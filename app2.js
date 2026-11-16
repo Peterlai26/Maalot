@@ -215,8 +215,11 @@ SUBS.settings = () => {
 <label class="f" for="sac">กิจวัตร</label><select id="sac"><option value="1.2" ${p.act === 1.2 ? "selected" : ""}>นั่งเป็นหลัก</option><option value="1.3" ${p.act === 1.3 ? "selected" : ""}>เดินไปมาบ้าง</option><option value="1.4" ${p.act === 1.4 ? "selected" : ""}>ยืนหรือเดินเยอะ</option></select>
 <label class="f" for="sdf">ความเร็วในการลด</label><select id="sdf"><option value="300" ${p.def === 300 ? "selected" : ""}>เบา 300 kcal ต่อวัน</option><option value="500" ${p.def === 500 ? "selected" : ""}>ปกติ 500 kcal ต่อวัน</option><option value="700" ${p.def === 700 ? "selected" : ""}>จริงจัง 700 kcal ต่อวัน</option></select>
 <button class="btn primary block" style="margin-top:12px" data-act="ssave">บันทึกการตั้งค่า</button>
-<div class="sec">สำรองข้อมูล</div><textarea id="bk" rows="3" aria-label="ข้อมูลสำรอง" placeholder="กดคัดลอก หรือวางข้อมูลที่เคยสำรองไว้ที่นี่"></textarea>
+<div class="sec">สำรองข้อมูล</div><p class="xs muted" style="margin-bottom:8px">${S.lastBackup ? "สำรองไฟล์ล่าสุด " + new Date(S.lastBackup).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" }) : "ยังไม่เคยสำรองเป็นไฟล์ ข้อมูลเก็บอยู่ในเบราว์เซอร์นี้เท่านั้น ถ้าล้างข้อมูลเบราว์เซอร์หรือเปลี่ยนเครื่องจะหาย"}</p>
+<div class="row"><button class="btn primary" style="flex:1" data-act="bkdl">ดาวน์โหลดไฟล์สำรอง</button><button class="btn" style="flex:1" data-act="bkfile">นำเข้าจากไฟล์</button></div>
+<div class="sec">หรือคัดลอกเป็นข้อความ</div><textarea id="bk" rows="3" aria-label="ข้อมูลสำรอง" placeholder="กดคัดลอก หรือวางข้อมูลที่เคยสำรองไว้ที่นี่"></textarea>
 <div class="row" style="margin-top:8px"><button class="btn" style="flex:1" data-act="bkout">คัดลอกข้อมูล</button><button class="btn" style="flex:1" data-act="bkin">นำเข้า</button></div>
+<div class="sec">ติดตั้งเป็นแอป</div><button class="btn block" data-act="pwa">เพิ่ม Maalot ลงหน้าจอหลัก</button>
 <div class="sec">อื่นๆ</div><button class="btn danger block" data-act="resetask">เริ่มใหม่ทั้งหมด</button>
 <p class="xs muted" style="margin-top:12px">ใช้เป็นข้อมูลทั่วไป ไม่ใช่คำแนะนำทางการแพทย์ ถ้ามีโรคประจำตัว ตั้งครรภ์ หรือกังวลเรื่องการกิน ควรปรึกษาแพทย์</p>`, after: badge
   };
@@ -227,6 +230,28 @@ ACT.ssave = () => {
   S.prof = Object.assign(S.prof, { h, age: a, sex: $("#ssx").value, act: parseFloat($("#sac").value), def: parseInt($("#sdf").value, 10) }); save(); toast("บันทึกแล้ว");
 };
 ACT.bkout = () => { const t = $("#bk"); t.value = JSON.stringify(S); t.select(); try { navigator.clipboard.writeText(t.value).then(() => toast("คัดลอกแล้ว"), () => toast("เลือกข้อความแล้ว กดคัดลอกเองได้เลย")); } catch (e) { toast("เลือกข้อความแล้ว กดคัดลอกเองได้เลย"); } };
+ACT.bkdl = () => {
+  S.lastBackup = Date.now(); save();
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(S)], { type: "application/json" }));
+  a.download = "maalot-backup-" + dk(new Date()) + ".json"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast("ดาวน์โหลดไฟล์สำรองแล้ว"); rerenderSub();
+};
+ACT.bkfile = () => $("#bkFile").click();
+document.addEventListener("change", e => {
+  if (!e.target || e.target.id !== "bkFile") return; const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  f.text().then(t => {
+    const d = JSON.parse(t); if (!d || !d.v) throw 0;
+    if (!confirm("นำเข้าไฟล์นี้จะแทนที่ข้อมูลปัจจุบันทั้งหมด ดำเนินการต่อไหม")) return;
+    S = merge(d); save(); toast("นำเข้าแล้ว"); closeAllSubs();
+  }).catch(() => toast("ไฟล์ไม่ถูกต้อง"));
+});
+let PWA_EV = null;
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); PWA_EV = e; });
+ACT.pwa = () => {
+  if (matchMedia("(display-mode: standalone)").matches || navigator.standalone) { toast("ติดตั้งเป็นแอปอยู่แล้ว"); return; }
+  if (PWA_EV) { PWA_EV.prompt(); PWA_EV = null; return; }
+  toast(/iPhone|iPad|iPod/.test(navigator.userAgent) ? "กดปุ่มแชร์ของ Safari แล้วเลือก เพิ่มไปยังหน้าจอโฮม" : "เปิดเมนูของเบราว์เซอร์ แล้วเลือก ติดตั้งแอป หรือ เพิ่มลงหน้าจอหลัก");
+};
 ACT.bkin = () => { try { const d = JSON.parse($("#bk").value); if (!d || !d.v) throw 0; S = merge(d); save(); toast("นำเข้าแล้ว"); closeAllSubs(); } catch (e) { toast("ข้อมูลไม่ถูกต้อง"); } };
 ACT.resetask = () => openModal(`<h2>เริ่มใหม่ทั้งหมด?</h2><p class="muted" style="margin:8px 0 14px">ข้อมูลทั้งหมดจะถูกลบและกู้คืนไม่ได้</p><div class="row"><button class="btn" style="flex:1" data-act="modalclose">ยกเลิก</button><button class="btn danger" style="flex:1" data-act="resetgo">ลบทั้งหมด</button></div>`);
 ACT.modalclose = closeModal;

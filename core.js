@@ -92,6 +92,7 @@ function readSnap(s) {
 }
 function withTimeout(p, ms) { return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]); }
 async function loadStore() {
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { }
   try { const raw = localStorage.getItem("wl_state_v1"); if (raw) S = merge(JSON.parse(raw)); } catch (e) { }
   let cloud = null;
   try {
