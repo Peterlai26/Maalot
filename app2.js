@@ -299,6 +299,7 @@ document.addEventListener("input", (e) => {
   const t = e.target;
   if (t.id === "hubq") { hubQ = t.value; renderHub(); }
   else if (t.dataset && t.dataset.in === "lgtext" && LG) LG.text = t.value;
+  else if (t.dataset && t.dataset.in === "lgsearch" && LG) lgSearch(t.value);
 });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && e.target.id === "homeIn") ACT.homesend();

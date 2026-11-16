@@ -240,6 +240,7 @@ ${it.known ? (c.assumed ? '<div class="xs muted" style="margin-top:4px">ไม�
     html: `<div class="seg" role="tablist"><button class="${isF ? "on" : ""}" data-act="lgtab" data-t="food">กิน</button><button class="${!isF ? "on" : ""}" data-act="lgtab" data-t="work">ออกกำลัง</button></div>
 <label class="f" for="lgtext">${isF ? "พิมพ์ว่ากินอะไร เช่น ข้าวมันไก่ 1 จาน กับชานมไข่มุก" : "พิมพ์ว่าทำอะไร เช่น วิดพื้น 3 เซ็ต 12 ครั้ง วิ่ง 20 นาที"}</label>
 <textarea id="lgtext" data-in="lgtext" placeholder="${isF ? "ข้าวมันไก่ 1 จาน, ชานมไข่มุก 1 แก้ว" : "วิดพื้น 3 เซ็ต เซ็ตละ 12 ครั้ง แพลงก์ 3 เซ็ต 45 วินาที"}">${esc(LG.text)}</textarea>
+${isF ? `<label class="f" for="lgsearch" style="margin-top:10px">หรือค้นหาเมนู แตะเพื่อเพิ่ม</label><input id="lgsearch" type="text" data-in="lgsearch" placeholder="เช่น กะเพรา ชาเขียว ส้มโอ" autocomplete="off"/><div id="lgres" class="logchips" style="margin-top:8px"></div>` : ""}
 <div class="row wrap" style="margin-top:8px"><button class="btn" data-act="lgparse">${ic("sparkle", 18)}ตีความ</button>${isF ? `<button class="btn" data-act="camera">${ic("camera", 18)}ถ่ายรูป</button>` : ""}<button class="btn" data-act="lgadd">${ic("plus", 18)}เพิ่มเอง</button>${hasUnknown ? `<button class="btn" data-act="lgai">ให้ Claude ประเมิน</button>` : ""}</div>
 ${LG.busy ? '<div class="hint pulse-ring">' + ic("sparkle", 18) + "<span>กำลังดูให้อยู่…</span></div>" : ""}
 <div class="card" style="margin-top:12px;padding:6px 14px">${rows || '<div class="muted sm" style="padding:14px 0">ยังไม่มีรายการ พิมพ์แล้วกดตีความ หรือกดเพิ่มเอง</div>'}</div>
@@ -250,6 +251,13 @@ ${LG.items.length ? `<div class="row between" style="margin-top:12px"><span clas
   };
 };
 ACT.lgtab = (a) => { LG.text = ($("#lgtext") || {}).value || LG.text; LG.tab = a.dataset.t; LG.items = LG.text ? (LG.tab === "food" ? parseFood(LG.text) : parseWork(LG.text)) : []; rerenderSub(); };
+function lgSearch(q) {
+  const box = $("#lgres"); if (!box) return; const n = normT(q || "").trim();
+  if (!n) { box.innerHTML = ""; return; }
+  const hit = FOODS.map((f, i) => { const keys = f[3].concat([f[0]]).map(normT); const j = keys.findIndex(k => k.indexOf(n) > -1); return { f, i, s: j < 0 ? -1 : (keys[j].indexOf(n) === 0 ? 0 : 1) }; }).filter(x => x.s >= 0).sort((a, b) => a.s - b.s).slice(0, 8);
+  box.innerHTML = hit.length ? hit.map(x => `<button class="chip" data-act="lgpick" data-i="${x.i}">${ic("plus", 14)}${esc(x.f[0])} · ${x.f[1]}</button>`).join("") : '<span class="xs muted">ไม่พบเมนูนี้ พิมพ์ในช่องด้านบนแล้วกดตีความ หรือให้ Claude ประเมินได้</span>';
+}
+ACT.lgpick = (a) => { const f = FOODS[+a.dataset.i]; if (!f) return; LG.text = ($("#lgtext") || {}).value || LG.text; LG.items.push({ n: f[0], k1: f[1], q: 1, known: true }); rerenderSub(); };
 ACT.lgparse = () => { LG.text = $("#lgtext").value; LG.items = LG.text.trim() ? (LG.tab === "food" ? parseFood(LG.text) : parseWork(LG.text)) : []; if (!LG.items.length) toast("พิมพ์สิ่งที่ทำก่อนนะ"); rerenderSub(); };
 ACT.lgq = (a) => { const it = LG.items[+a.dataset.i]; it.q = Math.max(0.5, Math.round((it.q + parseFloat(a.dataset.d)) * 2) / 2); rerenderSub(); };
 ACT.lgrm = (a) => { LG.items.splice(+a.dataset.i, 1); rerenderSub(); };

@@ -184,8 +184,13 @@ function findFood(seg) {
   FOODS.forEach(f => f[3].concat([f[0]]).forEach(k => { const kk = normT(k); if (kk.length > bl && n.indexOf(kk) > -1) { best = f; bl = kk.length; } }));
   return best;
 }
+/* "ส้มตำปู ข้าวเหนียว ไก่ย่าง" -> 3 รายการ: แยกด้วยเว้นวรรคเมื่อมีเมนูที่รู้จักตั้งแต่ 2 คำ (คำที่ไม่ใช่เมนู เช่น 1 จาน ติดกับเมนูก่อนหน้า) */
+function splitBySpace(seg) {
+  const toks = seg.split(/\s+/).filter(Boolean); if (toks.length < 2 || toks.filter(t => findFood(t)).length < 2) return [seg];
+  const out = []; toks.forEach(t => { if (findFood(t) || !out.length) out.push(t); else out[out.length - 1] += " " + t; }); return out;
+}
 function parseFood(text) {
-  return text.split(SPLIT).map(s => s.trim()).filter(Boolean).map(seg => {
+  return text.split(SPLIT).map(s => s.trim()).filter(Boolean).flatMap(splitBySpace).map(seg => {
     const f = findFood(seg), q = qtyOf(seg);
     if (f) return { n: f[0], k1: f[1], q, known: true };
     return { n: seg.replace(/\d+(\.\d+)?|ครึ่ง/g, "").trim() || seg, k1: 0, q, known: false };
