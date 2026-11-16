@@ -308,7 +308,7 @@ $("#photoIn").addEventListener("change", (e) => { const f = e.target.files && e.
 (async function init() {
   await loadStore(); applyTheme();
   $("#splash").hidden = true;
-  if (!S.onboarded) { ONB = { step: 1, look: Object.assign({}, S.look), name: "", prof: Object.assign({}, S.prof) }; renderOnb(); }
+  if (!S.onboarded) { ONB = { step: 1, look: Object.assign({}, S.look), name: "", prof: Object.assign({}, S.prof) }; renderLanding(); }
   else { $("#onb").hidden = true; $("#app").hidden = false; $(".nav").hidden = false; touchStreak(); save(); show("home"); }
   setInterval(() => { if (view === "home" && !subStack.length && !fx && document.activeElement && document.activeElement.id !== "homeIn") renderHome(); }, 300000);
 })();
