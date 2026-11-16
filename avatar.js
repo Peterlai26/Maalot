@@ -34,10 +34,10 @@ function figure(L, mood, rx) {
   return `<g class="fig">
 <rect x="${-19 - (lw - 14) / 2}" y="-28" width="${lw}" height="22" rx="6" fill="${sk}"/><rect x="${5 - (lw - 14) / 2 + 0}" y="-28" width="${lw}" height="22" rx="6" fill="${sk}"/>
 <ellipse cx="-13" cy="-4" rx="16" ry="8" fill="#fff"/><ellipse cx="13" cy="-4" rx="16" ry="8" fill="#fff"/>
-<ellipse cx="${aL}" cy="-54" rx="11" ry="26" fill="${oc}" transform="rotate(12 ${aL} -54)"/><circle cx="${hL}" cy="-30" r="9" fill="${sk}"/>
-<ellipse cx="${aR}" cy="-54" rx="11" ry="26" fill="${oc}" transform="rotate(-12 ${aR} -54)"/><circle cx="${hR}" cy="-30" r="9" fill="${sk}"/>
-<ellipse cx="0" cy="-54" rx="${rx}" ry="38" fill="${oc}"/><rect x="-22" y="-46" width="44" height="20" rx="9" fill="${oc2}"/>
-<g transform="translate(0,-134)">${back}<ellipse cx="0" cy="6" rx="50" ry="48" fill="${sk}"/>${bangs}${brow}${eyes}${lash}<ellipse cx="-34" cy="30" rx="${bl}" ry="5" fill="#F7B7A3"/><ellipse cx="34" cy="30" rx="${bl}" ry="5" fill="#F7B7A3"/>${mouth}${acc}</g>
+<g class="armL"><ellipse cx="${aL}" cy="-54" rx="11" ry="26" fill="${oc}" transform="rotate(12 ${aL} -54)"/><circle cx="${hL}" cy="-30" r="9" fill="${sk}"/></g>
+<g class="armR"><ellipse cx="${aR}" cy="-54" rx="11" ry="26" fill="${oc}" transform="rotate(-12 ${aR} -54)"/><circle cx="${hR}" cy="-30" r="9" fill="${sk}"/></g>
+<g class="torso"><ellipse cx="0" cy="-54" rx="${rx}" ry="38" fill="${oc}"/><rect x="-22" y="-46" width="44" height="20" rx="9" fill="${oc2}"/></g>
+<g transform="translate(0,-134)"><g class="head">${back}<ellipse cx="0" cy="6" rx="50" ry="48" fill="${sk}"/>${bangs}${brow}${eyes}${lash}<ellipse cx="-34" cy="30" rx="${bl}" ry="5" fill="#F7B7A3"/><ellipse cx="34" cy="30" rx="${bl}" ry="5" fill="#F7B7A3"/>${mouth}${acc}</g></g>
 </g>`;
 }
 
@@ -53,19 +53,20 @@ function scene(o) {
   const P = PAL[o.period], night = o.period === "night";
   const own = o.owned || {};
   const sunY = o.period === "morning" ? 78 : o.period === "noon" ? 46 : o.period === "evening" ? 88 : 52;
-  let sky = `<rect x="28" y="30" width="80" height="76" rx="10" fill="${P.sky}"/><circle cx="${night ? 84 : 70}" cy="${sunY - 10}" r="${night ? 11 : 13}" fill="${P.sun}"/>`;
-  if (night) sky += `<circle cx="44" cy="46" r="1.6" fill="#fff"/><circle cx="52" cy="90" r="1.6" fill="#fff"/><circle cx="96" cy="96" r="1.6" fill="#fff"/>`;
-  else sky += `<ellipse cx="52" cy="88" rx="20" ry="7" fill="#fff"/>`;
+  let sky = `<rect x="28" y="30" width="80" height="76" rx="10" fill="${P.sky}"/><circle class="sunball" cx="${night ? 84 : 70}" cy="${sunY - 10}" r="${night ? 11 : 13}" fill="${P.sun}"/>`;
+  if (night) sky += `<circle class="star" cx="44" cy="46" r="1.8" fill="#fff"/><circle class="star" style="animation-delay:.9s" cx="52" cy="90" r="1.8" fill="#fff"/><circle class="star" style="animation-delay:1.7s" cx="96" cy="96" r="1.8" fill="#fff"/><circle class="star" style="animation-delay:.4s" cx="60" cy="62" r="1.3" fill="#fff"/>`;
+  else sky += `<ellipse class="cloud" cx="52" cy="88" rx="20" ry="7" fill="#fff"/>`;
   const lights = [170, 210, 250, 290, 332].map((x, i) => `<circle cx="${x}" cy="${i % 2 ? 36 : 32}" r="5" fill="${i % 2 ? "#F7B7A3" : "#FBE3A1"}"/>`).join("");
-  const lamp = (o.period === "evening" || night) ? `<circle cx="326" cy="150" r="${night ? 34 : 24}" fill="#FBE3A1" opacity="${night ? 0.28 : 0.35}"/><rect x="324" y="160" width="4" height="70" fill="${night ? "#8A7BB0" : "#C9A98A"}"/><path d="M314 160 L338 160 L333 142 L319 142 Z" fill="#FBE3A1"/>` : "";
+  const lamp = (o.period === "evening" || night) ? `<circle class="glow" cx="326" cy="150" r="${night ? 34 : 24}" fill="#FBE3A1" opacity="${night ? 0.28 : 0.35}"/><rect x="324" y="160" width="4" height="70" fill="${night ? "#8A7BB0" : "#C9A98A"}"/><path d="M314 160 L338 160 L333 142 L319 142 Z" fill="#FBE3A1"/>` : "";
   const plant = own["room:plant"] ? `<rect x="42" y="214" width="30" height="34" rx="6" fill="#E98E70"/><path d="M57 214 C44 190 48 172 57 162 C66 172 70 190 57 214 Z" fill="#8CC79A"/><path d="M57 214 C70 196 80 190 86 196 C82 208 70 214 57 214 Z" fill="#6FB583"/>` : "";
   const poster = own["room:poster"] ? `<rect x="130" y="52" width="46" height="60" rx="4" fill="${P.frame}"/><rect x="135" y="57" width="36" height="50" rx="2" fill="${night ? "#6A5F8C" : "#F7D58A"}"/><circle cx="153" cy="76" r="9" fill="${night ? "#FBE3A1" : "#F4A58A"}"/><path d="M135 107 L148 90 L158 100 L165 92 L171 107 Z" fill="${night ? "#4A3F66" : "#8CC79A"}"/>` : "";
   const m = o.mood;
   const fx = (m === "eat" ? `<g transform="translate(250,100)"><g class="heart"><path d="M0 0 C-6 -8 -14 -2 0 10 C14 -2 6 -8 0 0 Z" fill="#F4A58A"/></g></g><g transform="translate(130,96)"><g class="heart h2"><path d="M0 0 C-6 -8 -14 -2 0 10 C14 -2 6 -8 0 0 Z" fill="#F4A58A"/></g></g><g transform="translate(190,166)"><g class="bowl"><path d="M-16 0 H16 Q14 16 0 16 Q-14 16 -16 0 Z" fill="#fff" stroke="#E8C9A8" stroke-width="2"/><ellipse cx="0" cy="0" rx="16" ry="4" fill="#FBF5DC"/></g></g>` : "")
     + (m === "work" ? `<g transform="translate(252,112)"><g class="sweat"><path d="M0 -8 C6 0 6 6 0 6 C-6 6 -6 0 0 -8 Z" fill="#8CC8E8"/></g></g><g transform="translate(112,84)"><g class="spark"><path d="M0 -8 l2.5 5.5 5.5 2.5 -5.5 2.5 -2.5 5.5 -2.5 -5.5 -5.5 -2.5 5.5 -2.5 z" fill="#FBE3A1"/></g></g><g transform="translate(274,74)"><g class="spark"><path d="M0 -8 l2.5 5.5 5.5 2.5 -5.5 2.5 -2.5 5.5 -2.5 -5.5 -5.5 -2.5 5.5 -2.5 z" fill="#FBE3A1"/></g></g>` : "")
+    + (m === "sleepy" ? `<g transform="translate(250,118)" fill="#8A7BB0" font-weight="700"><text class="zz" font-size="16" x="0" y="0">z</text><text class="zz" style="animation-delay:1s" font-size="22" x="12" y="-12">Z</text><text class="zz" style="animation-delay:2s" font-size="28" x="26" y="-26">Z</text></g>` : "")
     + (m === "hungry" ? `<g transform="translate(302,214)"><g class="rumble"><rect x="-40" y="-16" width="80" height="28" rx="14" fill="#fff"/><text x="0" y="3" text-anchor="middle" font-size="13" font-weight="600" fill="#8A4A3A">ครืดดด</text></g></g>` : "");
   const l1 = o.l1 || "", l2 = o.l2 || "";
-  const bubble = l1 ? `<g transform="translate(0,0)"><rect x="228" y="56" width="136" height="${l2 ? 48 : 34}" rx="16" fill="#fff"/><path d="M242 ${l2 ? 102 : 88} L236 ${l2 ? 120 : 106} L258 ${l2 ? 102 : 88} Z" fill="#fff"/><text x="296" y="${l2 ? 76 : 78}" text-anchor="middle" font-size="13" font-weight="600" fill="#6B4A3A">${l1}</text>${l2 ? `<text x="296" y="94" text-anchor="middle" font-size="12" fill="#8A4A3A">${l2}</text>` : ""}</g>` : "";
+  const bubble = l1 ? `<g class="bubble"><rect x="228" y="56" width="136" height="${l2 ? 48 : 34}" rx="16" fill="#fff"/><path d="M242 ${l2 ? 102 : 88} L236 ${l2 ? 120 : 106} L258 ${l2 ? 102 : 88} Z" fill="#fff"/><text x="296" y="${l2 ? 76 : 78}" text-anchor="middle" font-size="13" font-weight="600" fill="#6B4A3A">${l1}</text>${l2 ? `<text x="296" y="94" text-anchor="middle" font-size="12" fill="#8A4A3A">${l2}</text>` : ""}</g>` : "";
   const fm = m === "work" ? "proud" : m;
   return `<svg class="scene ${m}" viewBox="0 0 380 300" role="img" aria-label="ตัวละครของคุณในห้อง"><rect width="380" height="300" fill="${P.wall}"/><rect y="250" width="380" height="50" fill="${P.floor}"/><rect y="246" width="380" height="6" fill="${P.frame}"/>
 ${sky}<rect x="24" y="26" width="88" height="84" rx="12" fill="none" stroke="${P.frame}" stroke-width="5"/><path d="M70 30 V106 M28 68 H108" stroke="${P.wall}" stroke-width="4"/>

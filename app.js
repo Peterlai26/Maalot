@@ -5,15 +5,17 @@ const ACT = {}, SUBS = {};
 /* ---------- เครื่องมือหน้าจอ ---------- */
 function toast(msg) { const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
 function popCoins(n) { const c = document.createElement("div"); c.className = "coinpop"; c.style.left = "calc(50% - 24px)"; c.style.top = "38%"; c.innerHTML = "+" + n + " เหรียญ"; document.body.appendChild(c); setTimeout(() => c.remove(), 1300); }
+function cheerStage() { const st = $("#stage"); if (!st) return; st.classList.add("cheer"); setTimeout(() => st.classList.remove("cheer"), 1500); }
 function confetti() {
+  cheerStage();
   const cols = ["#E8845F", "#F7D58A", "#8CC79A", "#8CC8E8", "#F7B7A3"];
   for (let i = 0; i < 30; i++) { const e = document.createElement("i"); e.className = "confetti"; e.style.left = Math.random() * 100 + "vw"; e.style.background = cols[i % cols.length]; e.style.animationDelay = Math.random() * 0.5 + "s"; document.body.appendChild(e); setTimeout(() => e.remove(), 2600); }
 }
-function countTo(el, to, dec) {
-  if (!el) return; const from = 0, t0 = performance.now(), d = 700;
+function countTo(el, to, dec, from0, suf) {
+  if (!el) return; const from = from0 || 0, sx = suf || "", t0 = performance.now(), d = 700;
   const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduce) { el.textContent = to.toFixed(dec || 0); return; }
-  (function step(t) { const p = Math.min(1, (t - t0) / d), e = 1 - Math.pow(1 - p, 3); el.textContent = (from + (to - from) * e).toFixed(dec || 0); if (p < 1) requestAnimationFrame(step); })(t0);
+  if (reduce) { el.textContent = to.toFixed(dec || 0) + sx; return; }
+  (function step(t) { const p = Math.min(1, (t - t0) / d), e = 1 - Math.pow(1 - p, 3); el.textContent = (from + (to - from) * e).toFixed(dec || 0) + sx; if (p < 1) requestAnimationFrame(step); })(t0);
 }
 function setFx(name, ms) { fx = name; clearTimeout(fxT); if (view === "home" && !subStack.length) renderHome(); fxT = setTimeout(() => { fx = null; if (view === "home" && !subStack.length) renderHome(); }, ms); }
 function openSheet(html) { const s = $("#sheet"); s.innerHTML = '<div class="panel">' + html + "</div>"; s.hidden = false; }
@@ -128,7 +130,7 @@ ACT.onb3 = () => {
 /* ---------- หน้าแรก ---------- */
 function baseMood(now, info) {
   const h = now.getHours();
-  if (h >= 23 || h < 5) return "sleepy";
+  if ((h >= 23 || h < 5) && S.mode !== "light") return "sleepy";
   if (info.works.length) return "proud";
   if (info.logged && h >= 17 && info.eaten < floorKcal() * 0.45) return "hungry";
   return "happy";
@@ -145,9 +147,15 @@ function speech(mood, per, info, h) {
   if (per === "evening") return ["เย็นแล้วนะ", "คืนนี้กินอะไรดี"];
   return ["คืนนี้สบายๆ นะ", "ดื่มน้ำก่อนนอน"];
 }
+let RING_PREV = 0, COIN_PREV = null;
 function ring(pct) {
-  const R = 30, C = 2 * Math.PI * R;
-  return `<svg class="ring" width="76" height="76" viewBox="0 0 76 76" role="img" aria-label="กินแล้ว ${pct}% ของเป้าวันนี้"><circle cx="38" cy="38" r="${R}" fill="none" stroke="var(--soft)" stroke-width="8"/><circle cx="38" cy="38" r="${R}" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(C * pct / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 38 38)"/><text x="38" y="43" text-anchor="middle" font-size="16" font-weight="600" fill="var(--ink)">${pct}%</text></svg>`;
+  const R = 30, C = 2 * Math.PI * R, from = C * RING_PREV / 100;
+  return `<svg class="ring" width="76" height="76" viewBox="0 0 76 76" role="img" aria-label="กินแล้ว ${pct}% ของเป้าวันนี้" data-c="${C.toFixed(1)}" data-pct="${pct}"><circle cx="38" cy="38" r="${R}" fill="none" stroke="var(--soft)" stroke-width="8"/><circle cx="38" cy="38" r="${R}" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${from.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 38 38)"/><text x="38" y="43" text-anchor="middle" font-size="16" font-weight="600" fill="var(--ink)">${RING_PREV}%</text></svg>`;
+}
+function animateRing() {
+  const r = $("#v-home .ring"); if (!r) return; const C = +r.dataset.c, pct = +r.dataset.pct, c = r.querySelectorAll("circle")[1], tx = r.querySelector("text");
+  requestAnimationFrame(() => requestAnimationFrame(() => { c.setAttribute("stroke-dasharray", (C * pct / 100).toFixed(1) + " " + C.toFixed(1)); }));
+  countTo(tx, pct, 0, RING_PREV, "%"); RING_PREV = pct;
 }
 function weekStrip(tk) {
   const days = []; for (let i = 6; i >= 0; i--) days.push(addDays(tk, -i));
@@ -164,6 +172,7 @@ function renderHome() {
   const now = new Date(), h = now.getHours(), per = periodOf(h), tk = todayKey();
   const info = dayInfo(tk), tgt = targetOn(tk), rem = tgt + info.wk - info.eaten;
   const w = estW(), rx = shapeRx(w), mood = fx || baseMood(now, info);
+  const md = S.mode || "auto", sper = md === "dark" ? "night" : md === "light" ? (per === "night" ? "noon" : per) : per, isDark = document.documentElement.dataset.theme === "dark";
   const sp = speech(mood, per, info, h);
   const g = per === "morning" ? "อรุณสวัสดิ์" : per === "noon" ? "สวัสดีตอนบ่าย" : per === "evening" ? "สวัสดีตอนเย็น" : "สวัสดีตอนค่ำ";
   const pct = clamp(Math.round(info.eaten / Math.max(1, tgt + info.wk) * 100), 0, 100);
@@ -179,7 +188,7 @@ function renderHome() {
   const chips = info.meals.map(m => `<span class="chip">${ic("bowl", 15)}${esc(m.n)}</span>`).concat(info.works.map(m => `<span class="chip green">${ic("check", 15)}${esc(m.n)}</span>`)).join("");
   const under = bmiOf(w) < 18.5 ? `<div class="hint">${ic("heart", 18)}<span>น้ำหนักอยู่ในเกณฑ์ต่ำแล้ว แอปจึงตั้งเป้าให้คงที่ ไม่แนะนำให้ลดต่อ</span></div>` : "";
   $("#v-home").innerHTML = `<div class="top"><div><div class="muted sm">${THDAYL[now.getDay()]} ${now.getDate()} ${THMON[now.getMonth()]}</div><h1>${g}</h1></div><div class="chips"><span class="chip warn">${ic("flame", 15)}${S.streak.n || 1} วัน</span><span class="chip soft" id="coinchip">${ic("coin", 15)}${S.coins}</span></div></div>
-<div class="stage" id="stage" data-act="poke" role="button" aria-label="แตะเพื่อทักตัวละคร">${scene({ look: S.look, mood, rx, period: per, owned: S.owned, l1: sp[0], l2: sp[1] })}${particles(per)}</div>
+<div class="stagewrap"><div class="stage" id="stage" data-act="poke" role="button" aria-label="แตะเพื่อทักตัวละคร">${scene({ look: S.look, mood, rx, period: sper, owned: S.owned, l1: sp[0], l2: sp[1] })}${particles(sper)}</div><button class="todbtn" data-act="daynight" aria-label="สลับกลางวัน กลางคืน" aria-pressed="${isDark}"><span class="todknob">${ic("sun", 16).replace('class="ic"', 'class="ic sun"')}${ic("moon", 16).replace('class="ic"', 'class="ic moon"')}</span></button></div>
 <button class="card status" data-act="sub" data-n="today">${ring(pct)}<div style="flex:1;min-width:0"><div class="big">${line}</div><div class="muted sm">${remTxt}</div><div class="muted xs" style="margin-top:2px">กินแล้ว ${fmtN(info.eaten)}${info.wk ? " · ออกกำลัง +" + fmtN(info.wk) : ""} kcal</div></div>${ic("list", 20)}</button>
 ${weekStrip(tk)}
 ${under}
@@ -187,6 +196,7 @@ ${chips ? '<div class="logchips">' + chips + "</div>" : ""}
 ${freqFoods(tk)}
 <div class="row wrap" style="margin-top:10px"><button class="chip" data-act="water1">${ic("droplet", 15)}น้ำ ${water}/8 แก้ว</button><button class="chip" data-act="sub" data-n="weight">${ic("scale", 15)}ชั่งน้ำหนัก</button>${h >= 20 || h < 5 ? `<button class="chip blue" data-act="sub" data-n="night">${ic("moon", 15)}หิวดึก</button>` : ""}</div>
 <div class="inputbar"><input id="homeIn" type="text" placeholder="วันนี้กินอะไรมาบ้างนะ…" aria-label="บอกว่ากินหรือทำอะไรมา"/><button class="round" data-act="camera" aria-label="ถ่ายรูปอาหาร">${ic("camera", 22)}</button><button class="round primary" data-act="homesend" aria-label="ส่ง">${ic("send", 22)}</button></div>`;
+  animateRing(); const cc = $("#coinchip"); if (cc && COIN_PREV !== null && S.coins > COIN_PREV) cc.classList.add("bump"); COIN_PREV = S.coins;
 }
 ACT.water1 = () => {
   const k = todayKey(); S.water[k] = Math.min(12, (S.water[k] || 0) + 1);
