@@ -78,6 +78,7 @@ function merge(d) { const b = blank(); const o = Object.assign({}, b, d || {}); 
 function persistLocal() { try { localStorage.setItem("wl_state_v1", JSON.stringify(S)); } catch (e) { } }
 function save() {
   S.upd = Date.now(); persistLocal(); clearTimeout(saveT);
+  if (typeof pushPing === "function") pushPing();
   saveT = setTimeout(async () => {
     if (!dbRef) { syncMode = "local"; badge(); return; }
     try { await dbRef.set(JSON.parse(JSON.stringify(S))); syncMode = "cloud"; } catch (e) { syncMode = "local"; }
