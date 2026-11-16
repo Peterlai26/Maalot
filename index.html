@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>น้องก้อน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="splash" class="app" style="text-align:center;padding-top:30vh"><p class="muted">กำลังเปิดห้องของน้อง…</p></div>
+<div id="onb" class="app" hidden></div>
+<main id="app" class="app" hidden>
+  <section id="v-home" class="view"></section>
+  <section id="v-charts" class="view" hidden></section>
+  <section id="v-hub" class="view" hidden></section>
+  <section id="v-char" class="view" hidden></section>
+</main>
+<nav class="nav" hidden><div class="nav-in">
+  <button data-act="nav" data-v="home" data-v2="home"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>วันนี้</button>
+  <button data-act="nav" data-v="charts"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>กราฟ</button>
+  <button class="fab" data-act="fab" aria-label="เพิ่มบันทึก"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button data-act="nav" data-v="hub"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>ทุกโหมด</button>
+  <button data-act="nav" data-v="char"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>ตัวละคร</button>
+</div></nav>
+<div id="sub" hidden></div>
+<div id="sheet" hidden></div>
+<div id="modal" hidden></div>
+<input id="photoIn" type="file" accept="image/*" hidden>
+<script src="data.js"></script>
+<script src="avatar.js"></script>
+<script src="core.js"></script>
+<script src="app.js"></script>
+<script src="app2.js"></script>
+<script src="app3.js"></script>
+</body>
+</html>
