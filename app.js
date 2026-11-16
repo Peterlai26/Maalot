@@ -145,6 +145,21 @@ function speech(mood, per, info, h) {
   if (per === "evening") return ["เย็นแล้วนะ", "คืนนี้กินอะไรดี"];
   return ["คืนนี้สบายๆ นะ", "ดื่มน้ำก่อนนอน"];
 }
+function ring(pct) {
+  const R = 30, C = 2 * Math.PI * R;
+  return `<svg class="ring" width="76" height="76" viewBox="0 0 76 76" role="img" aria-label="กินแล้ว ${pct}% ของเป้าวันนี้"><circle cx="38" cy="38" r="${R}" fill="none" stroke="var(--soft)" stroke-width="8"/><circle cx="38" cy="38" r="${R}" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(C * pct / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 38 38)"/><text x="38" y="43" text-anchor="middle" font-size="16" font-weight="600" fill="var(--ink)">${pct}%</text></svg>`;
+}
+function weekStrip(tk) {
+  const days = []; for (let i = 6; i >= 0; i--) days.push(addDays(tk, -i));
+  return `<div class="weekstrip" aria-label="7 วันที่ผ่านมา">${days.map(k => { const on = dayInfo(k).logged; return `<div class="wd ${k === tk ? "today" : ""}"><span class="xs muted">${THDAY[new Date(k + "T12:00:00").getDay()]}</span><i class="${on ? "on" : ""}">${on ? ic("check", 14) : ""}</i></div>`; }).join("")}</div>`;
+}
+function freqFoods(tk) {
+  const from = addDays(tk, -60), cnt = {};
+  S.meals.forEach(m => { if (m.d >= from) { const n = baseName(m.n); cnt[n] = (cnt[n] || 0) + 1; } });
+  const today = new Set(S.meals.filter(m => m.d === tk).map(m => baseName(m.n)));
+  const top = Object.keys(cnt).filter(n => cnt[n] >= 2 && !today.has(n)).sort((x, y) => cnt[y] - cnt[x]).slice(0, 4);
+  return top.length ? `<div class="sec" style="margin-bottom:6px">กินบ่อย แตะเพื่อจดอีกครั้ง</div><div class="logchips" style="margin-top:0">${top.map(n => `<button class="chip" data-act="logfood" data-t="${esc(n)}">${ic("plus", 14)}${esc(n)}</button>`).join("")}</div>` : "";
+}
 function renderHome() {
   const now = new Date(), h = now.getHours(), per = periodOf(h), tk = todayKey();
   const info = dayInfo(tk), tgt = targetOn(tk), rem = tgt + info.wk - info.eaten;
@@ -165,9 +180,11 @@ function renderHome() {
   const under = bmiOf(w) < 18.5 ? `<div class="hint">${ic("heart", 18)}<span>น้ำหนักอยู่ในเกณฑ์ต่ำแล้ว แอปจึงตั้งเป้าให้คงที่ ไม่แนะนำให้ลดต่อ</span></div>` : "";
   $("#v-home").innerHTML = `<div class="top"><div><div class="muted sm">${THDAYL[now.getDay()]} ${now.getDate()} ${THMON[now.getMonth()]}</div><h1>${g}</h1></div><div class="chips"><span class="chip warn">${ic("flame", 15)}${S.streak.n || 1} วัน</span><span class="chip soft" id="coinchip">${ic("coin", 15)}${S.coins}</span></div></div>
 <div class="stage" id="stage" data-act="poke" role="button" aria-label="แตะเพื่อทักตัวละคร">${scene({ look: S.look, mood, rx, period: per, owned: S.owned, l1: sp[0], l2: sp[1] })}${particles(per)}</div>
-<button class="card status" data-act="sub" data-n="today"><div style="flex:1;min-width:0"><div class="big">${line}</div><div class="muted sm">${remTxt}</div><div class="bar" style="margin-top:8px"><i style="width:${pct}%"></i></div></div>${ic("list", 20)}</button>
+<button class="card status" data-act="sub" data-n="today">${ring(pct)}<div style="flex:1;min-width:0"><div class="big">${line}</div><div class="muted sm">${remTxt}</div><div class="muted xs" style="margin-top:2px">กินแล้ว ${fmtN(info.eaten)}${info.wk ? " · ออกกำลัง +" + fmtN(info.wk) : ""} kcal</div></div>${ic("list", 20)}</button>
+${weekStrip(tk)}
 ${under}
 ${chips ? '<div class="logchips">' + chips + "</div>" : ""}
+${freqFoods(tk)}
 <div class="row wrap" style="margin-top:10px"><button class="chip" data-act="water1">${ic("droplet", 15)}น้ำ ${water}/8 แก้ว</button><button class="chip" data-act="sub" data-n="weight">${ic("scale", 15)}ชั่งน้ำหนัก</button>${h >= 20 || h < 5 ? `<button class="chip blue" data-act="sub" data-n="night">${ic("moon", 15)}หิวดึก</button>` : ""}</div>
 <div class="inputbar"><input id="homeIn" type="text" placeholder="วันนี้กินอะไรมาบ้างนะ…" aria-label="บอกว่ากินหรือทำอะไรมา"/><button class="round" data-act="camera" aria-label="ถ่ายรูปอาหาร">${ic("camera", 22)}</button><button class="round primary" data-act="homesend" aria-label="ส่ง">${ic("send", 22)}</button></div>`;
 }
