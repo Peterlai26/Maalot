@@ -208,3 +208,12 @@ button:active:not([disabled]) { transform: scale(.96); transition: transform .08
 .land-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--soft); color: var(--accent); display: grid; place-items: center; flex-shrink: 0; }
 .land-step { gap: 12px; }
 .land-n { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 600; flex-shrink: 0; }
+
+/* home: ring, week strip */
+.status .ring, .ring { width: 76px; height: 76px; flex-shrink: 0; }
+.weekstrip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 8px 6px; }
+.wd { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.wd i { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--soft); color: var(--accent-ink); font-style: normal; }
+.wd i.on { background: var(--green); color: #fff; }
+.wd.today i { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wd.today span { color: var(--accent); font-weight: 600; }
