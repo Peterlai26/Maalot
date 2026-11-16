@@ -79,6 +79,7 @@ function persistLocal() { try { localStorage.setItem("wl_state_v1", JSON.stringi
 function save() {
   S.upd = Date.now(); persistLocal(); clearTimeout(saveT);
   if (typeof pushPing === "function") pushPing();
+  if (typeof medalSoon === "function") medalSoon();
   saveT = setTimeout(async () => {
     if (!dbRef) { syncMode = "local"; badge(); return; }
     try { await dbRef.set(JSON.parse(JSON.stringify(S))); syncMode = "cloud"; } catch (e) { syncMode = "local"; }
