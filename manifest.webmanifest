@@ -1,0 +1,15 @@
+{
+  "name": "Maalot (มาลด)",
+  "short_name": "Maalot",
+  "description": "ห้องอุ่นๆ สำหรับบันทึกการกิน ออกกำลังกาย และสุขภาพประจำวัน",
+  "lang": "th",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFF6EC",
+  "theme_color": "#FFF6EC",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
