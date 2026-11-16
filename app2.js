@@ -284,6 +284,7 @@ document.addEventListener("click", (e) => {
   const sh = $("#sheet"), md = $("#modal");
   if (e.target === sh) { closeSheet(); return; } if (e.target === md) { closeModal(); return; }
   const a = e.target.closest("[data-act]"); if (!a || a.disabled) return;
+  if (a.classList.contains("primary") || a.classList.contains("fab") || a.classList.contains("glass") || a.dataset.act === "water1") haptic(10);
   const f = ACT[a.dataset.act]; if (f) f(a, e);
 });
 document.addEventListener("change", (e) => {
@@ -307,10 +308,32 @@ document.addEventListener("keydown", (e) => {
 });
 $("#photoIn").addEventListener("change", (e) => { const f = e.target.files && e.target.files[0]; if (f) handlePhoto(f); });
 
+function haptic(ms) { try { if (navigator.vibrate) navigator.vibrate(ms || 10); } catch (e) { } }
+ACT.daynight = () => {
+  const dark = document.documentElement.dataset.theme === "dark"; S.mode = dark ? "light" : "dark"; applyTheme(); save(); haptic(12);
+  const st = $("#stage"); if (!st) { renderHome(); return; }
+  st.classList.add("todfade");
+  setTimeout(() => { renderHome(); const s2 = $("#stage"); if (s2) { s2.classList.add("todin"); setTimeout(() => s2.classList.remove("todin"), 650); } }, 280);
+};
+function greetStage(cls, ms) { const st = $("#stage"); if (!st) return; st.classList.add(cls); setTimeout(() => st.classList.remove(cls), ms); }
+function startIdleDirector() {
+  setInterval(() => {
+    if (view !== "home" || subStack.length || fx || document.visibilityState !== "visible" || !$("#stage") || !$("#sheet").hidden) return;
+    const st = $("#stage"); if (st.classList.contains("wave") || st.classList.contains("cheer") || st.classList.contains("poke")) return;
+    if (Math.random() < 0.6) greetStage("wave", 3200); else greetStage("hop", 1500);
+  }, 14000);
+}
+function endSplash(minMs, t0) {
+  const sp = $("#splash"); if (!sp) return; let done = false;
+  const go = () => { if (done) return; done = true; sp.classList.add("out"); setTimeout(() => { sp.remove(); if (view === "home" && S.onboarded) greetStage("wave", 3200); }, 520); };
+  sp.addEventListener("click", go); setTimeout(go, Math.max(0, minMs - (performance.now() - t0)));
+}
 (async function init() {
+  const t0 = performance.now(); let first = true; try { first = !sessionStorage.getItem("maalot_splash"); sessionStorage.setItem("maalot_splash", "1"); } catch (e) { }
   await loadStore(); applyTheme();
-  $("#splash").hidden = true;
+  endSplash(first ? 1900 : 500, t0);
   if (!S.onboarded) { ONB = { step: 1, look: Object.assign({}, S.look), name: "", prof: Object.assign({}, S.prof) }; renderLanding(); }
   else { $("#onb").hidden = true; $("#app").hidden = false; $(".nav").hidden = false; touchStreak(); save(); show("home"); startReminders(); }
+  startIdleDirector();
   setInterval(() => { if (view === "home" && !subStack.length && !fx && document.activeElement && document.activeElement.id !== "homeIn") renderHome(); }, 300000);
 })();

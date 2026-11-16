@@ -9,7 +9,7 @@ function renderLanding() {
   ];
   const steps = [["สร้างตัวละคร", "เลือกหน้าตาที่ชอบ"], ["กรอกข้อมูลเล็กน้อย", "ส่วนสูง น้ำหนัก อายุ"], ["เริ่มจดได้เลย", "ไม่ต้องสมัครสมาชิก"]];
   el.innerHTML = `<div class="inner land">
-<div class="land-hero"><span class="chip soft">${ic("sparkle", 15)}ห้องอุ่นๆ สำหรับดูแลตัวเอง</span>
+<div class="land-hero"><img class="land-logo" src="logo.svg" alt="" width="84" height="84"><span class="chip soft">${ic("sparkle", 15)}ห้องอุ่นๆ สำหรับดูแลตัวเอง</span>
 <h1 class="land-h1">Maalot <span class="land-th">มาลด</span></h1>
 <p class="land-sub">จดการกิน ออกกำลังกาย และน้ำหนัก โดยมีตัวละครของคุณเป็นเพื่อนในห้องอุ่นๆ ไม่ต้องกดเยอะ ไม่ต้องกดดันตัวเอง</p>
 <div class="land-stage">${lookPreview(S.look, 46)}</div>

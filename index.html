@@ -14,14 +14,35 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23f6b98a'/%3E%3Ctext x='32' y='44' font-size='34' font-family='sans-serif' font-weight='700' text-anchor='middle' fill='white'%3EM%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="splash" class="app" style="text-align:center;padding-top:30vh"><p class="muted">กำลังเปิด Maalot (มาลด)…</p></div>
+<div id="splash" class="splash" role="status" aria-label="กำลังเปิด Maalot">
+  <div class="splash-bg" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="splash-in">
+  <svg class="splash-logo" viewBox="0 0 512 512" width="132" height="132" aria-hidden="true">
+    <defs><linearGradient id="slg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F9B497"/><stop offset="1" stop-color="#E8845F"/></linearGradient><linearGradient id="slb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFBF3"/><stop offset="1" stop-color="#FFEBD2"/></linearGradient></defs>
+    <rect width="512" height="512" rx="116" fill="url(#slg)"/>
+    <g class="steam"><path d="M226 128c-16-16 16-26 0-46M286 128c-16-16 16-26 0-46" fill="none" stroke="#FFF6EC" stroke-width="11" stroke-linecap="round" opacity=".9"/></g>
+    <ellipse cx="256" cy="448" rx="128" ry="13" fill="#B65A38" opacity=".28"/>
+    <path d="M104 320c0-102 62-170 152-170s152 68 152 170c0 66-54 112-152 112S104 386 104 320Z" fill="url(#slb)"/>
+    <path d="M256 152c-4 18-10 30-22 42M256 152c0 16 0 30 0 44M256 152c4 18 10 30 22 42" fill="none" stroke="#E9CBA8" stroke-width="8" stroke-linecap="round"/>
+    <ellipse class="eye" cx="206" cy="312" rx="16" ry="21" fill="#3B2A24"/><ellipse class="eye" cx="306" cy="312" rx="16" ry="21" fill="#3B2A24"/>
+    <circle cx="211" cy="304" r="5.5" fill="#fff"/><circle cx="311" cy="304" r="5.5" fill="#fff"/>
+    <ellipse cx="162" cy="348" rx="23" ry="13" fill="#F7B7A3" opacity=".9"/><ellipse cx="350" cy="348" rx="23" ry="13" fill="#F7B7A3" opacity=".9"/>
+    <path d="M232 348q24 26 48 0" fill="none" stroke="#8A4A3A" stroke-width="9" stroke-linecap="round"/>
+    <path d="M410 120l8 20 20 8-20 8-8 20-8-20-20-8 20-8z" fill="#FFF1B8"/>
+  </svg>
+  <div class="splash-word" aria-hidden="true"><span>M</span><span>a</span><span>a</span><span>l</span><span>o</span><span>t</span></div>
+  <div class="splash-th">มาลด</div>
+  <div class="splash-tag">ห้องอุ่นๆ ที่มีเราอยู่ด้วยกัน</div>
+  <div class="splash-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+  </div>
+</div>
 <div id="onb" class="app" hidden></div>
 <main id="app" class="app" hidden>
   <section id="v-home" class="view"></section>
