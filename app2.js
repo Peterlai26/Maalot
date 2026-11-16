@@ -208,6 +208,7 @@ SUBS.settings = () => {
   const p = S.prof;
   return {
     title: "ตั้งค่าและข้อมูล", html: `<div class="hint">${ic("cloud", 18)}<span id="syncb"></span></div>
+${acctHTML()}
 <div class="sec" style="margin-top:0">ธีมแอป</div><div class="palrow">${PALS.map(p => `<button class="palbtn ${(S.pal || "peach") === p[0] ? "on" : ""}" style="background:${p[2]}" data-act="setpal" data-p="${p[0]}" aria-label="ธีม${p[1]}"></button>`).join("")}</div>
 <div class="seg" style="margin-top:12px">${[["auto", "ตามเครื่อง"], ["light", "สว่าง"], ["dark", "มืด"]].map(m => `<button class="${(S.mode || "auto") === m[0] ? "on" : ""}" data-act="setmode" data-m="${m[0]}">${m[1]}</button>`).join("")}</div>
 <div class="sec">ข้อมูลส่วนตัว</div><div class="grid2"><div><label class="f" for="sh">ส่วนสูง (ซม.)</label><input id="sh" type="number" inputmode="decimal" value="${p.h}"/></div><div><label class="f" for="sa">อายุ</label><input id="sa" type="number" inputmode="numeric" value="${p.age}"/></div></div>
@@ -222,7 +223,7 @@ SUBS.settings = () => {
 ${remHTML()}
 <div class="sec">ติดตั้งเป็นแอป</div><button class="btn block" data-act="pwa">เพิ่ม Maalot ลงหน้าจอหลัก</button>
 <div class="sec">อื่นๆ</div><button class="btn danger block" data-act="resetask">เริ่มใหม่ทั้งหมด</button>
-<p class="xs muted" style="margin-top:12px">ใช้เป็นข้อมูลทั่วไป ไม่ใช่คำแนะนำทางการแพทย์ ถ้ามีโรคประจำตัว ตั้งครรภ์ หรือกังวลเรื่องการกิน ควรปรึกษาแพทย์</p>`, after: badge
+<p class="xs muted" style="margin-top:12px">ใช้เป็นข้อมูลทั่วไป ไม่ใช่คำแนะนำทางการแพทย์ ถ้ามีโรคประจำตัว ตั้งครรภ์ หรือกังวลเรื่องการกิน ควรปรึกษาแพทย์</p>`, after: () => { badge(); acctAfter(); }
   };
 };
 ACT.ssave = () => {
@@ -332,6 +333,7 @@ function endSplash(minMs, t0) {
   const t0 = performance.now(); let first = true; try { first = !sessionStorage.getItem("maalot_splash"); sessionStorage.setItem("maalot_splash", "1"); } catch (e) { }
   await loadStore(); applyTheme();
   endSplash(first ? 1900 : 500, t0);
+  startSync();
   if (!S.onboarded) { ONB = { step: 1, look: Object.assign({}, S.look), name: "", prof: Object.assign({}, S.prof) }; renderLanding(); }
   else { $("#onb").hidden = true; $("#app").hidden = false; $(".nav").hidden = false; touchStreak(); save(); show("home"); startReminders(); }
   startIdleDirector();

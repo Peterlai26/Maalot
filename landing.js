@@ -14,7 +14,7 @@ function renderLanding() {
 <p class="land-sub">จดการกิน ออกกำลังกาย และน้ำหนัก โดยมีตัวละครของคุณเป็นเพื่อนในห้องอุ่นๆ ไม่ต้องกดเยอะ ไม่ต้องกดดันตัวเอง</p>
 <div class="land-stage">${lookPreview(S.look, 46)}</div>
 <button class="btn primary block land-cta" data-act="landgo">เริ่มเลย ใช้เวลาไม่ถึง 2 นาที</button>
-<p class="xs muted" style="text-align:center;margin-top:8px">ฟรี ไม่ต้องสมัครสมาชิก</p></div>
+<p class="xs muted" style="text-align:center;margin-top:8px">ฟรี ไม่ต้องสมัครสมาชิก</p>${GOOGLE_CLIENT_ID ? '<div class="land-login"><p class="sm muted" style="text-align:center;margin-bottom:8px">มีบัญชีอยู่แล้ว? เข้าสู่ระบบเพื่อดึงข้อมูลเดิมกลับมา</p><div class="gbtn" style="min-height:44px;display:flex;justify-content:center"></div></div>' : ""}</div>
 <h2 class="land-sec">มีอะไรในนี้</h2>
 <div class="col">${feats.map(f => `<div class="card land-feat"><span class="land-ic">${ic(f[0], 22)}</span><div><h3>${f[1]}</h3><p class="muted sm">${f[2]}</p></div></div>`).join("")}</div>
 <h2 class="land-sec">เริ่มยังไง</h2>
@@ -25,5 +25,6 @@ function renderLanding() {
 <p class="xs muted" style="margin-top:14px;text-align:center">สำหรับผู้ใหญ่ 18 ปีขึ้นไป ใช้เป็นข้อมูลทั่วไป ไม่ใช่คำแนะนำทางการแพทย์ ถ้ามีโรคประจำตัว ตั้งครรภ์ หรือกังวลเรื่องการกิน ควรปรึกษาแพทย์</p>
 </div>`;
   window.scrollTo(0, 0);
+  if (typeof acctRenderBtn === "function") acctRenderBtn();
 }
 ACT.landgo = () => renderOnb();

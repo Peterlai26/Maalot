@@ -72,7 +72,7 @@ function blank() {
     look: { g: "neutral", skin: "#FBD9BE", hs: "bob", hc: "#6B4A3A", oc: "#F4A58A", acc: "none" },
     prof: { h: 165, w0: 70, age: 20, sex: "f", act: 1.2, def: 500 },
     owned: {}, coins: 20, coinLog: {}, weights: [], meals: [], works: [], water: {}, sleep: {}, waist: [],
-    claimed: {}, streak: { last: "", n: 0, best: 0 }, cheat: null, plan: null, shop: {}, nights: 0
+    claimed: {}, del: {}, streak: { last: "", n: 0, best: 0 }, cheat: null, plan: null, shop: {}, nights: 0
   };
 }
 function merge(d) { const b = blank(); const o = Object.assign({}, b, d || {}); o.look = Object.assign({}, b.look, (d && d.look) || {}); o.prof = Object.assign({}, b.prof, (d && d.prof) || {}); o.streak = Object.assign({}, b.streak, (d && d.streak) || {}); return o; }
@@ -81,13 +81,14 @@ function save() {
   S.upd = Date.now(); persistLocal(); clearTimeout(saveT);
   if (typeof pushPing === "function") pushPing();
   if (typeof medalSoon === "function") medalSoon();
+  if (typeof syncSoon === "function") syncSoon();
   saveT = setTimeout(async () => {
     if (!dbRef) { syncMode = "local"; badge(); return; }
     try { await dbRef.set(JSON.parse(JSON.stringify(S))); syncMode = "cloud"; } catch (e) { syncMode = "local"; }
     badge();
   }, 900);
 }
-function badge() { const b = $("#syncb"); if (b) b.textContent = syncMode === "cloud" ? "บันทึกในบัญชีของคุณแล้ว ใช้ต่อได้ทุกเครื่อง" : "บันทึกในเครื่องนี้เท่านั้น"; }
+function badge() { const b = $("#syncb"); if (b) b.textContent = (typeof syncOn === "function" && syncOn()) ? "ซิงก์กับบัญชี Google แล้ว ใช้ต่อได้ทุกเครื่อง" : syncMode === "cloud" ? "บันทึกในบัญชีของคุณแล้ว ใช้ต่อได้ทุกเครื่อง" : "บันทึกในเครื่องนี้เท่านั้น"; }
 function readSnap(s) {
   if (!s) return null;
   try { const ex = typeof s.exists === "function" ? s.exists() : s.exists; if (ex === false) return null; } catch (e) { }

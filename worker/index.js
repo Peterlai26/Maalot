@@ -58,7 +58,7 @@ const msgFor = (h) => { let m = MSG[0][1]; MSG.forEach((x) => { if (h >= x[0]) m
 
 async function sha(s) { return [...new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode(s)))].map((b) => b.toString(16).padStart(2, "0")).join(""); }
 function cors(req, extra) {
-  const o = req.headers.get("Origin"), h = { "Access-Control-Allow-Methods": "POST, GET, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "86400", Vary: "Origin", ...extra };
+  const o = req.headers.get("Origin"), h = { "Access-Control-Allow-Methods": "POST, GET, PUT, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Access-Control-Max-Age": "86400", Vary: "Origin", ...extra };
   if (ALLOWED_ORIGINS.includes(o)) h["Access-Control-Allow-Origin"] = o; return h;
 }
 const J = (req, obj, status) => new Response(JSON.stringify(obj), { status: status || 200, headers: cors(req, { "Content-Type": "application/json" }) });
@@ -69,12 +69,74 @@ function cleanPrefs(p) {
 }
 const okEndpoint = (e) => { try { const u = new URL(e); return u.protocol === "https:" && PUSH_HOSTS.some((r) => r.test(u.hostname)) && e.length < 1000; } catch (_) { return false; } };
 
+
+/* ---- Google sign-in (ID token) + stateless session + per-user sync blob ---- */
+const GOOGLE_CERTS = "https://www.googleapis.com/oauth2/v3/certs";
+const SESSION_TTL = 30 * 86400;
+const MAX_SYNC_BYTES = 2 * 1024 * 1024;
+const strB64u = (str) => b64u.enc(enc.encode(str));
+const jsonB64u = (s) => JSON.parse(new TextDecoder().decode(b64u.dec(s)));
+export async function verifyGoogleIdToken(idToken, env, certsFetcher) {
+  if (!env.GOOGLE_CLIENT_ID) throw new Error("not configured");
+  const parts = String(idToken || "").split("."); if (parts.length !== 3) throw new Error("bad token");
+  const head = jsonB64u(parts[0]), claims = jsonB64u(parts[1]);
+  if (head.alg !== "RS256" || !head.kid) throw new Error("bad alg");
+  const certs = await (certsFetcher || (() => fetch(GOOGLE_CERTS, { cf: { cacheTtl: 3600, cacheEverything: true } }).then((r) => r.json())))();
+  const jwk = (certs.keys || []).find((k) => k.kid === head.kid); if (!jwk) throw new Error("unknown key");
+  const key = await crypto.subtle.importKey("jwk", { kty: jwk.kty, n: jwk.n, e: jwk.e, alg: "RS256", ext: true }, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
+  const ok = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, b64u.dec(parts[2]), enc.encode(parts[0] + "." + parts[1]));
+  if (!ok) throw new Error("bad signature");
+  const now = Math.floor(Date.now() / 1000);
+  if (!["accounts.google.com", "https://accounts.google.com"].includes(claims.iss)) throw new Error("bad iss");
+  if (claims.aud !== env.GOOGLE_CLIENT_ID) throw new Error("bad aud");
+  if (!(claims.exp > now)) throw new Error("expired");
+  if (claims.email_verified !== true && claims.email_verified !== "true") throw new Error("email not verified");
+  if (typeof claims.sub !== "string" || !claims.sub) throw new Error("no sub");
+  return claims;
+}
+async function hmacKey(env) { if (!env.SESSION_SECRET) throw new Error("no secret"); return crypto.subtle.importKey("raw", enc.encode(env.SESSION_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]); }
+export async function signSession(sub, env, now) {
+  const exp = Math.floor((now || Date.now()) / 1000) + SESSION_TTL, body = strB64u(JSON.stringify({ sub, exp }));
+  return body + "." + b64u.enc(await crypto.subtle.sign("HMAC", await hmacKey(env), enc.encode(body)));
+}
+export async function verifySession(token, env, now) {
+  const [body, sig] = String(token || "").split("."); if (!body || !sig) return null;
+  let ok = false; try { ok = await crypto.subtle.verify("HMAC", await hmacKey(env), b64u.dec(sig), enc.encode(body)); } catch (_) { return null; }
+  if (!ok) return null; const c = jsonB64u(body); return c.exp > Math.floor((now || Date.now()) / 1000) && typeof c.sub === "string" ? c : null;
+}
+async function handleAccount(req, env, url) {
+  if (url.pathname === "/auth/google" && req.method === "POST") {
+    let b; try { b = JSON.parse(await req.text()); } catch (_) { return J(req, { error: "bad json" }, 400); }
+    try {
+      const c = await verifyGoogleIdToken(b.credential, env);
+      return J(req, { token: await signSession(c.sub, env), exp: Math.floor(Date.now() / 1000) + SESSION_TTL, email: c.email || "", name: c.name || "" });
+    } catch (e) { return J(req, { error: "unauthorized" }, 401); }
+  }
+  if (url.pathname === "/sync") {
+    const m = /^Bearer (.+)$/.exec(req.headers.get("Authorization") || ""); const sess = m ? await verifySession(m[1], env) : null;
+    if (!sess) return J(req, { error: "unauthorized" }, 401);
+    const key = "d:" + await sha(sess.sub);
+    if (req.method === "GET") { const rec = JSON.parse((await env.SUBS.get(key)) || "null"); return J(req, rec ? { upd: rec.upd, data: rec.data } : { upd: 0, data: null }); }
+    if (req.method === "DELETE") { await env.SUBS.delete(key); return J(req, { ok: true }); }
+    if (req.method === "PUT") {
+      const t = await req.text(); if (t.length > MAX_SYNC_BYTES) return J(req, { error: "too large" }, 413);
+      let b; try { b = JSON.parse(t); } catch (_) { return J(req, { error: "bad json" }, 400); }
+      if (!b || typeof b.data !== "object" || b.data === null || Array.isArray(b.data) || typeof b.data.v !== "number") return J(req, { error: "bad data" }, 400);
+      const cur = JSON.parse((await env.SUBS.get(key)) || "null"), curUpd = cur ? cur.upd : 0;
+      if ((b.base || 0) !== curUpd) return J(req, { error: "conflict", upd: curUpd, data: cur && cur.data }, 409);
+      const upd = Date.now(); await env.SUBS.put(key, JSON.stringify({ upd, data: b.data })); return J(req, { ok: true, upd });
+    }
+  }
+  return null;
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(req) });
     if (!ALLOWED_ORIGINS.includes(req.headers.get("Origin"))) return new Response("forbidden", { status: 403 });
     if (req.method === "GET" && url.pathname === "/vapid") return J(req, { key: env.VAPID_PUBLIC });
+    if (url.pathname === "/auth/google" || url.pathname === "/sync") { const r = await handleAccount(req, env, url); if (r) return r; }
     if (req.method !== "POST") return J(req, { error: "not found" }, 404);
     let b; try { const t = await req.text(); if (t.length > 4000) throw 0; b = JSON.parse(t); } catch (_) { return J(req, { error: "bad json" }, 400); }
     const ep = b.sub ? b.sub.endpoint : b.endpoint;
