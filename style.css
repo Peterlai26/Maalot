@@ -310,3 +310,16 @@ button:active:not([disabled]) { transform: scale(.96); transition: transform .08
 .chip, .tile, .btn { transition: transform .12s, background-color .2s, box-shadow .2s; }
 .tile:active { transform: scale(.97); }
 .stagewrap { position: relative; }
+
+/* mood */
+.moodcard { margin-top: 10px; padding: 10px 12px; }
+.mrow { display: flex; justify-content: space-between; gap: 4px; margin-top: 8px; }
+.mrow.big { margin: 12px 0 6px; }
+.mbtn { background: none; border: 0; padding: 4px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: transform .15s, background-color .2s; }
+.mbtn.on { background: var(--soft); transform: scale(1.12); }
+.mbtn:not(.on):active { transform: scale(.9); }
+.mface { display: block; }
+.mhist { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px 2px; }
+.mh { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.mnone { width: 30px; height: 30px; border-radius: 50%; border: 2px dashed var(--line); display: block; }
+.sad .heart, .joy .heart { animation: rise 2s ease-out infinite; } .sad .heart.h2, .joy .heart.h2 { animation-delay: .9s; }
