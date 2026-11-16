@@ -72,7 +72,7 @@ function blank() {
     look: { g: "neutral", skin: "#FBD9BE", hs: "bob", hc: "#6B4A3A", oc: "#F4A58A", acc: "none" },
     prof: { h: 165, w0: 70, age: 20, sex: "f", act: 1.2, def: 500 },
     owned: {}, coins: 20, coinLog: {}, weights: [], meals: [], works: [], water: {}, sleep: {}, waist: [],
-    claimed: {}, streak: { last: "", n: 0, best: 0 }, cheat: null, plan: null, shop: {}, nights: 0
+    claimed: {}, moods: {}, streak: { last: "", n: 0, best: 0 }, cheat: null, plan: null, shop: {}, nights: 0
   };
 }
 function merge(d) { const b = blank(); const o = Object.assign({}, b, d || {}); o.look = Object.assign({}, b.look, (d && d.look) || {}); o.prof = Object.assign({}, b.prof, (d && d.prof) || {}); o.streak = Object.assign({}, b.streak, (d && d.streak) || {}); return o; }

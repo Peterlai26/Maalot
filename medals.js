@@ -9,6 +9,7 @@ const MEDALS = [
   { id: "work", n: "นักออกกำลัง", d: "จำนวนครั้งที่บันทึกการออกกำลังกาย", icon: "dumbbell", unit: "ครั้ง", tiers: [5, 20, 50, 100], prog: () => S.works.length },
   { id: "water", n: "สายน้ำ", d: "จำนวนวันที่ดื่มน้ำครบ 8 แก้ว", icon: "droplet", unit: "วัน", tiers: [3, 10, 30, 60], prog: () => Object.keys(S.water).filter(k => S.water[k] >= 8).length },
   { id: "weigh", n: "ชั่งสม่ำเสมอ", d: "จำนวนครั้งที่ชั่งน้ำหนัก", icon: "scale", unit: "ครั้ง", tiers: [3, 10, 30, 60], prog: () => S.weights.length },
+  { id: "mood", n: "ใส่ใจใจตัวเอง", d: "จำนวนวันที่บันทึกอารมณ์", icon: "heart", unit: "วัน", tiers: [3, 7, 30, 60], prog: () => Object.keys(S.moods || {}).length },
   { id: "night", n: "ผ่านคืนหิว", d: "จำนวนครั้งที่ผ่านโหมดหิวดึก", icon: "moon", unit: "ครั้ง", tiers: [1, 3, 10, 30], prog: () => S.nights || 0 }
 ];
 function medalBalDays() {

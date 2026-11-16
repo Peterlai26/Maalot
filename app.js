@@ -136,6 +136,9 @@ function baseMood(now, info) {
   return "happy";
 }
 function speech(mood, per, info, h) {
+  if (mood === "sad") return ["ไม่เป็นไรนะ", "ฉันอยู่ตรงนี้"];
+  if (mood === "joy") return ["ดีใจด้วยนะ", "ยิ้มแบบนี้ทั้งวันเลย"];
+  if (mood === "ok") return ["ขอบคุณที่บอกนะ", "ค่อยๆ ไปด้วยกัน"];
   if (mood === "eat") return ["อร่อยจังเลย", "ขอบคุณที่ป้อนนะ"];
   if (mood === "work") return ["สู้ๆ นะ", "เหนื่อยแต่สนุก"];
   if (mood === "hungry") return ["ท้องร้องแล้วนะ", "เติมพลังหน่อยนะ"];
@@ -189,7 +192,7 @@ function renderHome() {
   const under = bmiOf(w) < 18.5 ? `<div class="hint">${ic("heart", 18)}<span>น้ำหนักอยู่ในเกณฑ์ต่ำแล้ว แอปจึงตั้งเป้าให้คงที่ ไม่แนะนำให้ลดต่อ</span></div>` : "";
   $("#v-home").innerHTML = `<div class="top"><div><div class="muted sm">${THDAYL[now.getDay()]} ${now.getDate()} ${THMON[now.getMonth()]}</div><h1>${g}</h1></div><div class="chips"><span class="chip warn">${ic("flame", 15)}${S.streak.n || 1} วัน</span><span class="chip soft" id="coinchip">${ic("coin", 15)}${S.coins}</span></div></div>
 <div class="stagewrap"><div class="stage" id="stage" data-act="poke" role="button" aria-label="แตะเพื่อทักตัวละคร">${scene({ look: S.look, mood, rx, period: sper, owned: S.owned, l1: sp[0], l2: sp[1] })}${particles(sper)}</div><button class="todbtn" data-act="daynight" aria-label="สลับกลางวัน กลางคืน" aria-pressed="${isDark}"><span class="todknob">${ic("sun", 16).replace('class="ic"', 'class="ic sun"')}${ic("moon", 16).replace('class="ic"', 'class="ic moon"')}</span></button></div>
-<button class="card status" data-act="sub" data-n="today">${ring(pct)}<div style="flex:1;min-width:0"><div class="big">${line}</div><div class="muted sm">${remTxt}</div><div class="muted xs" style="margin-top:2px">กินแล้ว ${fmtN(info.eaten)}${info.wk ? " · ออกกำลัง +" + fmtN(info.wk) : ""} kcal</div></div>${ic("list", 20)}</button>
+${moodCardHTML()}<button class="card status" data-act="sub" data-n="today">${ring(pct)}<div style="flex:1;min-width:0"><div class="big">${line}</div><div class="muted sm">${remTxt}</div><div class="muted xs" style="margin-top:2px">กินแล้ว ${fmtN(info.eaten)}${info.wk ? " · ออกกำลัง +" + fmtN(info.wk) : ""} kcal</div></div>${ic("list", 20)}</button>
 ${weekStrip(tk)}
 ${under}
 ${chips ? '<div class="logchips">' + chips + "</div>" : ""}
@@ -364,6 +367,7 @@ const TILES = [
   ["ดูความคืบหน้า", "chart", "กราฟย้อนหลัง", "น้ำหนัก แคล เซ็ต", "charts", "", "d-blue", "กราฟ สถิติ"],
   ["ดูความคืบหน้า", "mail", "จดหมายสัปดาห์", "จากตัวละคร", "letter", "", "d-blue", "จดหมาย สรุป สัปดาห์"],
   ["ดูความคืบหน้า", "run", "คลังท่าออกกำลัง", "มีภาพอนิเมชัน", "lib", "", "d-blue", "ท่า สอน ออกกำลัง ตัวจับเวลา"],
+  ["ดูความคืบหน้า", "heart", "บันทึกอารมณ์", "วันนี้รู้สึกยังไง", "mood", "", "d-rose", "อารมณ์ ความรู้สึก ใจ เครียด เศร้า ดี สดใส"],
   ["ดูความคืบหน้า", "target", "ภารกิจ", "ปลดล็อกของใหม่", "missions", "", "d-blue", "ภารกิจ เหรียญ รางวัล"],
   ["ดูความคืบหน้า", "send", "แชร์การ์ดความคืบหน้า", "ส่ง LINE หรือ IG", "share", "", "d-blue", "แชร์ การ์ด รูป ไลน์ อินสตาแกรม ส่งต่อ"],
   ["ดูความคืบหน้า", "sparkle", "เหรียญรางวัล", "ได้เองจากความสม่ำเสมอ", "medals", "", "d-blue", "เหรียญ รางวัล ความสำเร็จ ถ้วย"],
