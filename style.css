@@ -692,3 +692,7 @@ body.chip-drag { user-select: none; -webkit-user-select: none; }
 @keyframes fabshake { 0%, 100% { rotate: 0deg; } 25% { rotate: -9deg; } 75% { rotate: 9deg; } }
 .nav .fab.trash.hot .ic { animation: fabshake .35s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .nav .fab.trash.hot .ic { animation: none; } }
+
+/* ก้อนเกี๊ยว (rig.js) */
+.rigstage { cursor: default; }
+canvas.rig { display: block; width: 100%; aspect-ratio: 380 / 290; }
