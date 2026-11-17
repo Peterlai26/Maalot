@@ -668,3 +668,12 @@ body:has(#tut) #instbar, body:has(#tutinv) #instbar { display: none; }
 
 .reckey { font: 700 17px/1.5 ui-monospace, Menlo, monospace; letter-spacing: .3px; white-space: nowrap; text-align: center; padding: 14px 8px; border-radius: 16px; background: var(--soft); user-select: all; word-break: break-all; }
 .linst.lacct { margin-left: 8px; }
+/* ชิปเมนู: ไอคอนอาหารตามชนิด ลากเพื่อลบ */
+.mchips { gap: 8px; } .mchip { touch-action: pan-y; user-select: none; -webkit-user-select: none; position: relative; transition: transform .22s cubic-bezier(.2, .9, .3, 1.1), background .15s, color .15s, opacity .18s; padding-left: 7px; }
+.mchip.dragging { transition: none; z-index: 5; box-shadow: 0 10px 20px -8px rgba(0, 0, 0, .35); } .mchip.gone { opacity: 0; }
+.mchip .ci { width: 26px; height: 26px; border-radius: 50%; display: inline-grid; place-items: center; flex: 0 0 26px; background: var(--soft); transition: background .15s, color .15s, transform .2s; } .mchip .cn { max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .mchip small { color: var(--muted); font-size: 12px; margin-left: 2px; }
+.mchip.arm { background: var(--danger-soft); color: var(--danger-ink); border-color: transparent; } .mchip.arm .ci { background: #E5534B; color: #fff; transform: scale(1.12); } .mchip.arm small { color: var(--danger-ink); }
+.fc-drink .ci { background: #E4E8FB; color: #3A48BD; } .fc-fruit .ci, .fc-veg .ci { background: var(--green-soft); color: var(--green); } .fc-dessert .ci { background: #FFE0EA; color: #D6336C; } .fc-snack .ci { background: #FFEFC2; color: #B66A0B; } .fc-noodle .ci, .fc-rice .ci { background: #FFEFC2; color: #B66A0B; } .fc-meat .ci { background: #FCE3E0; color: #A33A2D; } .fc-egg .ci, .fc-bread .ci { background: #FFF0C9; color: #7A5A00; } .fc-fast .ci { background: #FFE0D0; color: #C2410C; } .fc-work .ci { background: var(--green-soft); color: var(--green); }
+.mchip.arm .ci { background: #E5534B !important; color: #fff !important; }
+.dragtip { margin-left: auto; font-weight: 400; }
+.toast.undo { display: flex; align-items: center; gap: 14px; pointer-events: auto; } .toast.undo button { border: 0; background: rgba(255, 255, 255, .2); color: inherit; font: inherit; font-weight: 600; padding: 4px 12px; border-radius: 999px; }

@@ -3,7 +3,7 @@ const COMBO_MAX = 8;
 const comboKcal = c => c.items.reduce((s, x) => s + (x.k || 0), 0);
 function comboHome() {
   const cs = S.combos || []; if (!cs.length) return "";
-  return `<div class="sec" style="margin-bottom:6px">มื้อประจำ แตะครั้งเดียวจดเลย <button class="linkbtn" data-act="sub" data-n="combos">จัดการ</button></div><div class="logchips" style="margin-top:0">${cs.map(c => `<button class="chip" data-act="combolog" data-id="${esc(c.id)}">${ic("plus", 14)}${esc(c.n)} · ${fmtN(comboKcal(c))}</button>`).join("")}</div>`;
+  return `<div class="sec" style="margin-bottom:6px">มื้อประจำ แตะครั้งเดียวจดเลย <button class="linkbtn" data-act="sub" data-n="combos">จัดการ</button></div><div class="logchips" style="margin-top:0">${cs.map(c => `<button class="chip mchip" data-drag="combo" data-act="combolog" data-id="${esc(c.id)}"><span class="ci" data-ic="plus">${ic("plus", 14)}</span>${esc(c.n)} · ${fmtN(comboKcal(c))}</button>`).join("")}</div>`;
 }
 ACT.combolog = (a) => {
   const c = (S.combos || []).find(x => x.id === a.dataset.id); if (!c) return;
