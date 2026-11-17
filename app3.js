@@ -148,7 +148,7 @@ function trSave(sets) {
   if (!ex || !sets) { if (!ex && sets) logText("work", e.reps ? `${e.n} ${sets} เซ็ต ${e.reps} ครั้ง` : `${e.n} ${sets} เซ็ต ${e.secs || 60} วินาที`); return false; }
   const it = { n: ex[0], met: ex[1], kind: ex[2], sets: s.sets === 1 && !e.reps && !e.secs ? 0 : sets, reps: e.reps || 0, secs: e.secs || 0, mins: !e.reps && !e.secs ? (e.mins || 1) : 0, known: true, km: 0 };
   const c = workCalc(it, estW());
-  S.works.push({ id: rid(), d: todayKey(), t: nowHM(), n: it.n + (workLabel(it) ? " · " + workLabel(it) : ""), sets: it.sets, reps: it.reps, k: c.k });
+  S.works.push({ id: rid(), d: todayKey(), t: nowHM(), n: it.n + (workLabel(it) ? " · " + workLabel(it) : ""), ex: e.id, sets: it.sets, reps: it.reps, k: c.k });
   earn(5); touchStreak(); save(); return true;
 }
 ACT.trlog = () => { const ok = trSave(SESS.sets); stopTrain(); closeAllSubs(); if (ok) { setFx("proud", 3000); toast("บันทึกการออกกำลังกายแล้ว"); } };

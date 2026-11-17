@@ -187,14 +187,17 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && SE
 const tempoOf = e => e.reps ? clampN(RIG.period(e.rig) || 3, 1.5, 5) : 1;
 ACT.sesstart = a => {
   const s = srcOf(a.dataset.src); if (!s) return;
-  SES = { name: s.name, key: s.key, items: s.items.filter(it => libOf(it.id)), i: 0, set: 1, phase: "ready", t0: 0, startedAt: Date.now(), done: {}, paused: false, pausedAt: 0, restLen: 0 };
+  SES = newSes(s.name, s.key, s.items);
   openSub("session", {});
 };
+const newSes = (name, key, items) => ({ name, key, items: items.filter(it => libOf(it.id)), i: 0, set: 1, phase: "ready", t0: 0, startedAt: Date.now(), done: {}, paused: false, pausedAt: 0, restLen: 0, w: {}, sets: {}, int: 1, last: null });
+const curW = () => { const e = curE(); if (!weighted(e)) return 0; return SES.w[SES.i] != null ? SES.w[SES.i] : (SES.w[SES.i] = lastW(e.id)); };
 const cur = () => SES.items[SES.i], curE = () => libOf(cur().id), setsOf = it => it.mins ? 1 : (it.sets || 1);
 function beginWork() { SES.between = 0; SES.phase = "work"; SES.t0 = Date.now(); SES.paused = false; wakeOn(); beep(990, .15); startSesTick(); rerenderSub(); }
 function endSet(manual) {
   const it = cur(), e = curE(), d = SES.done[SES.i] = SES.done[SES.i] || { sets: 0, sec: 0, reps: 0 }, el = (Date.now() - SES.t0) / 1000;
   d.sets++; d.sec += it.reps ? Math.min(el, it.reps * tempoOf(e)) : Math.min(el, it.mins ? it.mins * 60 : it.secs || el); if (it.reps) d.reps += manual ? Math.min(it.reps, Math.max(1, Math.floor(el / tempoOf(e)))) : it.reps;
+  if (it.reps) { const arr = SES.sets[SES.i] = SES.sets[SES.i] || []; arr.push({ w: curW(), r: manual ? Math.min(it.reps, Math.max(1, Math.floor(el / tempoOf(e)))) : it.reps }); SES.last = { i: SES.i, k: arr.length - 1 }; }
   buzz([60, 40, 60]); beep(660, .2);
   if (SES.set < setsOf(it)) { SES.set++; SES.phase = "rest"; SES.restLen = it.rest || 30; SES.t0 = Date.now(); }
   else if (SES.i < SES.items.length - 1) { SES.i++; SES.set = 1; SES.phase = "rest"; SES.restLen = Math.max(15, it.rest || 15); SES.t0 = Date.now(); SES.between = 1; }
@@ -213,6 +216,10 @@ function sesTick() {
 }
 function startSesTick() { clearInterval(SEV); SEV = setInterval(sesTick, 200); }
 ACT.sesgo = () => beginWork();
+ACT.seswt = a => { const d = +a.dataset.d, e = curE(); SES.w[SES.i] = Math.max(0, r1(curW() + d * stepW(e))); rerenderSub(); };
+ACT.seswin = null;
+ACT.sesint = a => { SES.int = +a.dataset.v; rerenderSub(); };
+ACT.seslast = a => { const L = SES.last; if (!L) return; const st = SES.sets[L.i][L.k], e = libOf(SES.items[L.i].id), what = a.dataset.w, d = +a.dataset.d; if (what === "w") { st.w = Math.max(0, r1(st.w + d * stepW(e))); SES.w[L.i] = st.w; } else st.r = Math.max(1, st.r + d); rerenderSub(); };
 ACT.sesdone = () => { if (SES.phase === "work") endSet(true); };
 ACT.sesskiprest = () => beginWork();
 ACT.sesplus = () => { SES.restLen += 15; rerenderSub(); };
@@ -221,31 +228,39 @@ ACT.sesnext = () => { if (SES.i < SES.items.length - 1) { SES.i++; SES.set = 1; 
 ACT.sesprev = () => { if (SES.i > 0) { SES.i--; SES.set = 1; SES.phase = "ready"; SES.paused = false; clearInterval(SEV); rerenderSub(); } };
 ACT.sesend = () => { openModal(`<h2>จบการออกกำลังกายตอนนี้ไหม</h2><p class="muted" style="margin:8px 0 14px">บันทึกเฉพาะท่าที่ทำเสร็จแล้ว</p><div class="row"><button class="btn primary" style="flex:1" data-act="modalclose">ทำต่อ</button><button class="btn danger" style="flex:1" data-act="sesconfirm">จบและบันทึก</button></div>`); };
 ACT.sesconfirm = () => { closeModal(); sesFinish(); };
+ACT.sesstat = () => { clearInterval(SEV); wakeOff(); SES = null; closeAllSubs(); openSub("progress", {}); };
 ACT.sesquit = () => { closeModal(); clearInterval(SEV); wakeOff(); SES = null; closeAllSubs(); };
 ACT.sessnd = () => { try { localStorage.setItem("wl_snd", snd() ? "0" : "1"); } catch (e) { } rerenderSub(); };
 function sesFinish() {
   clearInterval(SEV); wakeOff(); const s = SES, kg = estW(); let k = 0, ex = 0, sets = 0, active = 0;
+  const prs = [], FI = [.85, 1, 1.2][s.int == null ? 1 : s.int];
   Object.keys(s.done).forEach(i => { const d = s.done[i], it = s.items[i], e = libOf(it.id); if (!d.sets) return; ex++; sets += d.sets; active += d.sec;
-    const kc = workCalc({ n: e.n, met: e.met || 3.5, kind: "time", mins: d.sec / 60, known: true, km: 0 }, kg).k; k += kc;
+    const kc = workCalc({ n: e.n, met: (e.met || 3.5) * FI, kind: "time", mins: d.sec / 60, known: true, km: 0 }, kg).k; k += kc;
+    const ss = (s.sets[i] || []).filter(x => x.r > 0);
+    if (ss.length && (weighted(e) || ss.some(x => x.w > 0))) { const rec = { id: rid(), d: todayKey(), t: nowHM(), ex: e.id, sets: ss.map(x => ({ w: x.w || 0, r: x.r })) }; prs.push.apply(prs, prsOf(rec, liftsOf(e.id))); S.lifts = (S.lifts || []).concat([rec]).slice(-2500); }
     const label = e.n + (it.mins ? " · " + Math.round(d.sec / 60) + " นาที" : e.reps || it.reps ? ` · ${d.sets} เซ็ต ${it.reps} ครั้ง` : ` · ${d.sets} เซ็ต ${it.secs} วินาที`);
-    S.works.push({ id: rid(), d: todayKey(), t: nowHM(), n: label, sets: d.sets, reps: it.reps || 0, k: kc }); });
-  s.sum = { secs: Math.round((Date.now() - s.startedAt) / 1000), k, ex, sets, active: Math.round(active) }; s.phase = "done";
+    S.works.push({ id: rid(), d: todayKey(), t: nowHM(), n: label, ex: e.id, sets: d.sets, reps: it.reps || 0, k: kc }); });
+  s.sum = { secs: Math.round((Date.now() - s.startedAt) / 1000), k, ex, sets, active: Math.round(active), prs }; s.phase = "done"; if (prs.length) earn(Math.min(prs.length, 3) * 2);
   if (ex) { S.sessions = (S.sessions || []).concat([{ id: rid(), d: todayKey(), t: nowHM(), name: s.name, src: s.key, secs: s.sum.secs, k, ex }]).slice(-400); earn(5 + Math.min(ex, 5)); touchStreak(); confetti(); setFx("proud", 3000); beep(1100, .3); buzz([100, 60, 100, 60, 200]); }
   save(); rerenderSub();
 }
 SUBS.session = () => {
   const s = SES; if (!s) return { title: "ออกกำลังกาย", html: `<p class="muted">ไม่มีเซสชัน</p>` };
   if (s.phase === "done") { const m = s.sum, mm = Math.floor(m.secs / 60);
-    return { title: "สรุปการออกกำลังกาย", html: `<div class="card" style="text-align:center">${m.ex ? `<div class="muted">${esc(s.name)}</div><div class="big-num">${mm} นาที</div><div class="sm">${m.ex} ท่า · ${m.sets} เซ็ต · ประมาณ ${m.k} kcal</div><div class="xs muted" style="margin-top:6px">kcal คำนวณจากเวลาที่ทำจริง ไม่รวมเวลาพัก</div>` : `<div class="sm">ยังไม่ได้ทำท่าไหนเสร็จ จึงไม่ได้บันทึก</div>`}</div>${m.ex ? `<p class="sm" style="margin:12px 0">บันทึกลงรายการวันนี้แล้ว ได้เหรียญและต่อสตรีค</p>` : ""}<button class="btn primary block" data-act="sesquit">เสร็จ</button>` }; }
+    return { title: "สรุปการออกกำลังกาย", html: `<div class="card" style="text-align:center">${m.ex ? `<div class="muted">${esc(s.name)}</div><div class="big-num">${mm} นาที</div><div class="sm">${m.ex} ท่า · ${m.sets} เซ็ต · ประมาณ ${m.k} kcal</div><div class="xs muted" style="margin-top:6px">kcal คำนวณจากเวลาที่ทำจริง ไม่รวมเวลาพัก ปรับตามความหนักที่เลือก</div>` : `<div class="sm">ยังไม่ได้ทำท่าไหนเสร็จ จึงไม่ได้บันทึก</div>`}</div>${m.prs && m.prs.length ? `<div class="sec">สถิติใหม่</div>${m.prs.map(p => `<div class="item"><div class="grow"><b>${esc(p.n)}</b><div class="xs muted">${p.t}</div></div><b>${p.v}</b></div>`).join("")}` : ""}${m.ex ? `<p class="sm" style="margin:12px 0">บันทึกลงรายการวันนี้แล้ว ได้เหรียญและต่อสตรีค</p>` : ""}<button class="btn primary block" data-act="sesquit">เสร็จ</button><button class="btn block" style="margin-top:8px" data-act="sesstat">ดูสถิติและแผนที่กล้ามเนื้อ</button>` }; }
   const it = cur(), e = curE(), n = s.items.length, ph = s.phase, nx = s.items[s.i + 1] && libOf(s.items[s.i + 1].id), tot = setsOf(it);
   const label = ph === "ready" ? "พร้อมแล้วกดเริ่ม" : ph === "rest" ? (s.between ? "พักก่อนท่าถัดไป" : "พักระหว่างเซ็ต") : s.paused ? "หยุดชั่วคราว" : e.cat === "ยืดเหยียด" ? "ค้างไว้ หายใจช้าๆ" : "ทำเลย";
   const big = ph === "work" ? (it.reps ? "0" : it.mins ? it.mins + ":00" : it.secs) : ph === "rest" ? s.restLen : "-";
   const sub = it.reps ? `จาก ${it.reps} ครั้ง` : it.mins ? "นาที" : "วินาที";
+  const wOn = weighted(e), w = wOn ? curW() : 0, L = s.last, ls = L && s.sets[L.i] && s.sets[L.i][L.k], le = L && libOf(s.items[L.i].id);
+  const wRow = !wOn ? "" : ph === "work" ? `<div class="xs muted" style="text-align:center;margin-top:6px">น้ำหนัก ${w ? w + " กก." : "น้ำหนักตัว"}</div>` : `<div class="fwt"><span>น้ำหนักที่ใช้</span><button data-act="seswt" data-d="-1" aria-label="ลดน้ำหนัก">−</button><b>${w ? w + " กก." : "น้ำหนักตัว"}</b><button data-act="seswt" data-d="1" aria-label="เพิ่มน้ำหนัก">+</button></div>`;
+  const recap = ph === "rest" && ls && weighted(le) ? `<div class="fwt recap"><span>เซ็ตที่แล้ว ${esc(le.n)}: แก้ได้</span><button data-act="seslast" data-w="r" data-d="-1" aria-label="ลดจำนวนครั้ง">−</button><b>${ls.r} ครั้ง</b><button data-act="seslast" data-w="r" data-d="1" aria-label="เพิ่มจำนวนครั้ง">+</button><button data-act="seslast" data-w="w" data-d="-1" aria-label="ลดน้ำหนัก">−</button><b>${ls.w ? ls.w + " กก." : "BW"}</b><button data-act="seslast" data-w="w" data-d="1" aria-label="เพิ่มน้ำหนัก">+</button></div>` : "";
+  const intRow = ph === "ready" && s.i === 0 && s.set === 1 ? `<div class="frow" style="margin-top:10px;justify-content:center">${["เบา", "กลาง", "หนัก"].map((n, i) => `<button class="fchip sm ${s.int === i ? "on" : ""}" data-act="sesint" data-v="${i}">${n}</button>`).join("")}</div><div class="xs muted" style="text-align:center">ความหนักของวันนี้ ใช้ปรับ kcal</div>` : "";
   const btns = ph === "ready" ? `<button class="btn primary" style="flex:1" data-act="sesgo">เริ่ม</button>` : ph === "rest" ? `<button class="btn" data-act="sesplus">+15 วิ</button><button class="btn primary" style="flex:1" data-act="sesskiprest">พร้อมแล้ว</button>` : `<button class="btn" data-act="sespause">${ic(s.paused ? "play" : "pause", 18)}${s.paused ? "ต่อ" : "หยุด"}</button><button class="btn primary" style="flex:1" data-act="sesdone">${it.reps ? "ทำครบแล้ว" : "จบเซ็ต"}</button>`;
   const rigH = e.rig ? RIG.html(e.rig, e.approx ? `<span class="fapx">ภาพใกล้เคียง</span>` : "") : `<div class="stage"><div class="fnorig">${ic("dumbbell", 40)}<div>ยังไม่มีภาพท่านี้ ดูวิธีทำด้านล่าง</div></div></div>`;
   return { title: `${s.i + 1}/${n} · ${e.n}`, keepScroll: true, html: `<div class="fprog">${s.items.map((_, i) => `<i class="${i < s.i ? "on" : i === s.i ? "cur" : ""}"></i>`).join("")}</div>${rigH}
 <div class="muted sm" style="text-align:center;margin-top:8px">${label}</div><div class="tcount" id="tcount">${big}</div><div class="muted" style="text-align:center">${ph === "rest" ? "วินาที · ถัดไป: " + esc(e.n) : sub} · เซ็ต ${Math.min(s.set, tot)}/${tot}</div>
-<div class="row" style="margin-top:14px;gap:8px">${btns}</div>
+${recap}${wRow}${intRow}<div class="row" style="margin-top:14px;gap:8px">${btns}</div>
 <div class="row" style="margin-top:8px;gap:8px"><button class="btn" style="flex:1" data-act="sesprev" ${s.i ? "" : "disabled"}>ท่าก่อนหน้า</button><button class="btn" style="flex:1" data-act="sesnext">ข้ามท่า</button><button class="btn danger" data-act="sesend">จบ</button></div>
 <div class="hint" style="margin-top:12px">${ic("sparkle", 18)}<span>${esc(e.tip)}</span></div><details style="margin-top:8px"><summary class="sm">วิธีทำ</summary><p class="sm" style="margin-top:6px">${esc(e.how)}</p></details>
 ${nx && ph !== "rest" ? `<div class="xs muted" style="margin-top:10px">ท่าถัดไป: ${esc(nx.n)}</div>` : ""}<div class="xs" style="margin-top:8px"><button class="linkb" data-act="sessnd">เสียงเตือน: ${snd() ? "เปิด" : "ปิด"}</button></div>`,
@@ -280,7 +295,7 @@ ACT.pbstep = a => { pbSync(); const it = PB.items[+a.dataset.i], d = +a.dataset.
 ACT.pbcat = a => { pbSync(); PB.cat = a.dataset.c; rerenderSub(); };
 function pbCommit() { pbSync(); if (!PB.items.length) { toast("เพิ่มท่าก่อน"); return null; } const name = (PB.name || "").trim() || "โปรแกรมของฉัน"; S.progs = S.progs || []; let p = PB.id && S.progs.find(x => x.id === PB.id); if (!p) { p = { id: rid() }; S.progs.push(p); PB.id = p.id; } p.name = name; p.items = JSON.parse(JSON.stringify(PB.items)); save(); return p; }
 ACT.pbsave = () => { if (pbCommit()) { toast("บันทึกโปรแกรมแล้ว"); closeSub(); if (subStack.length) rerenderSub(); } };
-ACT.pbrun = () => { const p = pbCommit(); if (p) { SES = { name: p.name, key: "prog:" + p.id, items: p.items.filter(it => libOf(it.id)), i: 0, set: 1, phase: "ready", t0: 0, startedAt: Date.now(), done: {}, paused: false, pausedAt: 0, restLen: 0 }; openSub("session", {}); } };
+ACT.pbrun = () => { const p = pbCommit(); if (p) { SES = newSes(p.name, "prog:" + p.id, p.items); openSub("session", {}); } };
 ACT.pbdel = a => { const id = a.dataset.id, i = (S.progs || []).findIndex(x => x.id === id); if (i < 0) return; const it = S.progs[i]; S.progs.splice(i, 1); S.del["p:" + id] = Date.now(); save(); closeSub(); if (subStack.length) rerenderSub(); toastUndo(`ลบ “${it.name}” แล้ว`, () => { S.progs.push(it); delete S.del["p:" + id]; save(); if (subStack.length) rerenderSub(); }); };
 
 /* ---------- ทางเข้า ---------- */
