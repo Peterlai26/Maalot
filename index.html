@@ -60,7 +60,8 @@
 <div id="sub" hidden></div>
 <div id="sheet" hidden></div>
 <div id="modal" hidden></div>
-<input id="photoIn" type="file" accept="image/*" hidden>
+<input id="photoIn" type="file" accept="image/*" style="position:fixed;left:-9999px;width:1px;height:1px;opacity:0" tabindex="-1" aria-hidden="true">
+<input id="photoCam" type="file" accept="image/*" capture="environment" style="position:fixed;left:-9999px;width:1px;height:1px;opacity:0" tabindex="-1" aria-hidden="true">
 <input id="bkFile" type="file" accept="application/json,.json" hidden>
 <script src="data.js"></script>
 <script src="items.js"></script>

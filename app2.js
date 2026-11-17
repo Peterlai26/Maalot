@@ -280,7 +280,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && e.target.id === "homeIn") ACT.homesend();
   if (e.key === "Escape") { if (!$("#modal").hidden) closeModal(); else if (!$("#sheet").hidden) closeSheet(); }
 });
-$("#photoIn").addEventListener("change", (e) => { const f = e.target.files && e.target.files[0]; if (f) handlePhoto(f); });
+["#photoIn", "#photoCam"].forEach(s => $(s).addEventListener("change", (e) => { const f = e.target.files && e.target.files[0]; if (f) handlePhoto(f); }));
 
 function haptic(ms) { try { if (navigator.vibrate) navigator.vibrate(ms || 10); } catch (e) { } }
 ACT.daynight = () => {

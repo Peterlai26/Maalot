@@ -171,7 +171,8 @@ ACT.water1 = () => {
 };
 ACT.homesend = () => { const v = ($("#homeIn").value || "").trim(); if (!v) { openSheet(quickHTML()); return; } openSub("log", { tab: autoTab(v), text: v, fresh: true }); };
 function autoTab(t) { return (findEx(t) || /เซ็ต|ครั้ง|นาที|วินาที/.test(t)) && !findFood(t) ? "work" : "food"; }
-ACT.camera = () => { $("#photoIn").value = ""; $("#photoIn").click(); };
+ACT.camera = () => { const i = $("#photoCam"); i.value = ""; i.click(); };
+ACT.gallery = () => { const i = $("#photoIn"); i.value = ""; i.click(); };
 ACT.sub = (a) => { closeSheet(); openSub(a.dataset.n, a.dataset.arg ? { id: a.dataset.arg } : {}); };
 ACT.back = () => { if (subStack.length > 1 || true) closeSub(); };
 function quickHTML() {
@@ -217,7 +218,7 @@ ${it.known ? (c.assumed ? '<div class="xs muted" style="margin-top:4px">ไม�
 <label class="f" for="lgtext">${isF ? "พิมพ์ว่ากินอะไร เช่น ข้าวมันไก่ 1 จาน กับชานมไข่มุก" : "พิมพ์ว่าทำอะไร เช่น วิดพื้น 3 เซ็ต 12 ครั้ง วิ่ง 20 นาที"}</label>
 <textarea id="lgtext" data-in="lgtext" placeholder="${isF ? "ข้าวมันไก่ 1 จาน, ชานมไข่มุก 1 แก้ว" : "วิดพื้น 3 เซ็ต เซ็ตละ 12 ครั้ง แพลงก์ 3 เซ็ต 45 วินาที"}">${esc(LG.text)}</textarea>
 ${isF ? `<label class="f" for="lgsearch" style="margin-top:10px">หรือค้นหาเมนู แตะเพื่อเพิ่ม</label><input id="lgsearch" type="text" data-in="lgsearch" placeholder="เช่น กะเพรา ชาเขียว ส้มโอ" autocomplete="off"/><div id="lgres" class="logchips" style="margin-top:8px"></div>` : ""}
-<div class="row wrap" style="margin-top:8px"><button class="btn" data-act="lgparse">${ic("sparkle", 18)}ตีความ</button>${isF ? `<button class="btn" data-act="camera">${ic("camera", 18)}ถ่ายรูป</button>` : ""}<button class="btn" data-act="lgadd">${ic("plus", 18)}เพิ่มเอง</button>${hasUnknown ? `<button class="btn" data-act="lgai">ให้ Claude ประเมิน</button>` : ""}</div>
+<div class="row wrap" style="margin-top:8px"><button class="btn" data-act="lgparse">${ic("sparkle", 18)}ตีความ</button>${isF ? `<button class="btn" data-act="camera">${ic("camera", 18)}ถ่ายรูป</button><button class="btn" data-act="gallery">${ic("book", 18)}เลือกรูป</button>` : ""}<button class="btn" data-act="lgadd">${ic("plus", 18)}เพิ่มเอง</button>${hasUnknown ? `<button class="btn" data-act="lgai">ให้ Claude ประเมิน</button>` : ""}</div>
 ${LG.busy ? '<div class="hint pulse-ring">' + ic("sparkle", 18) + "<span>กำลังดูให้อยู่…</span></div>" : ""}
 <div class="card" style="margin-top:12px;padding:6px 14px">${rows || '<div class="muted sm" style="padding:14px 0">ยังไม่มีรายการ พิมพ์แล้วกดตีความ หรือกดเพิ่มเอง</div>'}</div>
 ${LG.items.length ? `<div class="row between" style="margin-top:12px"><span class="muted">${isF ? "รวมมื้อนี้" : "เผาผลาญประมาณ"}</span><b style="font-size:20px">${isF ? "+" : "-"}${fmtN(tot)} kcal</b></div>` : ""}
@@ -242,15 +243,23 @@ ACT.lgai = async () => {
   const unk = LG.items.filter(x => !x.known && x.n.trim()); if (!unk.length) { toast("พิมพ์ชื่ออาหารก่อนนะ"); return; }
   LG.busy = true; rerenderSub();
   try { const res = await claudeEstimate(unk.map(x => x.n).join(", ")); LG.items = LG.items.filter(x => x.known).concat(res); }
-  catch (e) { toast(e.message === "nosample" ? "ตอนนี้ให้ Claude ประเมินไม่ได้ กรอกแคลอรี่เองได้เลย" : "ประเมินไม่สำเร็จ ลองกรอกเองนะ"); }
+  catch (e) { toast(estMsg(e, false)); }
   LG.busy = false; rerenderSub();
 };
+function estMsg(e, photo) {
+  const m = e && e.message;
+  if (m === "limit") return "วันนี้ใช้ AI ประเมินครบโควตาแล้ว พรุ่งนี้ลองใหม่ หรือพิมพ์แคลอรี่เองได้เลย";
+  if (m === "busy") return "ตอนนี้มีคนใช้ AI เยอะ ลองใหม่พรุ่งนี้ หรือพิมพ์ชื่ออาหารแทนได้";
+  if (m === "net") return "เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง";
+  if (m === "nosample" || m === "noimg") return photo ? "ตอนนี้ยังให้ AI อ่านรูปไม่ได้ พิมพ์ชื่ออาหารแทนได้เลย" : "ตอนนี้ให้ AI ประเมินไม่ได้ กรอกแคลอรี่เองได้เลย";
+  return photo ? "อ่านรูปไม่ชัด พิมพ์ชื่ออาหารแทนได้นะ" : "ประเมินไม่สำเร็จ ลองกรอกเองนะ";
+}
 async function handlePhoto(file) {
   if (!file) return;
   if (!LG || !$("#sub") || $("#sub").hidden) { LG = { tab: "food", text: "", items: [], when: "today", busy: false }; subStack = [{ name: "log", arg: {} }]; }
   LG.tab = "food"; LG.busy = true; renderSub();
   try { const b = await shrinkImage(file); const res = await claudeEstimate(null, b); if (!res.length) throw new Error("empty"); LG.items = res; toast("ดูรูปแล้ว ลองตรวจตัวเลขอีกที"); }
-  catch (e) { toast(e.message === "nosample" || e.message === "noimg" ? "ตอนนี้ประเมินจากรูปไม่ได้ พิมพ์ชื่ออาหารแทนได้เลย" : "อ่านรูปไม่ชัด พิมพ์ชื่ออาหารแทนได้นะ"); }
+  catch (e) { toast(estMsg(e, true)); }
   LG.busy = false; renderSub();
 }
 ACT.lgsave = () => {

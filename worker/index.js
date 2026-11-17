@@ -69,6 +69,61 @@ function cleanPrefs(p) {
 }
 const okEndpoint = (e) => { try { const u = new URL(e); return u.protocol === "https:" && PUSH_HOSTS.some((r) => r.test(u.hostname)) && e.length < 1000; } catch (_) { return false; } };
 
+
+/* ---------- ประเมินแคลอรี่ด้วย Claude (รูปหรือข้อความ) ---------- */
+const EST_MODEL = "claude-haiku-5-5", EST_PER_IP = 8, EST_GLOBAL = 250;
+const CF_VISION = ["@cf/meta/llama-4-scout-17b-16e-instruct", "@cf/mistralai/mistral-small-3.1-24b-instruct", "@cf/meta/llama-3.2-11b-vision-instruct", "@cf/llava-hf/llava-1.5-7b-hf"];
+const CF_TEXT = ["@cf/meta/llama-3.3-70b-instruct-fp8-fast", "@cf/google/gemma-3-12b-it", "@cf/meta/llama-3.1-8b-instruct-fast", "@cf/meta/llama-3.2-3b-instruct", "@cf/mistralai/mistral-small-3.1-24b-instruct"];
+const b64bytes = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+/* Workers AI (ฟรีตามโควตารายวันของ Cloudflare): ลองโมเดลตามลำดับ ข้ามตัวที่เลิกให้บริการแล้ว */
+async function cfAI(env, task, img, mime) {
+  const txt = (r) => (r && (typeof r.response === "string" ? r.response : r.choices && r.choices[0] && r.choices[0].message && r.choices[0].message.content) || r.description) || "";
+  const tried = [];
+  for (const model of img ? CF_VISION : CF_TEXT) {
+    try {
+      let r;
+      if (img && model.includes("llava")) r = await env.AI.run(model, { image: [...b64bytes(img)], prompt: task, max_tokens: 500 });
+      else {
+        const content = img ? [{ type: "text", text: task }, { type: "image_url", image_url: { url: "data:" + mime + ";base64," + img } }] : task;
+        const call = () => env.AI.run(model, { messages: [{ role: "user", content }], max_tokens: 500 });
+        try { r = await call(); } catch (e) { if (/agree|5016|license/i.test(String(e && e.message))) { await env.AI.run(model, { prompt: "agree" }); r = await call(); } else throw e; }
+      }
+      const t = txt(r); if (t) return { out: t, model };
+      tried.push(model + ": empty");
+    } catch (e) { tried.push(model + ": " + String((e && e.message) || e).slice(0, 90)); if (/neuron|quota|10000|4006|limit/i.test(String(e && e.message))) break; }
+  }
+  const err = new Error("all failed"); err.tried = tried; throw err;
+}
+async function estimate(req, env) {
+  if (!env.ANTHROPIC_API_KEY && !env.AI) return J(req, { error: "not_configured" }, 503);
+  let b; try { const t = await req.text(); if (t.length > 2500000) throw 0; b = JSON.parse(t); } catch (_) { return J(req, { error: "bad json" }, 400); }
+  const text = typeof b.text === "string" ? b.text.trim().slice(0, 200) : "", img = typeof b.image === "string" ? b.image : "";
+  const mime = ["image/jpeg", "image/png", "image/webp"].includes(b.mime) ? b.mime : "image/jpeg";
+  if (!text && !img) return J(req, { error: "empty" }, 400);
+  if (img && (img.length > 2000000 || !/^[A-Za-z0-9+/=]+$/.test(img))) return J(req, { error: "bad image" }, 400);
+  const day = new Date().toISOString().slice(0, 10), ip = req.headers.get("CF-Connecting-IP") || "x", kIp = "rl:" + day + ":" + (await sha(ip)).slice(0, 16), kAll = "rlg:" + day;
+  const [nIp, nAll] = await Promise.all([env.SUBS.get(kIp), env.SUBS.get(kAll)]);
+  if ((+nAll || 0) >= EST_GLOBAL) return J(req, { error: "busy" }, 429);
+  if ((+nIp || 0) >= EST_PER_IP) return J(req, { error: "limit" }, 429);
+  await Promise.all([env.SUBS.put(kIp, String((+nIp || 0) + 1), { expirationTtl: 172800 }), env.SUBS.put(kAll, String((+nAll || 0) + 1), { expirationTtl: 172800 })]);
+  const task = (img ? "ดูรูปอาหารที่แนบมา แล้วประเมินแคลอรี่ของแต่ละรายการที่เห็นตามปริมาณในรูป" : "ประเมินแคลอรี่ของอาหารต่อไปนี้ตามปริมาณปกติที่คนไทยกิน: " + text) + '\nตอบเป็น JSON array เท่านั้น ไม่มีข้อความอื่น รูปแบบ [{"name":"ชื่อภาษาไทยสั้นๆ","kcal":ตัวเลขรวมต่อรายการ}] ถ้าไม่ใช่อาหารให้ตอบ [] ถ้าไม่แน่ใจให้ประเมินแบบกลางๆ';
+  let out = "", used = "";
+  if (env.ANTHROPIC_API_KEY) {
+    const content = img ? [{ type: "image", source: { type: "base64", media_type: mime, data: img } }, { type: "text", text: task }] : task;
+    let r; try { r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model: EST_MODEL, max_tokens: 500, messages: [{ role: "user", content }] }) }); } catch (_) { return J(req, { error: "upstream" }, 502); }
+    if (!r.ok) return J(req, { error: "upstream", status: r.status }, 502);
+    const j = await r.json().catch(() => null); out = (j && j.content && j.content[0] && j.content[0].text) || "";
+  } else {
+    try { const r = await cfAI(env, task, img, mime); out = r.out; used = r.model; }
+    catch (e) { const t = (e.tried || [String(e.message || e)]).join(" | "); return J(req, { error: /neuron|quota|10000|4006/i.test(t) ? "busy" : "upstream", detail: t.slice(0, 600) }, /neuron|quota|10000|4006/i.test(t) ? 429 : 502); }
+  }
+  const m = out.match(/\[[\s\S]*\]/);
+  let arr; try { arr = JSON.parse(m ? m[0] : "null"); } catch (_) { arr = null; }
+  if (!Array.isArray(arr)) return J(req, { error: "parse" }, 502);
+  const items = arr.filter((x) => x && typeof x.name === "string" && isFinite(+x.kcal) && +x.kcal >= 0 && +x.kcal < 5000).slice(0, 8).map((x) => ({ name: x.name.slice(0, 40), kcal: Math.round(+x.kcal) }));
+  return J(req, { items, model: used });
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -76,6 +131,7 @@ export default {
     if (!ALLOWED_ORIGINS.includes(req.headers.get("Origin"))) return new Response("forbidden", { status: 403 });
     if (req.method === "GET" && url.pathname === "/vapid") return J(req, { key: env.VAPID_PUBLIC });
     if (req.method !== "POST") return J(req, { error: "not found" }, 404);
+    if (url.pathname === "/estimate") return estimate(req, env);
     let b; try { const t = await req.text(); if (t.length > 4000) throw 0; b = JSON.parse(t); } catch (_) { return J(req, { error: "bad json" }, 400); }
     const ep = b.sub ? b.sub.endpoint : b.endpoint;
     if (!okEndpoint(ep)) return J(req, { error: "bad endpoint" }, 400);
