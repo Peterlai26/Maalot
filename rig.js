@@ -143,7 +143,7 @@ const RIG = (() => {
     const sk = solve(pose), stH = D.l1 + D.l2 + D.ah + D.T + 2 * D.H + .5, ext = D.l1 + D.l2 + D.T + 2 * D.H + .9, sc = Math.min(H * .8 / stH, W * .86 / ext), gy = H * .87, cx = W / 2;
     const P = pt => [cx + (pt[0] - pose.ox) * sc, gy - pt[1] * sc];
     ctx.fillStyle = "#F3D9BF"; ctx.fillRect(0, gy + 2, W, H - gy);
-    const cols = { shirt: look().shirt, shorts: "#8155C9", shoe: "#F0679B", dumb: !!pose.dumb };
+    const cols = { shirt: look().shirt, shorts: "#8155C9", shoe: "#F0679B", dumb: !!pose.dumb && !st.nodumb };
     if (cols.shirt.toLowerCase() === "#8155c9") cols.shorts = "#4C5DDA";
     const xs = [sk.hip[0], sk.sh[0], sk.head[0], ...sk.legs.map(l => l.ankle[0]), ...sk.arms.map(a => a.hand[0])], x0 = P([Math.min(...xs), 0])[0], x1 = P([Math.max(...xs), 0])[0];
     ctx.fillStyle = "rgba(36,25,59,.14)"; ctx.beginPath(); ctx.ellipse((x0 + x1) / 2, gy + 4, Math.max(10, (x1 - x0) / 2 * .9), Math.max(3, sc * .08), 0, 0, 2 * PI); ctx.fill();
@@ -160,7 +160,7 @@ const RIG = (() => {
     const per = (EX[opt.ex] || EX.squat).period;
     const frame = now => {
       if (!cv.isConnected) return; fit();
-      const st = opt.state ? opt.state(now) : { tm: (now - t0) / 1000 * (opt.speed || 1) };
+      const st = opt.state ? opt.state(now) : { tm: (now - t0) / 1000 * (opt.speed || 1) }; if (opt.nodumb) st.nodumb = 1;
       if (reduce && !opt.state) st.tm = per * .45;
       scene(cv, opt.ex, st, now);
       if (!(reduce && !opt.state)) requestAnimationFrame(frame);
@@ -173,26 +173,38 @@ const RIG = (() => {
 /* ต่อเข้าคลังท่า และหน้า "ออกกำลังด้วยกัน" */
 (() => {
   const oLib = SUBS.lib, oTrain = SUBS.train;
-  const libRow = e => `<button class="item" style="width:100%;text-align:left" data-act="sub" data-n="lib" data-arg="${e.id}"><div class="grow"><b>${e.n}</b><div class="xs muted">${e.sets ? e.sets + " เซ็ต × " : ""}${e.reps ? e.reps + " ครั้ง" : e.secs ? e.secs + " วินาที" : e.mins ? e.mins + " นาที" : ""}${e.mus ? " · " + esc(e.mus) : ""}</div></div>${ic("play", 18)}</button>`;
+  let mineOnly = false;
+  const tags = e => `${["", "เริ่มต้น", "ปานกลาง", "ชำนาญ"][e.lvl] || ""}${e.eq.length ? " · " + e.eq.map(k => (EQN[k] || k).split(" ")[0]).join(" ") : " · ไม่ใช้อุปกรณ์"}${e.out ? " · กลางแจ้ง" : ""}`;
+  const libRow = e => `<button class="item" style="width:100%;text-align:left" data-act="sub" data-n="lib" data-arg="${e.id}"><div class="grow"><b>${e.n}</b><div class="xs muted">${e.sets ? e.sets + " เซ็ต × " : ""}${e.reps ? e.reps + " ครั้ง" : e.secs ? e.secs + " วินาที" : e.mins ? e.mins + " นาที" : ""}${e.mus ? " · " + esc(e.mus) : ""}</div><div class="xs muted">${tags(e)}</div></div>${ic("play", 18)}</button>`;
+  ACT.libmine = () => { mineOnly = !mineOnly; rerenderSub(); };
   SUBS.lib = arg => {
     const id = arg && arg.id;
-    if (!id || id === "work") { const order = ["ขาและก้น", "อก แขน ไหล่", "หลัง", "แกนกลางลำตัว", "คาร์ดิโอ", "ยืดเหยียด"]; return { title: "คลังท่าออกกำลัง " + LIB.length + " ท่า", html: order.map(c => `<div class="sec" style="margin-top:14px">${c}</div>` + LIB.filter(e => e.cat === c).map(libRow).join("")).join("") }; }
-    const r = oLib(arg);
-    if (id && id !== "work" && RIG.has(id) && r && r.html) {
-      r.html = r.html.replace(/<div class="card" style="text-align:center">[\s\S]*?<\/div>/, RIG.html(id));
-      const af = r.after; r.after = el => { if (af) af(el); RIG.mount(el.querySelector("canvas.rig"), { ex: id, speed: 1 }); };
+    if (!id || id === "work") {
+      const F = S.fit, order = ["ขาและก้น", "อก แขน ไหล่", "หลัง", "แกนกลางลำตัว", "คาร์ดิโอ", "ยืดเหยียด"], ok = e => !mineOnly || !F || (FIT.has(e, F) && !e.lim.some(l => F.lim.includes(l)));
+      const n = LIB.filter(ok).length;
+      return { title: "คลังท่าออกกำลัง " + LIB.length + " ท่า", html: `${F ? `<button class="fchip sm ${mineOnly ? "on" : ""}" data-act="libmine" aria-pressed="${mineOnly}">เฉพาะที่ฉันทำได้ตามอุปกรณ์ (${n})</button>` : `<button class="btn block" data-act="sub" data-n="fit">ตั้งค่าโปรแกรมเพื่อกรองตามอุปกรณ์</button>`}` + order.map(c => { const l = LIB.filter(e => e.cat === c && ok(e)); return l.length ? `<div class="sec" style="margin-top:14px">${c} (${l.length})</div>` + l.map(libRow).join("") : ""; }).join("") };
+    }
+    const r = oLib(arg), e = LIB.find(x => x.id === id);
+    if (e && r && r.html) {
+      const card = /<div class="card" style="text-align:center">[\s\S]*?<\/div>/;
+      const meta = `<div class="xs muted" style="margin:8px 0">${tags(e)} · ${esc(e.mus)}</div>`;
+      if (e.rig && RIG.has(e.rig)) {
+        r.html = r.html.replace(card, RIG.html(e.rig) + (e.approx ? `<p class="xs muted" style="margin-top:6px">ภาพเป็นท่าใกล้เคียง ทำตามวิธีทำด้านล่างให้ถูกท่า</p>` : "") + meta);
+        const af = r.after; r.after = el => { if (af) af(el); RIG.mount(el.querySelector("canvas.rig"), { ex: e.rig, speed: 1, nodumb: e.noDumb }); };
+      } else r.html = r.html.replace(card, meta);
     }
     return r;
   };
   SUBS.train = arg => {
     const r = oTrain(arg), s = SESS;
-    if (!s || !RIG.has(s.e.id) || !r) return r;
-    if (!s.tempoSet) { s.tempoSet = 1; if (s.e.reps) s.tempo = Math.max(1.2, RIG.period(s.e.id) || s.tempo); }
-    r.html = r.html.replace(/<div class="stage"><svg[\s\S]*?<\/svg><\/div>/, RIG.html(s.e.id));
+    if (!s || !r) return r; const rk = s.e.rig;
+    if (!s.tempoSet) { s.tempoSet = 1; if (s.e.reps) s.tempo = Math.max(1.2, RIG.period(rk) || s.tempo); }
+    if (!rk || !RIG.has(rk)) return r;
+    r.html = r.html.replace(/<div class="stage"><svg[\s\S]*?<\/svg><\/div>/, RIG.html(rk));
     const af = r.after;
     r.after = el => {
       if (af) af(el);
-      RIG.mount(el.querySelector("canvas.rig"), { ex: s.e.id, state: now => {
+      RIG.mount(el.querySelector("canvas.rig"), { ex: rk, nodumb: s.e.noDumb, state: now => {
         if (!SESS || SESS !== s) return { tm: 0, idle: true };
         const ph = s.phase;
         if (ph === "done") return { tm: now / 1000, cheer: true, expr: "cheer" };
