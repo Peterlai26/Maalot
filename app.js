@@ -45,49 +45,12 @@ function refresh() { if (view === "home") renderHome(); else if (view === "chart
 function lookPreview(L, rx) {
   return `<div class="stage"><svg viewBox="0 0 380 290" role="img" aria-label="ตัวอย่างตัวละคร"><rect width="380" height="290" fill="#FFF1E3"/><rect y="252" width="380" height="38" fill="#F3D9BF"/><ellipse cx="190" cy="268" rx="100" ry="14" fill="#FBE3A1"/><g transform="translate(190,268)">${figure(L, "happy", rx || 46)}</g></svg></div>`;
 }
-function swatchBtn(k, v, color, code, label) {
-  const on = EDIT.look[k] === v, lock = code && !isOwned(code);
-  return `<button class="sw ${on ? "on" : ""}" style="background:${color}" data-act="lk" data-k="${k}" data-v="${v}" data-code="${code || ""}" aria-label="${label}${lock ? " ล็อก" : ""}">${lock ? '<span class="lk">' + ic("lock", 14) + "</span>" : ""}</button>`;
-}
-function chipBtn(k, v, label, code) {
-  const on = EDIT.look[k] === v, lock = code && !isOwned(code);
-  return `<button class="btn sm ${on ? "sel" : ""}" data-act="lk" data-k="${k}" data-v="${v}" data-code="${code || ""}">${lock ? ic("lock", 14) : ""}${label}</button>`;
-}
-function lookEditor() {
-  const L = EDIT.look;
-  return `<div id="prev">${lookPreview(L, EDIT.rx)}</div>
-<label class="f" for="nm">ชื่อตัวละคร</label><input id="nm" type="text" maxlength="14" placeholder="เช่น ก้อน หรือ เบนซ์" value="${esc(S.name || EDIT.name || "")}"/>
-<label class="f">เพศของตัวละคร</label><div class="row wrap">${chipBtn("g", "male", "ชาย")}${chipBtn("g", "female", "หญิง")}${chipBtn("g", "neutral", "กลางๆ")}</div>
-<label class="f">สีผิว</label><div class="swatches">${SKINS.map((c, i) => swatchBtn("skin", c, c, "", "สีผิว " + (i + 1))).join("")}</div>
-<label class="f">ทรงผม</label><div class="row wrap">${HSTYLES.map(h => chipBtn("hs", h[0], h[1], h[2])).join("")}</div>
-<label class="f">สีผม</label><div class="swatches">${HAIRC.map((c, i) => swatchBtn("hc", c[0], c[0], c[1], "สีผม " + (i + 1))).join("")}</div>
-<label class="f">เสื้อฮู้ด</label><div class="swatches">${OUTC.map((c, i) => swatchBtn("oc", c[0], c[0], c[1], "สีเสื้อ " + (i + 1))).join("")}</div>
-<label class="f">เครื่องประดับ</label><div class="row wrap">${ACCS.map(a => chipBtn("acc", a[0], a[1], a[2])).join("")}</div>
-<div class="hint" id="lkhint">${ic("sparkle", 18)}<span id="lkt">แตะเพื่อลองแต่งได้เลย ของที่มีกุญแจต้องปลดล็อกก่อนถึงจะใช้จริง</span></div>`;
-}
-ACT.lk = (a) => {
-  const k = a.dataset.k, v = a.dataset.v, code = a.dataset.code, L = EDIT.look;
-  if (a.dataset.k === "g" || true) { L[k] = v; }
-  if (k === "g") L.hs = v === "male" ? "short" : v === "female" ? "long" : "bob";
-  const nm = $("#nm"); if (nm) EDIT.name = nm.value;
-  const y = $("#sub").scrollTop || window.scrollY;
-  const host = EDIT.host; host();
-  const t = $("#lkt"); if (t) t.textContent = code && !isOwned(code) ? "ลองใส่ดูได้ แต่ต้องปลดล็อกก่อนใช้จริง: " + (LOCKHINT[code] || "") : "ใส่ได้เลย";
-  if ($("#sub").hidden) window.scrollTo(0, y); else $("#sub").scrollTop = y;
-};
-function fixLocked(L) {
-  const def = { hs: "bob", hc: "#6B4A3A", oc: "#F4A58A", acc: "none" }, bad = [];
-  const chk = (k, code) => { if (code && !isOwned(code)) { L[k] = def[k]; bad.push(LOCKHINT[code] || "ของที่ล็อก"); } };
-  HAIRC.forEach(c => { if (L.hc === c[0]) chk("hc", c[1]); }); OUTC.forEach(c => { if (L.oc === c[0]) chk("oc", c[1]); });
-  HSTYLES.forEach(h => { if (L.hs === h[0]) chk("hs", h[2]); }); ACCS.forEach(a => { if (L.acc === a[0]) chk("acc", a[2]); });
-  return bad;
-}
 
 /* ---------- เริ่มต้นครั้งแรก ---------- */
 function renderOnb() {
   const el = $("#onb"); el.hidden = false; $("#app").hidden = true; $(".nav").hidden = true;
   if (ONB.step === 1) {
-    EDIT = { look: ONB.look, rx: 46, name: ONB.name, host: renderOnb };
+    EDIT = EDIT && EDIT.host === renderOnb ? Object.assign(EDIT, { look: ONB.look }) : { look: ONB.look, rx: 46, name: ONB.name, host: renderOnb, mode: "wear", tab: "self", onb: true, sel: null };
     el.innerHTML = `<div class="inner"><p class="muted sm">ขั้นที่ 1 จาก 3</p><h1>สร้างตัวแทนของคุณ</h1><p class="muted sm" style="margin:4px 0 12px">เลือกหน้าตาที่ชอบ เปลี่ยนใหม่ได้ทุกเมื่อ</p>${lookEditor()}<button class="btn primary block" style="margin-top:16px" data-act="onb1">ต่อไป · ใส่ส่วนสูงและน้ำหนัก</button></div>`;
   } else if (ONB.step === 2) {
     const p = ONB.prof, sx = p.sex;
@@ -109,7 +72,7 @@ ${under ? '<div class="hint">' + ic("heart", 18) + "<span>น้ำหนัก�
   }
   window.scrollTo(0, 0);
 }
-ACT.onb1 = () => { ONB.name = ($("#nm") || {}).value || ONB.name; ONB.step = 2; renderOnb(); };
+ACT.onb1 = () => { ONB.name = (EDIT && EDIT.name) || ($("#nm") || {}).value || ONB.name; ONB.step = 2; renderOnb(); };
 ACT.onbback = () => { ONB.step = Math.max(1, ONB.step - 1); renderOnb(); };
 ACT.onb2 = () => {
   const h = parseFloat($("#ph").value), w = parseFloat($("#pw").value), a = parseInt($("#pa").value, 10);
@@ -191,7 +154,7 @@ function renderHome() {
   const chips = info.meals.map(m => `<span class="chip">${ic("bowl", 15)}${esc(m.n)}</span>`).concat(info.works.map(m => `<span class="chip green">${ic("check", 15)}${esc(m.n)}</span>`)).join("");
   const under = bmiOf(w) < 18.5 ? `<div class="hint">${ic("heart", 18)}<span>น้ำหนักอยู่ในเกณฑ์ต่ำแล้ว แอปจึงตั้งเป้าให้คงที่ ไม่แนะนำให้ลดต่อ</span></div>` : "";
   $("#v-home").innerHTML = `<div class="top"><div><div class="muted sm">${THDAYL[now.getDay()]} ${now.getDate()} ${THMON[now.getMonth()]}</div><h1>${g}</h1></div><div class="chips"><span class="chip warn">${ic("flame", 15)}${S.streak.n || 1} วัน</span><span class="chip soft" id="coinchip">${ic("coin", 15)}${S.coins}</span></div></div>
-<div class="stagewrap"><div class="stage" id="stage" data-act="poke" role="button" aria-label="แตะเพื่อทักตัวละคร">${scene({ look: S.look, mood, rx, period: sper, owned: S.owned, l1: sp[0], l2: sp[1] })}${particles(sper)}</div><button class="todbtn" data-act="daynight" aria-label="สลับกลางวัน กลางคืน" aria-pressed="${isDark}"><span class="todknob">${ic("sun", 16).replace('class="ic"', 'class="ic sun"')}${ic("moon", 16).replace('class="ic"', 'class="ic moon"')}</span></button></div>
+<div class="stagewrap"><div class="stage" id="stage" data-act="poke" role="button" aria-label="แตะเพื่อทักตัวละคร">${scene({ look: S.look, mood, rx, period: sper, owned: S.owned, room: roomOf(), l1: sp[0], l2: sp[1] })}${particles(sper)}</div><button class="todbtn" data-act="daynight" aria-label="สลับกลางวัน กลางคืน" aria-pressed="${isDark}"><span class="todknob">${ic("sun", 16).replace('class="ic"', 'class="ic sun"')}${ic("moon", 16).replace('class="ic"', 'class="ic moon"')}</span></button></div>
 ${moodCardHTML()}<button class="card status" data-act="sub" data-n="today">${ring(pct)}<div style="flex:1;min-width:0"><div class="big">${line}</div><div class="muted sm">${remTxt}</div><div class="muted xs" style="margin-top:2px">กินแล้ว ${fmtN(info.eaten)}${info.wk ? " · ออกกำลัง +" + fmtN(info.wk) : ""} kcal</div></div>${ic("list", 20)}</button>
 ${weekStrip(tk)}
 ${under}
@@ -371,7 +334,8 @@ const TILES = [
   ["ดูความคืบหน้า", "target", "ภารกิจ", "ปลดล็อกของใหม่", "missions", "", "d-blue", "ภารกิจ เหรียญ รางวัล"],
   ["ดูความคืบหน้า", "send", "แชร์การ์ดความคืบหน้า", "ส่ง LINE หรือ IG", "share", "", "d-blue", "แชร์ การ์ด รูป ไลน์ อินสตาแกรม ส่งต่อ"],
   ["ดูความคืบหน้า", "sparkle", "เหรียญรางวัล", "ได้เองจากความสม่ำเสมอ", "medals", "", "d-blue", "เหรียญ รางวัล ความสำเร็จ ถ้วย"],
-  ["ตัวละครของฉัน", "hanger", "แต่งตัวและห้อง", "เปลี่ยนได้ทุกเมื่อ", "wardrobe", "", "d-rose", "แต่งตัว เสื้อ ผม"],
+  ["ตัวละครของฉัน", "home", "ตกแต่งห้อง", "ของแต่ง สัตว์เลี้ยง", "room", "", "d-rose", "ห้อง ตกแต่ง เฟอร์นิเจอร์ สัตว์เลี้ยง วอลเปเปอร์ พรม"],
+  ["ตัวละครของฉัน", "hanger", "แต่งตัว", "เปลี่ยนได้ทุกเมื่อ", "wardrobe", "", "d-rose", "แต่งตัว เสื้อ ผม"],
   ["ตัวละครของฉัน", "bag", "ร้านค้า", "ใช้เหรียญซื้อ", "shop", "", "d-rose", "ร้าน ซื้อ เหรียญ"],
   ["ตัวละครของฉัน", "users", "เพื่อนช่วยกัน", "เร็วๆ นี้", "", "", "d-rose", "เพื่อน"],
   ["อื่นๆ", "settings", "ตั้งค่าและข้อมูล", "เป้าหมาย สำรองข้อมูล", "settings", "", "d-blue", "ตั้งค่า สำรอง ข้อมูล รีเซ็ต"]

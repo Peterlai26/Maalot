@@ -169,7 +169,7 @@ function missionProg(id) {
   }
   return 0;
 }
-function isOwned(code) { return !code || !!S.owned[code]; }
+function isOwned(code) { return !code || !!S.owned[code] || (typeof itemFree === "function" && itemFree(code)); }
 
 /* ---------- ตีความข้อความ ---------- */
 const normT = s => s.replace(/\s+/g, "");

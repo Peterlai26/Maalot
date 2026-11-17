@@ -2,12 +2,12 @@
 const baseName = n => String(n).split(" · ")[0].replace(/ ×[\d.]+$/, "");
 ACT.sub = (a) => {
   closeSheet(); const n = a.dataset.n;
-  if (n === "log") LG = null; if (n === "wardrobe") EDIT = null;
+  if (n === "log") LG = null; if (n === "wardrobe" || n === "room" || n === "shop") EDIT = null;
   openSub(n, { id: a.dataset.arg, tab: a.dataset.arg });
 };
 ACT.back = () => {
   const top = subStack[subStack.length - 1];
-  if (top && top.name === "wardrobe") EDIT = null;
+  if (top && (top.name === "wardrobe" || top.name === "room" || top.name === "shop")) EDIT = null;
   if (top && top.name === "night") stopNight();
   closeSub();
 };
@@ -58,18 +58,8 @@ function renderChar() {
   $("#v-char").innerHTML = `<div class="top"><div><div class="muted sm">ตัวแทนของคุณ</div><h1>${esc(S.name || "น้องก้อน")}</h1></div><span class="chip soft">${ic("coin", 15)}${S.coins}</span></div>
 <div class="stage"><svg viewBox="0 0 380 290" role="img" aria-label="เปรียบเทียบตอนเริ่มกับตอนนี้"><rect width="380" height="290" fill="#FFF1E3"/><rect y="252" width="380" height="38" fill="#F3D9BF"/><g transform="translate(110,268)" opacity=".35" style="filter:grayscale(.6)">${figure(L, "happy", rx0)}</g><g transform="translate(270,268)">${figure(L, "happy", rxN)}</g><text x="110" y="24" text-anchor="middle" font-size="13" fill="#8a7a6a">ตอนเริ่ม ${f1(w0)} กก.</text><text x="270" y="24" text-anchor="middle" font-size="13" fill="#6b4a3a">ตอนนี้ ${f1(w)} กก.</text></svg></div>
 <div class="card"><div class="row between"><span class="muted">เปลี่ยนไปแล้ว</span><b style="font-size:20px">${diff >= 0 ? "-" : "+"}${f1(Math.abs(diff))} กก.</b></div><div class="row wrap" style="margin-top:10px">${ms}</div><p class="xs muted" style="margin-top:8px">น้ำหนักตัวละครคำนวณจากน้ำหนักที่ชั่งจริงและแคลอรี่ที่บันทึก ชั่งเป็นประจำจะแม่นขึ้น</p></div>
-<div class="grid2" style="margin-top:12px"><button class="tile" data-act="sub" data-n="wardrobe"><span class="dot d-rose">${ic("hanger", 20)}</span><span><b>แต่งตัว</b><span class="s">เปลี่ยนหน้าตา</span></span></button><button class="tile" data-act="sub" data-n="shop"><span class="dot d-rose">${ic("bag", 20)}</span><span><b>ร้านค้า</b><span class="s">${S.coins} เหรียญ</span></span></button><button class="tile" data-act="sub" data-n="missions"><span class="dot d-blue">${ic("target", 20)}</span><span><b>ภารกิจ</b><span class="s">รับของรางวัล</span></span></button><button class="tile" data-act="sub" data-n="medals"><span class="dot d-blue">${ic("sparkle", 20)}</span><span><b>เหรียญรางวัล</b><span class="s">${medalCount()} / ${MEDALS.length * 4} อัน</span></span></button><button class="tile" data-act="sub" data-n="share"><span class="dot d-rose">${ic("send", 20)}</span><span><b>แชร์การ์ด</b><span class="s">ส่ง LINE หรือ IG</span></span></button><button class="tile" data-act="sub" data-n="settings"><span class="dot d-blue">${ic("settings", 20)}</span><span><b>ตั้งค่า</b><span class="s">เป้าหมาย ข้อมูล</span></span></button></div>`;
+<div class="grid2" style="margin-top:12px"><button class="tile" data-act="sub" data-n="room"><span class="dot d-rose">${ic("home", 20)}</span><span><b>ตกแต่งห้อง</b><span class="s">ของแต่ง สัตว์เลี้ยง</span></span></button><button class="tile" data-act="sub" data-n="wardrobe"><span class="dot d-rose">${ic("hanger", 20)}</span><span><b>แต่งตัว</b><span class="s">เปลี่ยนหน้าตา</span></span></button><button class="tile" data-act="sub" data-n="shop"><span class="dot d-rose">${ic("bag", 20)}</span><span><b>ร้านค้า</b><span class="s">${S.coins} เหรียญ</span></span></button><button class="tile" data-act="sub" data-n="missions"><span class="dot d-blue">${ic("target", 20)}</span><span><b>ภารกิจ</b><span class="s">รับของรางวัล</span></span></button><button class="tile" data-act="sub" data-n="medals"><span class="dot d-blue">${ic("sparkle", 20)}</span><span><b>เหรียญรางวัล</b><span class="s">${medalCount()} / ${MEDALS.length * 4} อัน</span></span></button><button class="tile" data-act="sub" data-n="share"><span class="dot d-rose">${ic("send", 20)}</span><span><b>แชร์การ์ด</b><span class="s">ส่ง LINE หรือ IG</span></span></button><button class="tile" data-act="sub" data-n="settings"><span class="dot d-blue">${ic("settings", 20)}</span><span><b>ตั้งค่า</b><span class="s">เป้าหมาย ข้อมูล</span></span></button></div>`;
 }
-SUBS.wardrobe = () => {
-  if (!EDIT || EDIT.host !== rerenderSub) EDIT = { look: Object.assign({}, S.look), rx: shapeRx(estW()), name: S.name, host: rerenderSub };
-  return { title: "แต่งตัว", keepScroll: true, html: lookEditor() + `<button class="btn primary block" style="margin-top:16px" data-act="wsv">บันทึก</button>` };
-};
-ACT.wsv = () => {
-  const nm = $("#nm"); if (nm) EDIT.name = nm.value;
-  const L = Object.assign({}, EDIT.look), bad = fixLocked(L);
-  S.look = L; S.name = (EDIT.name || "").trim() || S.name; save(); EDIT = null; closeAllSubs();
-  toast(bad.length ? "บางอย่างยังล็อกอยู่ เลยไม่ได้ใส่" : "เปลี่ยนหน้าตาแล้ว");
-};
 SUBS.missions = () => ({
   title: "ภารกิจ", html: `<p class="muted sm" style="margin-bottom:8px">เหรียญได้จากความสม่ำเสมอ ไม่ได้ขึ้นกับน้ำหนัก</p>` + MISSIONS.map(m => {
     const p = Math.min(m.goal, missionProg(m.id)), done = p >= m.goal, got = S.claimed[m.id];
@@ -79,17 +69,6 @@ SUBS.missions = () => ({
 ACT.claim = (a) => {
   const m = MISSIONS.find(x => x.id === a.dataset.id); if (!m || S.claimed[m.id] || missionProg(m.id) < m.goal) return;
   S.claimed[m.id] = true; S.coins += m.coins; if (m.item) S.owned[m.item] = true; save(); confetti(); popCoins(m.coins); toast(m.item ? "ปลดล็อก " + m.itemName + " แล้ว" : "ได้รับเหรียญแล้ว"); rerenderSub();
-};
-SUBS.shop = () => ({
-  title: "ร้านค้า", right: `<span class="chip soft">${ic("coin", 14)}${S.coins}</span>`, html: `<p class="muted sm" style="margin-bottom:8px">ใช้เหรียญที่ได้จากภารกิจและการบันทึกเท่านั้น</p>` + SHOP.map(s => {
-    const own = S.owned[s.id];
-    return `<div class="item"><span class="sw" style="background:${s.sw || "var(--line)"};cursor:default"></span><div class="grow"><b>${s.n}</b><div class="xs muted">${s.cat}</div></div>${own ? '<span class="chip green">' + ic("check", 14) + "มีแล้ว</span>" : `<button class="btn sm ${S.coins >= s.price ? "primary" : ""}" data-act="buy" data-id="${s.id}">${ic("coin", 14)}${s.price}</button>`}</div>`;
-  }).join("")
-});
-ACT.buy = (a) => {
-  const s = SHOP.find(x => x.id === a.dataset.id); if (!s || S.owned[s.id]) return;
-  if (S.coins < s.price) { toast("เหรียญยังไม่พอ ทำภารกิจเพิ่มได้นะ"); return; }
-  S.coins -= s.price; S.owned[s.id] = true; save(); toast("ซื้อ " + s.n + " แล้ว"); rerenderSub();
 };
 
 /* ---------- ช่วยตัดสินใจ ---------- */

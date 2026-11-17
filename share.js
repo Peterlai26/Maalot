@@ -19,7 +19,7 @@ async function shDraw() {
   const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, SH_C.bg1); bg.addColorStop(1, SH_C.bg2); g.fillStyle = bg; g.fillRect(0, 0, W, H);
   T("Maalot", 70, 78, F(600, 56), SH_C.accent, "left"); T("มาลด", W - 70, 80, F(600, 34), SH_C.muted, "right");
   const st = shStats(), now = new Date();
-  let svg = scene({ look: S.look, mood: "happy", rx: shapeRx(estW()), period: "noon", owned: S.owned, l1: "", l2: "" });
+  let svg = scene({ look: S.look, mood: "happy", rx: shapeRx(estW()), period: "noon", owned: S.owned, room: roomOf(), l1: "", l2: "" });
   svg = svg.replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" width="760" height="600" ');
   let room = null; try { room = await shImg(svg); } catch (e) { }
   const sx = 120, sy = 130, sw = 840, sh = 663;
