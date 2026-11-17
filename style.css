@@ -1231,3 +1231,4 @@ input:not([type]), input[type="text"]:not(.bare), input[type="number"]:not(.bare
 .hfr-i { flex: none; width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; background: var(--soft); color: var(--accent); }
 .hfr.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--card)); } .hfr.on svg:last-child { color: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .hubact { animation: none !important; } }
+.hq-grid + .hgrid { margin-top: 14px; } .hfeat + .hq-grid { margin-top: 14px; } .hubact + .hgrid, .hubtop + .hgrid { margin-top: 14px; }
