@@ -111,8 +111,10 @@ async function estimate(req, env) {
   /* นับรวมทั้งระบบแบบสุ่ม (เขียน KV น้อยลง ไม่ให้เกินโควตาเขียนฟรีต่อวัน) */
   await env.SUBS.put(kIp, String((+nIp || 0) + 1), { expirationTtl: 172800 });
   if (Math.random() < 0.2) await env.SUBS.put(kAll, String((+nAll || 0) + 5), { expirationTtl: 172800 });
+  const label = b.label === true && !!img;
   let task;
-  if (foods.length) task = "ให้ข้อมูลโภชนาการต่อ 1 เสิร์ฟของอาหารต่อไปนี้ ตามลำดับเดิมและใช้ชื่อเดิมทุกชื่อ (ค่า kcal ในวงเล็บเป็นค่าอ้างอิงที่ควรใกล้เคียง):\n" + foods.map((f, i) => `${i + 1}. ${f.n} (${f.k} kcal)`).join("\n") + "\n" + FMT;
+  if (label) task = 'นี่คือรูปฉลากโภชนาการ (ด้านหลังซองอาหาร) ให้อ่านค่าจากตาราง "ข้อมูลโภชนาการ" ตามที่เขียนไว้จริง ห้ามเดา ถ้าอ่านค่าไหนไม่ได้ให้ใส่ null ตอบเป็น JSON object เดียวเท่านั้น รูปแบบ {"name":"ชื่อสินค้าถ้าเห็น","servingsPerPack":จำนวนหน่วยบริโภคต่อซอง,"kcal":พลังงานต่อ 1 หน่วยบริโภค (กิโลแคลอรี),"protein":กรัม,"carb":กรัม,"fat":กรัม,"fiber":กรัม,"sugar":กรัม,"sodium":มิลลิกรัม} ค่าทั้งหมดเป็นต่อ 1 หน่วยบริโภค';
+  else if (foods.length) task = "ให้ข้อมูลโภชนาการต่อ 1 เสิร์ฟของอาหารต่อไปนี้ ตามลำดับเดิมและใช้ชื่อเดิมทุกชื่อ (ค่า kcal ในวงเล็บเป็นค่าอ้างอิงที่ควรใกล้เคียง):\n" + foods.map((f, i) => `${i + 1}. ${f.n} (${f.k} kcal)`).join("\n") + "\n" + FMT;
   else if (img) task = "ดูรูปอาหารที่แนบมา แล้วแยกเป็นแต่ละรายการที่เห็น ประเมินโภชนาการตามปริมาณในรูป ถ้าไม่ใช่อาหารให้ตอบ []." + FMT;
   else task = "ผู้ใช้พิมพ์บอกว่ากินอะไรมา: \"" + text + "\"\nข้อความอาจพิมพ์ผิด สะกดไม่ครบ ใช้คำย่อ หรือเป็นอาหารจากต่างประเทศ ให้เดาว่าหมายถึงอาหารอะไร แก้ชื่อให้ถูกต้อง (ชื่อต่างประเทศให้ใช้ชื่อที่คนไทยเรียกทั่วไป) แยกเป็นรายการ ถ้าระบุจำนวนให้คิดตามจำนวนนั้น ถ้าไม่ระบุให้คิด 1 เสิร์ฟปกติ ถ้าไม่ใช่อาหารให้ตอบ []." + FMT;
   let out = "", used = "";
@@ -124,6 +126,12 @@ async function estimate(req, env) {
   } else {
     try { const r = await cfAI(env, task, img, mime); out = r.out; used = r.model; }
     catch (e) { const t = (e.tried || [String(e.message || e)]).join(" | "); return J(req, { error: /neuron|quota|10000|4006/i.test(t) ? "busy" : "upstream", detail: t.slice(0, 600) }, /neuron|quota|10000|4006/i.test(t) ? 429 : 502); }
+  }
+  if (label) {
+    const mo = out.match(/\{[\s\S]*\}/); let o; try { o = JSON.parse(mo ? mo[0] : "null"); } catch (_) { o = null; }
+    if (!o || typeof o !== "object") return J(req, { error: "parse" }, 502);
+    const num = (v, mx) => { if (v === null || v === undefined || v === "") return null; const x = +v; return isFinite(x) && x >= 0 && x < mx ? Math.round(x * 10) / 10 : null; };
+    return J(req, { label: { name: typeof o.name === "string" ? o.name.slice(0, 40) : "", servingsPerPack: num(o.servingsPerPack, 100), kcal: num(o.kcal, 5000), protein: num(o.protein, 500), carb: num(o.carb, 500), fat: num(o.fat, 500), fiber: num(o.fiber, 200), sugar: num(o.sugar, 500), sodium: num(o.sodium, 20000) }, model: used });
   }
   const m = out.match(/\[[\s\S]*\]/);
   let arr; try { arr = JSON.parse(m ? m[0] : "null"); } catch (_) { arr = null; }
