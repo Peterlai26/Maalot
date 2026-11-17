@@ -26,7 +26,7 @@ function syncMerge(a, b) {
   };
   const byDT = (p, q) => (p.d || "") < (q.d || "") ? -1 : (p.d || "") > (q.d || "") ? 1 : (p.t || "") < (q.t || "") ? -1 : (p.t || "") > (q.t || "") ? 1 : 0;
   out.meals = byId(a.meals, b.meals, "m:", byDT); out.works = byId(a.works, b.works, "k:", byDT);
-  out.combos = byId(a.combos, b.combos, "c:"); out.myfoods = byId(a.myfoods, b.myfoods, "f:"); out.progs = byId(a.progs, b.progs, "p:"); out.lifts = byId(a.lifts, b.lifts, "l:", byDT); out.sessions = byId(a.sessions, b.sessions, "s:", byDT);
+  out.combos = byId(a.combos, b.combos, "c:"); out.myfoods = byId(a.myfoods, b.myfoods, "f:"); out.progs = byId(a.progs, b.progs, "p:"); out.lifts = byId(a.lifts, b.lifts, "l:", byDT); out.cardio = byId(a.cardio, b.cardio, "g:", byDT); out.sessions = byId(a.sessions, b.sessions, "s:", byDT);
   const byDate = (la, lb, pre) => {
     const m = {}; (lb || []).concat(la || []).forEach(x => { if (!x || !x.d) return; const o = m[x.d]; if (!o || (x.t || 0) > (o.t || 0)) m[x.d] = x; });
     return Object.keys(m).map(k => m[k]).filter(x => !(pre && del[pre + x.d] && del[pre + x.d] >= (x.t || 0))).sort((p, q) => p.d < q.d ? -1 : 1);
