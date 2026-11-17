@@ -201,6 +201,19 @@ function logHero(isF) {
   const t = isF ? "บันทึกอาหาร" : "บันทึกออกกำลังกาย", sub = isF ? `วันนี้กินแล้ว ${fmtN(i.eaten)} / ${fmtN(tgt)} kcal` : (i.works.length ? `วันนี้ขยับแล้ว ${i.works.length} ครั้ง · เผาผลาญ ${fmtN(i.wk)} kcal` : "วันนี้ยังไม่ได้ขยับ เริ่มจากสั้นๆ ก็นับ");
   return `<div class="mhero lghero ${isF ? "amber" : "blue"}"><span class="mh-bg" aria-hidden="true"><i></i><i></i><i></i></span><span class="mh-ic">${ic(isF ? "bowl" : "dumbbell", 28)}</span><div class="mh-t"><b>${t}</b><span>${sub}</span>${isF ? `<i class="mh-bar"><b style="width:${pct}%"></b></i>` : ""}</div></div>`;
 }
+/* ทางลัดจดอาหาร/ออกกำลังกาย: ตัวช่วยทั้งหมดรวมอยู่ในหน้าต่างที่เด้งขึ้นจากปุ่มด้านขวา (ถ่ายรูป เลือกรูป ขนมซอง เพิ่มเอง ค้นหาเมนู ตัวอย่าง มื้อประจำ) */
+const LOGX = { chips: "" };
+function aidHTML() {
+  const isF = LG.tab === "food", tile = (i, t, sub, act, n) => `<button class="aidt" style="--i:${n}" data-act="${act}"><span class="aidi">${ic(i, 22)}</span><b>${t}</b><span>${sub}</span></button>`;
+  const tiles = isF ? [["camera", "ถ่ายรูป", "ให้ AI ดูให้", "camera"], ["book", "เลือกรูป", "จากอัลบั้ม", "gallery"]].concat(typeof ACT.myfadd === "function" ? [["bowl", "ขนมซอง", "จากฉลากโภชนาการ", "myfadd"]] : [], [["plus", "เพิ่มเอง", "กรอกชื่อและแคลอรี่", "lgadd"]]) : [["plus", "เพิ่มเอง", "กรอกท่าและเวลา", "lgadd"]];
+  const ex = (isF ? ["ข้าวมันไก่ 1 จาน", "กาแฟเย็น", "ส้มตำ ไก่ย่าง ข้าวเหนียว", "ชานมไข่มุก"] : ["วิดพื้น 3 เซ็ต 12 ครั้ง", "วิ่ง 20 นาที", "สควอต 3 เซ็ต 15 ครั้ง", "เดิน 30 นาที"]).map((t, i) => `<button type="button" class="lgx" style="--i:${i}" data-act="lgex" data-t="${t}">${ic("sparkle", 12)}${t}</button>`).join("");
+  return `<div class="aid"><div class="aidh"><h2>ทางลัด${isF ? "จดอาหาร" : "จดออกกำลังกาย"}</h2><button class="gx2" data-act="sheetclose" aria-label="ปิด">${ic("x", 18)}</button></div>
+<div class="aidgrid">${tiles.map((t, n) => tile(t[0], t[1], t[2], t[3], n)).join("")}</div>
+${isF ? `<div class="aids">ค้นหาเมนู แตะเพื่อเพิ่ม</div><input id="lgsearch" type="text" data-in="lgsearch" placeholder="เช่น กะเพรา ชาเขียว ส้มโอ" autocomplete="off"/><div id="lgres" class="logchips" style="margin-top:8px"></div>` : ""}
+<div class="aids">ตัวอย่างให้แตะ</div><div class="lgex">${ex}</div>${isF ? `<div class="aidx">${LOGX.chips}</div>` : ""}</div>`;
+}
+ACT.lgaid = () => { if (LG) openSheet(aidHTML()); };
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("#sheet .aid [data-act]"); if (b && b.dataset.act !== "sheetclose") setTimeout(closeSheet, 60); });
 ACT.lgex = a => { const t = $("#lgtext"); if (!t) return; t.value = a.dataset.t; ACT.lgparse(); };
 function quickHTML() {
   return `<h2 style="margin-bottom:12px">เพิ่มอะไรดี</h2>${ifStrip()}<div class="grid2">
@@ -244,9 +257,8 @@ ${it.known ? (c.assumed ? '<div class="xs muted" style="margin-top:4px">ไม�
     html: `${logHero(isF)}<!--logcta--><div class="seg" role="tablist"><button class="${isF ? "on" : ""}" data-act="lgtab" data-t="food">กิน</button><button class="${!isF ? "on" : ""}" data-act="lgtab" data-t="work">ออกกำลัง</button></div>
 <div class="composer ${isF ? "food" : "work"}"><label class="f" for="lgtext">${isF ? "พิมพ์ว่ากินอะไร เช่น ข้าวมันไก่ 1 จาน กับชานมไข่มุก" : "พิมพ์ว่าทำอะไร เช่น วิดพื้น 3 เซ็ต 12 ครั้ง วิ่ง 20 นาที"}</label>
 <textarea id="lgtext" data-in="lgtext" placeholder="${isF ? "ข้าวมันไก่ 1 จาน, ชานมไข่มุก 1 แก้ว" : "วิดพื้น 3 เซ็ต เซ็ตละ 12 ครั้ง แพลงก์ 3 เซ็ต 45 วินาที"}">${esc(LG.text)}</textarea>
-<div class="lgex" aria-label="ตัวอย่างให้แตะ">${(isF ? ["ข้าวมันไก่ 1 จาน", "กาแฟเย็น", "ส้มตำ ไก่ย่าง ข้าวเหนียว", "ชานมไข่มุก"] : ["วิดพื้น 3 เซ็ต 12 ครั้ง", "วิ่ง 20 นาที", "สควอต 3 เซ็ต 15 ครั้ง", "เดิน 30 นาที"]).map((t, i) => `<button type="button" class="lgx" style="--i:${i}" data-act="lgex" data-t="${t}">${ic("sparkle", 12)}${t}</button>`).join("")}</div>
-${isF ? `<label class="f" for="lgsearch" style="margin-top:10px">หรือค้นหาเมนู แตะเพื่อเพิ่ม</label><input id="lgsearch" type="text" data-in="lgsearch" placeholder="เช่น กะเพรา ชาเขียว ส้มโอ" autocomplete="off"/><div id="lgres" class="logchips" style="margin-top:8px"></div>` : ""}
-<div class="row wrap" style="margin-top:8px"><button class="btn primary go" data-act="lgparse">${ic("sparkle", 18)}ตีความ</button>${isF ? `<button class="btn" data-act="camera">${ic("camera", 18)}ถ่ายรูป</button><button class="btn" data-act="gallery">${ic("book", 18)}เลือกรูป</button>` : ""}<button class="btn" data-act="lgadd">${ic("plus", 18)}เพิ่มเอง</button>${hasUnknown ? `<button class="btn" data-act="lgai">ให้ AI ประเมิน</button>` : ""}</div>
+<div class="row lgbar"><button class="btn primary go" data-act="lgparse">${ic("sparkle", 18)}ตีความ</button><button class="btn lgaid" data-act="lgaid" aria-haspopup="dialog">${ic("plus", 18)}ทางลัด</button></div>
+${hasUnknown ? `<button class="btn block" style="margin-top:8px" data-act="lgai">${ic("sparkle", 16)}ให้ AI ประเมินรายการที่ไม่รู้จัก</button>` : ""}
 ${LG.busy ? '<div class="hint pulse-ring">' + ic("sparkle", 18) + "<span>กำลังดูให้อยู่…</span></div>" : ""}</div>
 <div class="card" style="margin-top:12px;padding:6px 14px">${rows || `<div class="lgempty"><span class="lge-ic">${ic(isF ? "bowl" : "dumbbell", 30)}</span><b>${isF ? "ยังไม่มีรายการอาหาร" : "ยังไม่มีรายการออกกำลังกาย"}</b><span>${isF ? "พิมพ์ด้านบน แตะตัวอย่าง หรือถ่ายรูปได้เลย" : "บอกท่า เซ็ต ครั้ง หรือเวลา แล้วกดตีความ"}</span></div>`}</div>
 ${LG.items.length ? `<div class="row between lgtotal" style="margin-top:12px"><span class="muted">${isF ? "รวมมื้อนี้" : "เผาผลาญประมาณ"}</span><b style="font-size:20px">${isF ? "+" : "-"}${fmtN(tot)} kcal</b></div>` : ""}

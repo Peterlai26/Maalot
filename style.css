@@ -960,3 +960,18 @@ input[type=password], input[type=email] { width: 100%; background: var(--card); 
 @keyframes mbar { from { width: 0 !important; } }
 @keyframes itempop { from { opacity: 0; transform: translateY(-8px) scale(.96); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .ifbadge, .ifbadge.fast, .ibf, .ifstrip, .ifstrip::after, .ifs-bg i, .ifs-ic, .ifs-go svg, .mh-bar b, .lgx, .lgx svg, .lge-ic, .lgtotal b, .composer ~ .card .item:last-child { animation: none !important; } }
+
+/* แถวปุ่มล่างของช่องพิมพ์: ตีความ (ซ้าย) · ทางลัด (ขวา กดแล้วเด้งหน้าต่างให้เลือก) */
+.lgbar { margin-top: 12px; gap: 10px; } .lgbar .btn { min-height: 48px; border-radius: 999px; justify-content: center; } .lgbar .btn.primary { flex: 1.5; } .lgbar .lgaid { flex: 1; }
+.lgaid { background: color-mix(in srgb, var(--accent) 10%, var(--card)); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); color: var(--accent); font-weight: 600; }
+.lgaid svg { animation: lgplus 3s ease-in-out infinite; } @keyframes lgplus { 0%, 70%, 100% { transform: rotate(0); } 85% { transform: rotate(90deg) scale(1.15); } }
+/* หน้าต่างทางลัด */
+.aid { max-height: 76vh; overflow-y: auto; padding-bottom: 4px; }
+.aidh { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; } .gx2 { width: 34px; height: 34px; border: 0; border-radius: 50%; display: grid; place-items: center; background: var(--soft); color: var(--muted); cursor: pointer; }
+.aidgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.aidt { display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 2px; padding: 12px; border-radius: 20px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; animation: ptin .38s cubic-bezier(.2, .9, .3, 1) both; animation-delay: calc(var(--i, 0) * .06s); transition: transform .12s; }
+.aidt:active { transform: scale(.96); } .aidt b { font-size: 15px; } .aidt span:last-child { font-size: 12px; color: var(--muted); }
+.aidi { width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; background: var(--soft); color: var(--accent); margin-bottom: 6px; }
+.aids { font-weight: 600; font-size: 13px; color: var(--muted); margin: 16px 2px 6px; }
+.aidx .sec { margin-top: 14px !important; }
+@media (prefers-reduced-motion: reduce) { .lgaid svg, .aidt { animation: none !important; } }
