@@ -97,7 +97,7 @@ SUBS.fitq = () => {
   else if (st === 4) body = `<h2>มีส่วนไหนที่ต้องระวังไหม</h2><p class="muted sm" style="margin:4px 0 10px">จะเว้นท่าที่อาจกวนส่วนนั้น</p><div class="fgrid">${LIMS.map(l => chip(q.lim.includes(l[0]), "fqlim", `data-v="${l[0]}"`, l[1])).join("")}</div><div style="margin-top:12px">${chip(!!q.care, "fqcare", "", "ตั้งครรภ์ มีโรคหัวใจ/ความดัน เพิ่งผ่าตัด หรือกำลังเจ็บอยู่", "จะจำกัดเป็นท่าเบา")}</div>${q.care ? `<div class="hint warnh" style="margin-top:10px">${ic("heart", 18)}<span>ควรปรึกษาแพทย์ก่อนเริ่มออกกำลังกาย แอปนี้ไม่ใช่คำแนะนำทางการแพทย์ ถ้าเวียนหัว เจ็บหน้าอก หรือหายใจไม่ออกให้หยุดทันที</span></div>` : ""}`;
   else { const F = fqFit(), plan = genPlan(F, 0), a = analyze(F, plan); body = `<h2>แผนที่ได้</h2>${anaHtml(F, plan, a, true)}`; FQ._plan = plan; }
   const last = st === T - 1;
-  return { title: "ตั้งค่าโปรแกรม", html: `${prog}${body}<div class="row" style="margin-top:16px;gap:8px">${st ? `<button class="btn" data-act="fqback">ย้อนกลับ</button>` : ""}<button class="btn primary" style="flex:1" data-act="${last ? "fqsave" : "fqnext"}" ${st === 0 && !q.loc.length ? "disabled" : ""}>${last ? "ใช้แผนนี้" : "ต่อไป"}</button></div>`, keepScroll: false };
+  return { title: "ตั้งค่าโปรแกรม", html: `${prog}${body}<div class="row" style="margin-top:16px;gap:8px">${st ? `<button class="btn" data-act="fqback">ย้อนกลับ</button>` : ""}<button class="btn primary" style="flex:1" data-act="${last ? "fqsave" : "fqnext"}" ${st === 0 && !q.loc.length ? "disabled" : ""}>${last ? "ใช้แผนนี้" : "ต่อไป"}</button></div>${st === 0 ? `<button class="linkbtn" style="display:block;margin:12px auto 0;font-size:14px" data-act="sub" data-n="log" data-arg="work">ข้ามไปพิมพ์บันทึกเองก่อน</button>` : ""}`, keepScroll: false };
 };
 const fqFit = () => ({ loc: FQ.loc.slice(), eq: FQ.eq.slice(), goal: FQ.goal, lvl: +FQ.lvl, days: +FQ.days, mins: +FQ.mins, lim: FQ.lim.slice(), care: FQ.care ? 1 : 0 });
 const tog = (a, v) => { const i = a.indexOf(v); if (i < 0) a.push(v); else a.splice(i, 1); };
@@ -121,6 +121,8 @@ ${a.sug.length ? `<div class="sec">ถ้าเพิ่มอุปกรณ์
 }
 SUBS.fitan = () => { const F = S.fit, plan = S.plan; if (!F || !plan) return { title: "วิเคราะห์แผน", html: `<p class="muted">ยังไม่มีแผน</p><button class="btn primary block" data-act="fqstart">ตอบคำถามสร้างแผน</button>` }; return { title: "วิเคราะห์แผน", html: anaHtml(F, plan, analyze(F, plan)) }; };
 ACT.fqstart = () => { FQ = null; openSub("fitq", {}); };
+/* กดช่องออกกำลังกายบนหน้าแรก: เข้าโปรแกรมก่อน (ยังไม่มีแผนจะเริ่มที่คำถามข้อ 1) ส่วนพิมพ์บันทึกเองมีปุ่มอยู่ในหน้านั้น */
+ACT.workhome = () => { closeSheet(); if (S.fit && S.plan) openSub("fit", {}); else { FQ = null; openSub("fitq", {}); } };
 
 /* ---------- หน้าหลักโปรแกรมออกกำลัง ---------- */
 const sessionsOf = (from, to) => (S.sessions || []).filter(s => s.d >= from && s.d <= to);
@@ -140,7 +142,7 @@ SUBS.fit = () => {
 <p class="xs muted" style="margin-top:8px">${F.loc.map(l => (LOCS.find(x => x[0] === l) || [, l])[1]).join(" · ")} · ${F.eq.length ? F.eq.length + " อุปกรณ์" : "ไม่มีอุปกรณ์"} · ${F.days} วัน/สัปดาห์ · ${F.mins} นาที</p>`; }
   const progs = (S.progs || []).map(p => `<button class="item" style="width:100%;text-align:left" data-act="sub" data-n="fitday" data-arg="prog:${p.id}"><div class="grow"><b>${esc(p.name)}</b><div class="xs muted">${p.items.length} ท่า · ประมาณ ${dayMins(p)} นาที</div></div>${ic("play", 18)}</button>`).join("");
   const pre = PRESETS.map(p => { const need = presetNeed(p), ok = !F || need.every(k => F.eq.includes(k)); return `<button class="item" style="width:100%;text-align:left" data-act="sub" data-n="fitday" data-arg="pre:${p.id}"><div class="grow"><b>${p.n}</b><div class="xs muted">${p.d}${need.length ? " · ต้องมี" + need.map(k => EQN[k].split(" ")[0]).join(" ") : " · ไม่ใช้อุปกรณ์"}</div></div>${F && ok ? `<span class="fok">ทำได้</span>` : ""}</button>`; }).join("");
-  return { title: "โปรแกรมออกกำลังกาย", html: `${top}<div class="sec">โปรแกรมของฉัน</div>${progs || `<p class="xs muted">ยังไม่มี สร้างเองได้จากปุ่มด้านล่าง</p>`}<button class="btn block" style="margin-top:8px" data-act="pbnew">${ic("plus", 18)}สร้างโปรแกรมเอง</button><div class="sec">โปรแกรมสำเร็จรูป</div>${pre}<div class="sec">คลังท่า</div><button class="btn block" data-act="sub" data-n="lib">ดูท่าทั้งหมด ${LIB.length} ท่า</button>` };
+  return { title: "โปรแกรมออกกำลังกาย", html: `${top}<div class="sec">โปรแกรมของฉัน</div>${progs || `<p class="xs muted">ยังไม่มี สร้างเองได้จากปุ่มด้านล่าง</p>`}<button class="btn block" style="margin-top:8px" data-act="sub" data-n="log" data-arg="work">พิมพ์บันทึกเอง (บอกท่า เซ็ต ครั้ง)</button><button class="btn block" style="margin-top:8px" data-act="pbnew">${ic("plus", 18)}สร้างโปรแกรมเอง</button><div class="sec">โปรแกรมสำเร็จรูป</div>${pre}<div class="sec">คลังท่า</div><button class="btn block" data-act="sub" data-n="lib">ดูท่าทั้งหมด ${LIB.length} ท่า</button>` };
 };
 
 /* ---------- โปรแกรมสำเร็จรูป ---------- */
@@ -301,5 +303,5 @@ ACT.pbdel = a => { const id = a.dataset.id, i = (S.progs || []).findIndex(x => x
 /* ---------- ทางเข้า ---------- */
 (function () {
   if (!TILES.some(t => t[4] === "fit")) TILES.splice(TILES.findIndex(t => t[4] === "log" && t[5] === "work") + 1, 0, ["บันทึก", "target", "โปรแกรมออกกำลัง", "แผน ตั้งเวลา นำออกกำลัง", "fit", "", "d-warn", "โปรแกรม แผน ออกกำลัง ที่บ้าน ยิม อุปกรณ์ เซสชัน"]);
-  const oLog = SUBS.log; SUBS.log = a => { const r = oLog(a); if (r && r.title === "ออกกำลังกาย" && r.html) r.html = `<button class="btn block" style="margin-bottom:10px" data-act="sub" data-n="fit">${ic("play", 18)}โปรแกรมออกกำลังกาย (นำออกกำลังทีละท่า)</button>` + r.html; return r; };
+  const oLog = SUBS.log; SUBS.log = a => { const r = oLog(a); if (r && r.title === "ออกกำลังกาย" && r.html) r.html = `<button class="progcta" data-act="sub" data-n="fit"><span class="pc-ic">${ic("play", 22)}</span><span class="pc-t"><b>โปรแกรมออกกำลังกาย</b><small>นำออกกำลังทีละท่า มีน้องเกี๊ยวทำให้ดู</small></span><span class="pc-go">${ic("back", 20)}</span></button>` + r.html; return r; };
 })();

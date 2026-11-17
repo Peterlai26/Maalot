@@ -138,7 +138,7 @@ function freqFoods(tk) {
 function homeQuick(line, remTxt, info, tgt) {
   const total = tgt + info.wk, pct = Math.min(100, Math.round(info.eaten / Math.max(1, total) * 100));
   const foodSub = info.logged ? `กินแล้ว ${fmtN(info.eaten)} · ${remTxt}` : line;
-  return `<div class="hq-grid home"><button class="hq q-food" data-act="sub" data-n="log" data-arg="food"><span class="hq-ic">${ic("bowl", 22)}</span><b>กินอะไรมา</b><span class="hq-s">${foodSub}</span><i class="hq-bar"><b style="width:${pct}%"></b></i></button><button class="hq q-work" data-act="sub" data-n="log" data-arg="work"><span class="hq-ic">${ic("dumbbell", 22)}</span><b>ออกกำลังกาย</b><span class="hq-s">${info.works.length ? `วันนี้ ${info.works.length} ครั้ง · -${fmtN(info.wk)} kcal` : "ยังไม่ได้ขยับวันนี้"}</span></button></div>`;
+  return `<div class="hq-grid home"><button class="hq q-food" data-act="sub" data-n="log" data-arg="food"><span class="hq-ic">${ic("bowl", 22)}</span><b>กินอะไรมา</b><span class="hq-s">${foodSub}</span><i class="hq-bar"><b style="width:${pct}%"></b></i></button><button class="hq q-work" data-act="workhome"><span class="hq-ic">${ic("dumbbell", 22)}</span><b>ออกกำลังกาย</b><span class="hq-s">${info.works.length ? `วันนี้ ${info.works.length} ครั้ง · -${fmtN(info.wk)} kcal` : "ยังไม่ได้ขยับวันนี้"}</span></button></div>`;
 }
 function renderHome() {
   const now = new Date(), h = now.getHours(), per = periodOf(h), tk = todayKey();

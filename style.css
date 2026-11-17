@@ -737,3 +737,21 @@ button.item { background: none; border: 0; border-bottom: 1px solid var(--line);
 .splash { --bg: #F9F5ED; --soft: #ECE7F6; --ink: #24193B; --muted: #6B6080; --accent: #6B3FC0; --card: #FFFFFF; color-scheme: light; }
 .ltod { display: none !important; }
 #sub.dress .dnext.top, #onb.dream .dnext.top, .dnext.top { bottom: auto; top: 10px; right: 10px; min-height: 34px; padding: 5px 11px 5px 13px; font-size: 13px; }
+
+/* ---------- ปุ่ม "โปรแกรมออกกำลังกาย": เด่น มีแสงวิ่งผ่าน หัวใจเต้น ลูกศรขยับชวนกด ---------- */
+.progcta { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 12px; padding: 13px 16px 13px 13px; border: 0; border-radius: 22px; color: var(--accent-ink); text-align: left; cursor: pointer; overflow: hidden; isolation: isolate;
+  background: var(--accent); background: linear-gradient(115deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 62%, #F0679B) 100%); box-shadow: 0 10px 22px -10px var(--accent); animation: pcglow 2.4s ease-in-out infinite; transition: transform .12s; }
+.progcta:active { transform: scale(.97); }
+.progcta::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .45) 50%, transparent 65%); transform: translateX(-120%); animation: pcshine 3.2s ease-in-out .6s infinite; }
+.pc-ic { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .28); position: relative; animation: pcbeat 1.5s ease-in-out infinite; }
+.pc-ic::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .7); animation: pcring 1.5s ease-out infinite; }
+.pc-t { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.pc-t b { font-size: 17px; font-weight: 700; letter-spacing: .1px; } .pc-t small { font-size: 12.5px; opacity: .9; margin-top: 2px; }
+.pc-go { flex: none; display: grid; place-items: center; }
+.pc-go svg { transform: rotate(180deg); animation: pcnudge 1.2s ease-in-out infinite; }
+@keyframes pcshine { 0%, 45% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
+@keyframes pcglow { 0%, 100% { box-shadow: 0 10px 22px -10px var(--accent); } 50% { box-shadow: 0 12px 30px -6px var(--accent); } }
+@keyframes pcbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+@keyframes pcring { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(1.6); opacity: 0; } }
+@keyframes pcnudge { 0%, 100% { transform: rotate(180deg) translateX(0); } 50% { transform: rotate(180deg) translateX(-5px); } }
+@media (prefers-reduced-motion: reduce) { .progcta, .progcta::after, .pc-ic, .pc-ic::before, .pc-go svg { animation: none; } }

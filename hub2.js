@@ -17,7 +17,7 @@ function hubQuick() {
   const k = todayKey(), i = dayInfo(k), tgt = targetOn(k) + i.wk, wat = S.water[k] || 0, lw = S.weights[S.weights.length - 1];
   const bar = (v, mx) => `<i class="hq-bar"><b style="width:${Math.min(100, Math.round(v / Math.max(1, mx) * 100))}%"></b></i>`;
   const q = (cls, ic_, title, sub, act, bar_) => `<button class="hq ${cls}" ${act}><span class="hq-ic">${ic(ic_, 22)}</span><b>${title}</b><span class="hq-s">${sub}</span>${bar_ || ""}</button>`;
-  return `<div class="hq-grid">${q("q-food", "bowl", "กินอะไรมา", `วันนี้ ${fmtN(i.eaten)} / ${fmtN(tgt)} kcal`, 'data-act="sub" data-n="log" data-arg="food"', bar(i.eaten, tgt))}${q("q-work", "dumbbell", "ออกกำลังกาย", i.works.length ? `วันนี้ ${i.works.length} ครั้ง` : "ยังไม่ได้ขยับวันนี้", 'data-act="sub" data-n="log" data-arg="work"')}${q("q-water", "droplet", "น้ำและการนอน", `น้ำ ${wat}/8 แก้ว`, 'data-act="sub" data-n="water"', bar(wat, 8))}${q("q-weigh", "scale", "ชั่งน้ำหนัก", lw ? `ล่าสุด ${f1(lw.w)} กก.` : "ใส่ตัวเลขวันนี้", 'data-act="sub" data-n="weight"')}</div>`;
+  return `<div class="hq-grid">${q("q-food", "bowl", "กินอะไรมา", `วันนี้ ${fmtN(i.eaten)} / ${fmtN(tgt)} kcal`, 'data-act="sub" data-n="log" data-arg="food"', bar(i.eaten, tgt))}${q("q-work", "dumbbell", "ออกกำลังกาย", i.works.length ? `วันนี้ ${i.works.length} ครั้ง` : "ยังไม่ได้ขยับวันนี้", 'data-act="workhome"')}${q("q-water", "droplet", "น้ำและการนอน", `น้ำ ${wat}/8 แก้ว`, 'data-act="sub" data-n="water"', bar(wat, 8))}${q("q-weigh", "scale", "ชั่งน้ำหนัก", lw ? `ล่าสุด ${f1(lw.w)} กก.` : "ใส่ตัวเลขวันนี้", 'data-act="sub" data-n="weight"')}</div>`;
 }
 renderHub = function () {
   const q = hubQ.trim(), cats = [], by = {};
