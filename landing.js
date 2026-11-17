@@ -47,8 +47,11 @@ function renderLanding() {
   setTimeout(() => { const w = $(".lroom"); if (w) { w.classList.add("wave"); setTimeout(() => w.classList.remove("wave"), 3200); } }, 650);
 }
 /* ด่านสมัครสมาชิก: ต้องมีบัญชี (สมัครหรือเข้าสู่ระบบ) ก่อนถึงขั้นสร้างตัวละครและแต่งตัว ข้ามไม่ได้ */
+/* พรีวิวของ Cloudflare Pages (xxxx.maalot-2jx.pages.dev) เป็นโดเมนใหม่ทุกครั้งและเซิร์ฟเวอร์สมัครสมาชิกไม่อนุญาตโดเมนเหล่านี้
+   จึงข้ามด่านสมัครให้เพื่อใช้ทดสอบได้เลย โดเมนจริง (maalot-2jx.pages.dev) ยังบังคับสมัครตามเดิม */
+const isPreviewHost = () => /\.maalot-2jx\.pages\.dev$/.test(location.hostname);
 function startOnb() {
-  if (typeof loggedIn === "function" && loggedIn()) { renderOnb(); return; }
+  if ((typeof loggedIn === "function" && loggedIn()) || isPreviewHost()) { renderOnb(); return; }
   ACC = { mode: "register", busy: false, err: "", gate: true, pop: true, id: ACC.id };
   openGate();
 }
