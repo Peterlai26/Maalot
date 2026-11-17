@@ -302,12 +302,23 @@ function endSplash(minMs, t0) {
   const go = () => { if (done) return; done = true; sp.classList.add("out"); setTimeout(() => { sp.remove(); if (view === "home" && S.onboarded) greetStage("wave", 3200); }, 520); };
   sp.addEventListener("click", go); setTimeout(go, Math.max(0, minMs - (performance.now() - t0)));
 }
+/* ทางลัดจากการกดไอคอนแอปค้าง (Android): ?a=food|work|water|weight|mood */
+function shortcutGo() {
+  let a = ""; try { a = new URLSearchParams(location.search).get("a") || ""; } catch (e) { }
+  if (!a) return; try { history.replaceState(null, "", location.pathname); } catch (e) { }
+  setTimeout(() => {
+    if (a === "food" || a === "work") logText(a, "");
+    else if (a === "water") ACT.water1();
+    else if (a === "weight") openSub("weight", {});
+    else if (a === "mood") openSub("mood", {});
+  }, 400);
+}
 (async function init() {
   const t0 = performance.now(); let first = true; try { first = !sessionStorage.getItem("maalot_splash"); sessionStorage.setItem("maalot_splash", "1"); } catch (e) { }
   await loadStore(); applyTheme();
   endSplash(first ? 1900 : 500, t0);
   if (!S.onboarded) { ONB = { step: 1, look: Object.assign({}, S.look), name: "", prof: Object.assign({}, S.prof) }; renderLanding(); }
-  else { $("#onb").hidden = true; $("#app").hidden = false; $(".nav").hidden = false; touchStreak(); save(); show("home"); startReminders(); }
+  else { $("#onb").hidden = true; $("#app").hidden = false; $(".nav").hidden = false; touchStreak(); save(); show("home"); startReminders(); shortcutGo(); }
   startIdleDirector();
   setInterval(() => { if (view === "home" && !subStack.length && !fx && document.activeElement && document.activeElement.id !== "homeIn") renderHome(); }, 300000);
 })();

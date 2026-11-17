@@ -555,3 +555,5 @@ body:has(#sub:not([hidden])) #instbar, body:has(#modal:not([hidden])) #instbar {
 .gbar { height: 8px; border-radius: 999px; background: var(--soft); margin-top: 6px; overflow: hidden; } .gbar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #8155C9, #F0679B); transition: width .6s; } .gbar i.ok { background: var(--green); }
 .dcell .dev { position: absolute; left: 10px; bottom: 36px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: #FFD66B; color: #7A4A00; font-style: normal; box-shadow: 0 1px 4px rgba(0, 0, 0, .25); }
 .evcard .btn, .goalcard > .btn { white-space: nowrap; flex: 0 0 auto; }
+/* จอแคบ (iPhone SE): ปุ่มอารมณ์ย่อให้พอดี */
+.mrow .mbtn { flex: 1 1 0; min-width: 0; } .mrow .mbtn svg { max-width: 100%; height: auto; } .mrow .mbtn .xs { white-space: nowrap; font-size: 11px; }
