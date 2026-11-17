@@ -44,7 +44,7 @@ function iffFastedNow(st) {
   const now = Date.now(), tk = todayKey(), yk = addDays(tk, -1), last = S.meals.filter(m => (m.d === tk || m.d === yk) && minOf(m.t) !== null).map(m => tsOf(m.d, m.t)).filter(t => t <= now);
   let since = last.length ? Math.max.apply(null, last) : null; const nm = new Date().getHours() * 60 + new Date().getMinutes();
   const winEnd = nm >= st.e ? new Date(tk + "T00:00:00").getTime() + st.e * 60000 : new Date(yk + "T00:00:00").getTime() + iffWin(st.f, yk).e * 60000;
-  if (since === null || since < winEnd) since = since === null ? winEnd : Math.max(since, winEnd - 0);
+  if (since === null) since = winEnd;
   return Math.min(24, hrs(now - since));
 }
 const fmtHM = h => { const m = Math.max(0, Math.round(h * 60)); return Math.floor(m / 60) + " ชม. " + (m % 60) + " นาที"; };
