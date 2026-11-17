@@ -19,7 +19,7 @@ function iffBanner() {
   return `<button class="card status" data-act="sub" data-n="iff" style="margin-bottom:10px"><div style="flex:1;min-width:0"><div class="big">${st.eating ? "ช่วงกินเปิดอยู่" : "กำลังงดกิน (ดื่มน้ำได้)"}</div><div class="muted sm">${st.eating ? "ปิดในอีก " + dur(st.left) + " (" + hm(st.e) + ")" : "เปิดอีก " + dur(st.left) + " (" + hm(st.s) + ")"} · IF ${24 - st.f.eat}:${st.f.eat}</div></div>${ic("timer", 22)}</button>`;
 }
 const _rh = renderHome;
-renderHome = function () { _rh(); const s = $("#v-home .status"); if (s) s.insertAdjacentHTML("beforebegin", iffBanner()); };
+renderHome = function () { _rh(); const s = $("#v-home .hq-grid.home"); if (s) s.insertAdjacentHTML("beforebegin", iffBanner()); };
 const _rhub = renderHub;
 renderHub = function () { _rhub(); const st = iffState(); if (st && !st.eating) $$('#v-hub .tile[data-n="pick"] b, #v-hub .tile[data-n="fridge"] b').forEach(b => b.insertAdjacentHTML("beforeend", " " + ic("lock", 14))); };
 TILES.splice(TILES.length - 1, 0, ["วินัย", "timer", "โหมด IF", "ตั้งวินัยช่วงเวลากิน", "iff", "", "d-warn", "IF วินัย อด งด ช่วงเวลา ล็อก"], ["วินัย", "play", "ออกกำลังด้วยกัน", "ตัวละครทำให้ดู", "lib", "", "d-warn", "ออกกำลัง ท่า ทำตาม"]);
@@ -155,3 +155,5 @@ ACT.trlog = () => { const ok = trSave(SESS.sets); stopTrain(); closeAllSubs(); i
 ACT.trstop = () => { const s = SESS, done = s.phase === "done" ? s.sets : s.set - 1; const ok = done > 0 && trSave(done); stopTrain(); closeAllSubs(); if (ok) { setFx("proud", 3000); toast("บันทึก " + done + " เซ็ตแล้ว"); } };
 const _bk = ACT.back;
 ACT.back = () => { const t = subStack[subStack.length - 1]; if (t && t.name === "train") stopTrain(); _bk(); };
+/* หน้าแรกถูกวาดครั้งแรกก่อนไฟล์นี้โหลด จึงเติมแบนเนอร์ IF ตอน load */
+addEventListener("load", () => { if (iffState() && typeof view !== "undefined" && view === "home" && !$('#v-home [data-n="iff"]')) { const s = $("#v-home .hq-grid.home"); if (s) s.insertAdjacentHTML("beforebegin", iffBanner()); } });
