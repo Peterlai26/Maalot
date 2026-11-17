@@ -1,5 +1,5 @@
 /* Service worker: network-first so updates show up right after a deploy; cache is the offline fallback */
-const V = "maalot-v10";
+const V = "maalot-v11";
 const CORE = ["./", "style.css", "data.js", "avatar.js", "core.js", "app.js", "app2.js", "app3.js", "landing.js", "reminders.js", "medals.js", "share.js", "mood.js", "items.js", "roomitems.js", "dress.js", "manifest.webmanifest", "logo.svg", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {

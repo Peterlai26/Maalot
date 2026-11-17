@@ -10,14 +10,18 @@ const LLOOKS = [
   { g: "neutral", skin: SKINS[3], hs: "curly", hc: "#2E2420", oc: "#2B4A9E", hat: "crown", neck: "bowtie", shoe: "red" },
   { g: "neutral", skin: SKINS[1], hs: "short", hc: "#3FA7A0", oc: "#FFFFFF", pt: "stripes", hat: "cap", face: "sun", hand: "icecream" }
 ];
-const LHILLS = '<svg class="lhills" viewBox="0 0 480 190" preserveAspectRatio="none" aria-hidden="true"><path d="M0 92C60 62 112 104 172 76S300 34 362 74S450 64 480 52V190H0Z" fill="#6840AF" opacity=".92"/><path d="M0 130C70 100 122 140 202 112S340 92 402 124S462 114 480 104V190H0Z" fill="#4F2681"/><path d="M0 164C80 144 150 172 240 154S400 148 480 160V190H0Z" fill="#231968"/></svg>';
+const LHILLS = '<svg class="lhills" viewBox="0 0 480 190" preserveAspectRatio="none" aria-hidden="true"><path d="M0 92C60 62 112 104 172 76S300 34 362 74S450 64 480 52V190H0Z" class="h1"/><path d="M0 130C70 100 122 140 202 112S340 92 402 124S462 114 480 104V190H0Z" class="h2"/><path d="M0 164C80 144 150 172 240 154S400 148 480 160V190H0Z" class="h3"/></svg>';
+function landTod() { try { const v = localStorage.getItem("wl_land_tod"); if (v) return v; } catch (e) {} const h = new Date().getHours(); return h >= 5 && h < 18 ? "day" : "night"; }
+function landRoom(t) { return scene({ look: S.look, mood: "happy", rx: 46, period: t === "day" ? "morning" : "night", owned: {}, room: ROOM_DEFAULT, l1: "สวัสดีนะ", l2: "กินอะไรมาบ้าง" }); }
 function renderLanding() {
+  const tod = landTod();
   const el = $("#onb"); el.hidden = false; $("#app").hidden = true; $(".nav").hidden = true; el.classList.add("dream");
-  const room = scene({ look: S.look, mood: "happy", rx: 46, period: "noon", owned: {}, room: ROOM_DEFAULT, l1: "สวัสดีนะ", l2: "กินอะไรมาบ้าง" });
+  const room = landRoom(tod);
   const cast = LLOOKS.map(L => `<svg viewBox="-92 -248 184 262" role="img" aria-label="ตัวละครตัวอย่าง">${figure(L, "happy", 46)}</svg>`).join("");
-  el.innerHTML = `<div class="inner land">
+  el.innerHTML = `<div class="inner land" data-tod="${tod}">
 <section class="lhero"><div class="lclouds" aria-hidden="true"><i></i><i></i><i></i></div>
-<div class="lbrand"><img src="logo.svg" width="38" height="38" alt=""><span>Maalot</span></div>
+<div class="lbrand"><img src="logo.svg" width="38" height="38" alt=""><span>Maalot</span>
+<button class="ltod" data-act="landtod" aria-label="สลับโหมดเช้าและกลางคืน"><i class="ts">${ic("sun", 15)}</i><i class="tm">${ic("moon", 15)}</i><b></b></button></div>
 <h1 class="lhead">มื้อนี้กินอะไรมา<br>บอกน้องก้อนได้เลย</h1>
 <p class="lsub">พิมพ์เป็นประโยคธรรมดา น้องจดและประมาณแคลอรี่ให้<br>ไม่ต้องนับเอง ไม่มีใครตัดสิน</p>
 <button class="lcta" data-act="landgo">เริ่มจดมื้อแรก ${ic("arrow", 18)}</button>
@@ -39,6 +43,12 @@ ${typeof GOOGLE_CLIENT_ID !== "undefined" && GOOGLE_CLIENT_ID ? '<div class="llo
   setTimeout(() => { const w = $(".lroom"); if (w) { w.classList.add("wave"); setTimeout(() => w.classList.remove("wave"), 3200); } }, 650);
 }
 ACT.landgo = () => renderOnb();
+ACT.landtod = () => {
+  const root = $(".land"); if (!root) return; const t = root.dataset.tod === "day" ? "night" : "day";
+  root.dataset.tod = t; try { localStorage.setItem("wl_land_tod", t); } catch (e) {}
+  const w = $(".lroom-in"); if (w) w.innerHTML = landRoom(t);
+  const r = $(".lroom"); if (r) { r.classList.remove("wave"); void r.offsetWidth; r.classList.add("wave"); setTimeout(() => r.classList.remove("wave"), 3200); }
+};
 
 function landAnim(el) {
   const demo = $(".lplum", el), feat = $(".lfeat", el), lin = demo && $(".lin", demo);

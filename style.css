@@ -494,3 +494,21 @@ h1, h2, h3 { font-family: var(--font-display); }
   .lplum .lrow, .lplum .ltot, .lplum .lnote { opacity: 1 !important; animation: none !important; } .lfeat li { opacity: 1; transform: none; transition: none; }
 }
 .hint[hidden] { display: none; }
+
+/* หน้าแรก: โหมดเช้า (เหลือง) / กลางคืน (ม่วง) */
+.lbrand { width: 100%; } .ltod { margin-left: auto; position: relative; width: 62px; height: 32px; border-radius: 999px; border: 0; padding: 0; background: rgba(255, 255, 255, .2); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .5); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; color: #fff; }
+.ltod i { display: grid; place-items: center; position: relative; z-index: 2; font-style: normal; transition: color .25s; }
+.ltod b { position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; transition: transform .3s cubic-bezier(.3, 1.3, .5, 1); box-shadow: 0 2px 6px rgba(0, 0, 0, .2); }
+.land[data-tod="day"] .ltod b { transform: none; } .land[data-tod="night"] .ltod b { transform: translateX(30px); }
+.land[data-tod="day"] .ltod .ts, .land[data-tod="night"] .ltod .tm { color: #24193B; }
+.lhills path { transition: fill .5s; } .lhills .h1 { fill: #6840AF; opacity: .92; } .lhills .h2 { fill: #4F2681; } .lhills .h3 { fill: #231968; }
+.lhero { transition: background .5s; }
+.land[data-tod="day"] .lhero { background: linear-gradient(180deg, #FFF1B8 0%, #FFD76A 32%, #FFB93D 58%, #F58F2B 82%, #D9701F 100%); color: #3A2410; }
+.land[data-tod="day"] .lhead { color: #3A2410; } .land[data-tod="day"] .lsub, .land[data-tod="day"] .lfine { color: rgba(58, 36, 16, .85); }
+.land[data-tod="day"] .lbrand { color: #3A2410; } .land[data-tod="day"] .ltod { background: rgba(58, 36, 16, .12); box-shadow: inset 0 0 0 1.5px rgba(58, 36, 16, .3); color: #3A2410; }
+.land[data-tod="day"] .lclouds i { background: radial-gradient(closest-side, rgba(255, 255, 255, .95), rgba(255, 255, 255, 0)); }
+.land[data-tod="day"] .lhills .h1 { fill: #F19A3A; } .land[data-tod="day"] .lhills .h2 { fill: #E5762B; } .land[data-tod="day"] .lhills .h3 { fill: #C4561F; }
+.land[data-tod="day"] .lring { background: linear-gradient(135deg, #FFC857, #F0679B 60%, #F58F2B); }
+.land[data-tod="day"] .lblue { background: #F2A71B; color: #3A2410; } .land[data-tod="day"] .lblue h2 { color: #3A2410; } .land[data-tod="day"] .lblue p { color: #5A3A12; }
+.land[data-tod="day"] .lchip { background: #FFEFC2; color: #B66A0B; }
+#onb.dream .land[data-tod="night"] .lhead { color: #fff; }
