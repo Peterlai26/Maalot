@@ -833,3 +833,9 @@ input[type=password], input[type=email] { width: 100%; background: var(--card); 
 /* ปิดไฮไลต์สี่เหลี่ยมสีน้ำเงินของเบราว์เซอร์มือถือตอนแตะ (ไม่ตามขอบมนของการ์ด) ใช้ท่าย่อเล็กน้อยบอกว่ากดโดนแทน */
 * { -webkit-tap-highlight-color: transparent; }
 .hq, .tile { transition: transform .12s; } .hq:active, .tile:active { transform: scale(.97); }
+
+/* สลับมุมมองตัวอย่างท่า: ด้านข้าง / ด้านหน้า */
+.rigstage { position: relative; }
+.rigtog { position: absolute; top: 8px; right: 8px; z-index: 2; display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(255, 255, 255, .78); box-shadow: 0 4px 12px -6px rgba(36, 25, 59, .5); backdrop-filter: blur(4px); }
+.rigtog button { border: 0; background: transparent; color: #6B6080; font: 600 12px var(--font-body); padding: 5px 11px; border-radius: 999px; cursor: pointer; transition: background .2s, color .2s; }
+.rigtog button.on { background: #6B3FC0; background: var(--accent); color: var(--accent-ink); }
