@@ -98,18 +98,26 @@ function modeTile(m, i) {
   if (m.soon || !m.name) return `<button class="htile ${tone} soon" disabled ${st}><span class="hic">${ic(m.icon, 22)}</span><b>${m.title}</b><span class="s">${m.sub}</span><i class="soonbadge">เร็วๆ นี้</i></button>`;
   return `<button class="htile ${tone}" ${st} data-act="${m.name === "charts" ? "nav" : "sub"}" data-n="${m.name}" data-v="charts" ${m.arg ? `data-arg="${m.arg}"` : ""}><span class="hic">${ic(m.icon, 22)}</span><b>${m.title}</b><span class="s">${m.sub}</span>${m.isnew ? `<i class="newbadge">ใหม่</i>` : ""}${m.tabs ? `<i class="tabsbadge">${m.tabs.length} ในหนึ่ง</i>` : ""}</button>`;
 }
+const HUB_ORD = ["บันทึก", "ออกกำลังกาย", "วินัย", "ช่วยตัดสินใจ", "ดูความคืบหน้า", "ตัวละครของฉัน", "อื่นๆ"], HUB_REC = ["eat", "habits", "walk", "body", "rewards", "crave"];
+const HUB_CI = { rec: "sparkle", all: "grid", "บันทึก": "bowl", "ออกกำลังกาย": "dumbbell", "วินัย": "timer", "ช่วยตัดสินใจ": "dice", "ดูความคืบหน้า": "chart", "ตัวละครของฉัน": "hanger", "อื่นๆ": "settings" };
+hubCat = "rec";
+const hubCatName = c => c === "rec" ? "แนะนำ" : c === "all" ? "ทั้งหมด" : c;
 renderHub = function () {
-  const q = hubQ.trim(), cats = [], by = {}, feats = MODES.filter(m => m.featured);
-  MODES.forEach(m => {
-    if (q ? (m.title + m.sub + m.kw).toLowerCase().indexOf(q.toLowerCase()) < 0 : (m.quick || m.featured)) return;
-    if (!by[m.cat]) { by[m.cat] = []; cats.push(m.cat); } by[m.cat].push(m);
-  });
-  const ORD = ["บันทึก", "ออกกำลังกาย", "วินัย", "ช่วยตัดสินใจ", "ดูความคืบหน้า", "ตัวละครของฉัน", "อื่นๆ"]; cats.sort((a, b) => (ORD.indexOf(a) < 0 ? 99 : ORD.indexOf(a)) - (ORD.indexOf(b) < 0 ? 99 : ORD.indexOf(b)));
-  const fresh = q ? "" : MODES.filter(m => m.isnew && m.name);
-  const newRow = fresh.length ? `<div class="sec hubsec">${ic("sparkle", 14)} มาใหม่</div><div class="hubnew">${fresh.map((m, i) => `<button class="hnew ${m.tone || "violet"}" style="--i:${i}" data-act="sub" data-n="${m.name}"><span class="hic">${ic(m.icon, 20)}</span><span><b>${m.title}</b><small>${m.sub}</small></span><i>ใหม่</i></button>`).join("")}</div>` : "";
-  const shown = q ? cats : cats.filter(c => hubCat === "all" || c === hubCat), n = { i: 0 };
-  const secs = shown.map(c => `<div class="sec hubsec">${c} <span class="hubn">${by[c].length}</span></div><div class="hgrid">${by[c].map(m => modeTile(m, n.i++)).join("")}</div>`).join("");
-  const chips = q ? "" : `<div class="hubchips" role="tablist">${[["all", "ทั้งหมด"]].concat(cats.map(c => [c, c])).map(c => `<button class="hchip ${hubCat === c[0] ? "on" : ""}" data-act="hubcat" data-c="${c[0]}" role="tab" aria-selected="${hubCat === c[0]}">${c[1]}</button>`).join("")}</div>`;
-  $("#v-hub").innerHTML = `<div class="top"><div><h1>ทุกโหมด</h1><div class="xs muted">ทุกอย่างของ Maalot ที่เดียว</div></div></div><div class="hubsearch"><span class="muted">${ic("search", 18)}</span><input id="hubq" type="text" placeholder="ค้นหา เช่น หิว น้ำหนัก เมนู" value="${esc(hubQ)}" aria-label="ค้นหาโหมด"/></div>${q ? "" : feats.map(featCard).join("")}${newRow}${q ? "" : hubQuick()}${chips}${secs || '<p class="muted" style="margin:24px 4px;text-align:center">ไม่พบ ลองคำอื่น เช่น น้ำ กราฟ ตัวละคร</p>'}`;
+  const q = hubQ.trim(), feats = MODES.filter(m => m.featured), home = !q && hubCat === "rec";
+  const ord = c => HUB_ORD.indexOf(c) < 0 ? 99 : HUB_ORD.indexOf(c), byCat = (a, b) => ord(a.cat) - ord(b.cat);
+  let list;
+  if (q) list = MODES.filter(m => (m.title + m.sub + m.kw).toLowerCase().indexOf(q.toLowerCase()) > -1).sort(byCat);
+  else if (hubCat === "rec") list = HUB_REC.map(n => modeOf(n)).filter(m => m && !m.quick && !m.featured).sort((a, b) => (b.isnew ? 1 : 0) - (a.isnew ? 1 : 0));
+  else if (hubCat === "all") list = MODES.filter(m => !m.quick && !m.featured).sort(byCat);
+  else list = MODES.filter(m => m.cat === hubCat);
+  const on = !q && hubCat !== "rec";
+  const bar = `<div class="hubtop"><div class="hubsearch"><span class="muted">${ic("search", 18)}</span><input id="hubq" type="text" placeholder="ค้นหา เช่น หิว น้ำหนัก เมนู" value="${esc(hubQ)}" aria-label="ค้นหาโหมด"/></div><button class="hubfb${on ? " on" : ""}" data-act="hubfilter" aria-label="กรองโหมด">${ic("sliders", 20)}${on ? "<i></i>" : ""}</button></div>${on ? `<button class="hubact" data-act="hubcat" data-c="rec">${ic(HUB_CI[hubCat] || "grid", 14)}${esc(hubCatName(hubCat))}<span>✕</span></button>` : ""}`;
+  $("#v-hub").innerHTML = `<div class="top"><div><h1>ทุกโหมด</h1><div class="xs muted">${q ? "ผลการค้นหา" : hubCat === "rec" ? "แนะนำสำหรับคุณ" : hubCatName(hubCat)}</div></div></div>${bar}${home ? feats.map(featCard).join("") + hubQuick() : ""}${list.length ? `<div class="hgrid">${list.map((m, i) => modeTile(m, i)).join("")}</div>` : '<p class="muted" style="margin:24px 4px;text-align:center">ไม่พบ ลองคำอื่น เช่น น้ำ กราฟ ตัวละคร</p>'}`;
   const inp = $("#hubq"); if (hubQ) { inp.focus(); inp.setSelectionRange(hubQ.length, hubQ.length); }
 };
+
+ACT.hubfilter = () => {
+  const cats = HUB_ORD.filter(c => MODES.some(m => m.cat === c)), rows = [["rec", MODES.length ? HUB_REC.length : 0], ["all", MODES.filter(m => !m.quick && !m.featured).length]].concat(cats.map(c => [c, MODES.filter(m => m.cat === c).length]));
+  openModal(`<h2>กรองโหมด</h2><div class="hfl">${rows.map(r => `<button class="hfr${hubCat === r[0] ? " on" : ""}" data-act="hubcat" data-c="${r[0]}"><span class="hfr-i">${ic(HUB_CI[r[0]] || "grid", 18)}</span><b>${esc(hubCatName(r[0]))}</b><em>${r[1]}</em>${hubCat === r[0] ? ic("check", 16) : ""}</button>`).join("")}</div>`);
+};
+ACT.hubcat = a => { hubCat = a.dataset.c; if (!$("#modal").hidden) closeModal(); renderHub(); const v = $("#v-hub"); if (v) window.scrollTo(0, 0); };
