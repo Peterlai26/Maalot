@@ -20,7 +20,9 @@ function dressScene() { return scene({ look: EDIT.look, mood: "happy", rx: EDIT.
 const SAVEBTN = (cls) => `<button class="btn primary dnext ${cls || ""}" data-act="dsave">บันทึก ${ic("check", 14)}</button>`;
 const NEXTBTN = (cls) => `<button class="btn primary dnext ${cls || ""}" data-act="onb1">ต่อไป ${ic("arrow", 14)}</button>`;
 function dressPreview(sc) {
-  return `<div class="dprevwrap"><div class="dwin"><div class="dprev stage">${sc.replace('viewBox="0 0 380 300"', 'viewBox="66 50 248 234"')}</div></div>${EDIT.onb ? NEXTBTN() : SAVEBTN()}</div>`;
+  /* โหมดห้อง: เลื่อนกรอบไปทางขวาให้เห็นสัตว์เลี้ยงเต็มตัว และย้ายปุ่มบันทึกขึ้นมุมบน ไม่ให้บังสัตว์ */
+  const room = EDIT.mode === "room", vb = room && (EDIT.tab === "pet" || EDIT.tab === "floorR") ? "92 50 248 234" : "66 50 248 234";
+  return `<div class="dprevwrap"><div class="dwin"><div class="dprev stage">${sc.replace('viewBox="0 0 380 300"', 'viewBox="' + vb + '"')}</div></div>${EDIT.onb ? NEXTBTN() : SAVEBTN(room ? "top" : "")}</div>`;
 }
 function wearThumb(slot, id) {
   const L = normLook(EDIT.look); L[slot] = id;
