@@ -160,7 +160,7 @@ ${weekStrip(tk)}
 ${under}
 ${chips ? '<div class="logchips">' + chips + "</div>" : ""}
 ${eventHome()}${goalsHome()}${comboHome()}${freqFoods(tk)}
-<div class="row wrap" style="margin-top:10px"><button class="chip" data-act="water1">${ic("droplet", 15)}น้ำ ${water}/8 แก้ว</button><button class="chip" data-act="sub" data-n="weight">${ic("scale", 15)}ชั่งน้ำหนัก</button>${h >= 20 || h < 5 ? `<button class="chip blue" data-act="sub" data-n="night">${ic("moon", 15)}หิวดึก</button>` : ""}</div>
+<div class="row wrap" style="margin-top:10px"><button class="chip" data-act="sub" data-n="nutri">${ic("chart", 15)}โภชนาการ</button><button class="chip" data-act="water1">${ic("droplet", 15)}น้ำ ${water}/8 แก้ว</button><button class="chip" data-act="sub" data-n="weight">${ic("scale", 15)}ชั่งน้ำหนัก</button>${h >= 20 || h < 5 ? `<button class="chip blue" data-act="sub" data-n="night">${ic("moon", 15)}หิวดึก</button>` : ""}</div>
 <div class="inputbar"><input id="homeIn" type="text" placeholder="วันนี้กินอะไรมาบ้างนะ…" aria-label="บอกว่ากินหรือทำอะไรมา"/><button class="round" data-act="camera" aria-label="ถ่ายรูปอาหาร">${ic("camera", 22)}</button><button class="round primary" data-act="homesend" aria-label="ส่ง">${ic("send", 22)}</button></div>`;
   animateRing(); const cc = $("#coinchip"); if (cc && COIN_PREV !== null && S.coins > COIN_PREV) cc.classList.add("bump"); COIN_PREV = S.coins;
 }
@@ -199,7 +199,7 @@ SUBS.log = (arg) => {
   const rows = LG.items.map((it, i) => {
     if (isF) {
       const k = Math.round(it.k1 * it.q); tot += k;
-      return `<div class="item"><div class="grow">${it.known ? `<b>${esc(it.n)}</b>${it.ai ? ' <span class="chip blue xs">Claude ประเมิน</span>' : ""}` : `<input type="text" data-in="lgn" data-i="${i}" value="${esc(it.n)}" placeholder="ชื่ออาหาร" aria-label="ชื่ออาหาร"/><div class="xs muted" style="margin-top:4px">ไม่รู้จักเมนูนี้ กรอกแคลอรี่เองหรือให้ Claude ประเมิน</div>`}
+      return `<div class="item"><div class="grow">${it.known ? `<b>${esc(it.n)}</b>${it.ai ? ' <span class="chip blue xs">AI ประเมิน</span>' : ""}${macroLine(it)}` : `<input type="text" data-in="lgn" data-i="${i}" value="${esc(it.n)}" placeholder="ชื่ออาหาร" aria-label="ชื่ออาหาร"/><div class="xs muted" style="margin-top:4px">ไม่รู้จักเมนูนี้ กรอกแคลอรี่เองหรือให้ Claude ประเมิน</div>`}
 <div class="row" style="margin-top:6px"><div class="stepper"><button data-act="lgq" data-i="${i}" data-d="-0.5" aria-label="ลดปริมาณ">${ic("minus", 16)}</button><span style="min-width:34px;text-align:center">${it.q}</span><button data-act="lgq" data-i="${i}" data-d="0.5" aria-label="เพิ่มปริมาณ">${ic("plus", 16)}</button></div>
 <span class="xs muted">× </span><input type="number" inputmode="numeric" style="width:80px;min-height:36px;padding:6px 8px" data-in="lgk" data-i="${i}" value="${it.k1}" aria-label="แคลอรี่ต่อหน่วย"/><span class="xs muted">kcal</span></div></div>
 <div style="text-align:right"><b>${fmtN(k)}</b><div class="xs muted">kcal</div><button class="iconbtn" data-act="lgrm" data-i="${i}" aria-label="ลบรายการ">${ic("trash", 18)}</button></div></div>`;
@@ -242,7 +242,7 @@ ACT.lgadd = () => { LG.items.push(LG.tab === "food" ? { n: "", k1: 0, q: 1, know
 ACT.lgai = async () => {
   const unk = LG.items.filter(x => !x.known && x.n.trim()); if (!unk.length) { toast("พิมพ์ชื่ออาหารก่อนนะ"); return; }
   LG.busy = true; rerenderSub();
-  try { const res = await claudeEstimate(unk.map(x => x.n).join(", ")); LG.items = LG.items.filter(x => x.known).concat(res); }
+  try { const res = await claudeEstimate(unk.map(x => x.raw || x.n).join(", ")); LG.items = LG.items.filter(x => x.known).concat(res); }
   catch (e) { toast(estMsg(e, false)); }
   LG.busy = false; rerenderSub();
 };
@@ -263,11 +263,11 @@ async function handlePhoto(file) {
   LG.busy = false; renderSub();
 }
 ACT.lgsave = () => {
-  const isF = LG.tab === "food", kg = estW(), d = LG.when === "yest" ? addDays(todayKey(), -1) : todayKey(), t = LG.when === "yest" ? "12:00" : nowHM();
+  const isF = LG.tab === "food", kg = estW(), d = LG.when === "yest" ? addDays(todayKey(), -1) : todayKey(), t = lgTime();
   const items = LG.items.filter(x => x.n.trim() || x.known);
   if (!items.length) { toast("ยังไม่มีรายการให้บันทึก"); return; }
   if (isF) {
-    items.forEach(it => { const k = Math.round(it.k1 * it.q); S.meals.push({ id: rid(), d, t, n: it.n + (it.q !== 1 ? " ×" + it.q : ""), k }); });
+    items.forEach(it => S.meals.push(mealOf(it, d, t)));
     earn(2); setFx("eat", 2600);
   } else {
     items.forEach(it => { const c = workCalc(it, kg); S.works.push({ id: rid(), d, t, n: it.n + (workLabel(it) ? " · " + workLabel(it) : ""), sets: it.sets || 0, reps: it.reps || 0, k: c.k }); });
