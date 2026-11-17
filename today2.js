@@ -34,6 +34,6 @@ ACT.mealsave = (a) => {
   if (m.k > 0 && m.p !== undefined && k !== m.k) { const r = k / m.k; ["p", "c", "f", "fb", "sg", "na"].forEach(x => { if (m[x] !== undefined) m[x] = Math.round(m[x] * r * 10) / 10; }); }
   m.n = n; m.k = Math.round(k); if (/^\d{2}:\d{2}$/.test(t)) m.t = t; save(); closeModal(); rerenderSub();
 };
-ACT.mealdel = (a) => { S.meals = S.meals.filter(x => x.id !== a.dataset.id); save(); closeModal(); rerenderSub(); toast("ลบแล้ว"); };
+ACT.mealdel = (a) => { S.meals = S.meals.filter(x => x.id !== a.dataset.id); (S.del = S.del || {})["m:" + a.dataset.id] = Date.now(); save(); closeModal(); rerenderSub(); toast("ลบแล้ว"); };
 /* เปิดหน้านี้ใหม่ทุกครั้งเริ่มที่วันนี้ */
 const _openSubT = openSub; openSub = function (name, arg) { if (name === "today") TODAY_OFF = 0; return _openSubT(name, arg); };

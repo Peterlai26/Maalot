@@ -66,7 +66,7 @@ const msgFor = (h) => { let m = MSG[0][1]; MSG.forEach((x) => { if (h >= x[0]) m
 
 async function sha(s) { return [...new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode(s)))].map((b) => b.toString(16).padStart(2, "0")).join(""); }
 function cors(req, extra) {
-  const o = req.headers.get("Origin"), h = { "Access-Control-Allow-Methods": "POST, GET, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "86400", Vary: "Origin", ...extra };
+  const o = req.headers.get("Origin"), h = { "Access-Control-Allow-Methods": "POST, GET, PUT, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Access-Control-Max-Age": "86400", Vary: "Origin", ...extra };
   if (ALLOWED_ORIGINS.includes(o)) h["Access-Control-Allow-Origin"] = o; return h;
 }
 const J = (req, obj, status) => new Response(JSON.stringify(obj), { status: status || 200, headers: cors(req, { "Content-Type": "application/json" }) });
@@ -170,12 +170,103 @@ async function estimate(req, env) {
   return J(req, { items, model: used });
 }
 
+/* ---------- บัญชีผู้ใช้ (ไอดี + รหัสผ่าน) และซิงก์ข้ามเครื่อง ----------
+   เบราว์เซอร์เป็นคนยืดรหัสผ่านด้วย PBKDF2 (250k รอบ) แล้วส่งเฉพาะค่าที่ได้ (k) มา เซิร์ฟเวอร์เก็บ HMAC(pepper, salt + k) เท่านั้น
+   รหัสกู้คืนใช้หลักการเดียวกัน (rk) เพราะไม่มีอีเมลยืนยันสำหรับรีเซ็ตรหัสผ่าน */
+const SESSION_TTL = 30 * 86400, MAX_SYNC_BYTES = 2 * 1024 * 1024, ID_RE = /^[a-z0-9._@+-]{3,40}$/, HEX64 = /^[0-9a-f]{64}$/;
+const strB64u = (str) => b64u.enc(enc.encode(str));
+const jsonB64u = (s) => JSON.parse(new TextDecoder().decode(b64u.dec(s)));
+const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+async function hmacKey(env) { if (!env.SESSION_SECRET) throw new Error("no secret"); return crypto.subtle.importKey("raw", enc.encode(env.SESSION_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]); }
+const pw = async (env, salt, k) => hex(await crypto.subtle.sign("HMAC", await hmacKey(env), enc.encode(salt + "|" + k)));
+const ctEq = (a, b) => { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; };
+export async function signSession(sub, tv, env, now) {
+  const exp = Math.floor((now || Date.now()) / 1000) + SESSION_TTL, body = strB64u(JSON.stringify({ sub, tv, exp }));
+  return body + "." + b64u.enc(await crypto.subtle.sign("HMAC", await hmacKey(env), enc.encode(body)));
+}
+export async function verifySession(token, env, now) {
+  const [body, sig] = String(token || "").split("."); if (!body || !sig) return null;
+  let ok = false; try { ok = await crypto.subtle.verify("HMAC", await hmacKey(env), b64u.dec(sig), enc.encode(body)); } catch (_) { return null; }
+  if (!ok) return null; const c = jsonB64u(body); return c.exp > Math.floor((now || Date.now()) / 1000) && typeof c.sub === "string" ? c : null;
+}
+const FAILS = new Map(); /* ตัวกันยิงรหัสผ่านต่อ IP ภายในเครื่องเซิร์ฟเวอร์ (ไม่เขียน KV จึงไม่กินโควตาเขียนฟรี) */
+function ipBlocked(ip) { const now = Date.now(), a = (FAILS.get(ip) || []).filter((t) => now - t < 600000); FAILS.set(ip, a); return a.length >= 15; }
+const ipFail = (ip) => { const a = FAILS.get(ip) || []; a.push(Date.now()); FAILS.set(ip, a); };
+async function readJson(req, max) { const t = await req.text(); if (t.length > (max || 4000)) throw new Error("big"); return JSON.parse(t); }
+async function accountOf(env, id) { const uid = await env.SUBS.get("u:" + (await sha(id))); if (!uid) return null; const a = JSON.parse((await env.SUBS.get("a:" + uid)) || "null"); return a ? { uid, a } : null; }
+async function lockedOut(env, uid) { const f = JSON.parse((await env.SUBS.get("f:" + uid)) || "null"); return !!(f && f.n >= 8 && Date.now() - f.t < 15 * 60000); }
+async function noteFail(env, uid) { const f = JSON.parse((await env.SUBS.get("f:" + uid)) || "null") || { n: 0, t: 0 }; const fresh = Date.now() - f.t > 15 * 60000; await env.SUBS.put("f:" + uid, JSON.stringify({ n: fresh ? 1 : f.n + 1, t: Date.now() }), { expirationTtl: 3600 }); }
+async function sessionOut(req, env, a, uid) { return J(req, { token: await signSession(uid, a.tv, env), exp: Math.floor(Date.now() / 1000) + SESSION_TTL, id: a.id }); }
+async function authed(req, env) {
+  const m = /^Bearer (.+)$/.exec(req.headers.get("Authorization") || ""); const s = m ? await verifySession(m[1], env) : null; if (!s) return null;
+  const a = JSON.parse((await env.SUBS.get("a:" + s.sub)) || "null"); return a && a.tv === s.tv ? { uid: s.sub, a } : null;
+}
+export async function handleAccount(req, env, url) {
+  const p = url.pathname, ip = req.headers.get("CF-Connecting-IP") || "x";
+  if (p.startsWith("/auth/") && req.method === "POST") {
+    let b; try { b = await readJson(req); } catch (_) { return J(req, { error: "bad json" }, 400); }
+    const id = String(b.id || "").trim().toLowerCase();
+    if (p === "/auth/register") {
+      if (!ID_RE.test(id) || !HEX64.test(b.k || "") || !HEX64.test(b.rk || "")) return J(req, { error: "bad input" }, 400);
+      if (ipBlocked(ip)) return J(req, { error: "slow down" }, 429);
+      if (await env.SUBS.get("u:" + (await sha(id)))) return J(req, { error: "taken" }, 409);
+      const uid = hex(crypto.getRandomValues(new Uint8Array(16))), salt = hex(crypto.getRandomValues(new Uint8Array(16))), a = { id, salt, h: await pw(env, salt, b.k), rh: await pw(env, salt, "r" + b.rk), tv: 1, created: Date.now() };
+      await env.SUBS.put("a:" + uid, JSON.stringify(a)); await env.SUBS.put("u:" + (await sha(id)), uid); ipFail(ip); /* นับการสมัครด้วย กันสมัครรัว */
+      return sessionOut(req, env, a, uid);
+    }
+    if (p === "/auth/login") {
+      if (!ID_RE.test(id) || !HEX64.test(b.k || "")) return J(req, { error: "bad input" }, 400);
+      if (ipBlocked(ip)) return J(req, { error: "slow down" }, 429);
+      const r = await accountOf(env, id); if (!r) { ipFail(ip); return J(req, { error: "wrong" }, 401); }
+      if (await lockedOut(env, r.uid)) return J(req, { error: "locked" }, 429);
+      if (!ctEq(await pw(env, r.a.salt, b.k), r.a.h)) { ipFail(ip); await noteFail(env, r.uid); return J(req, { error: "wrong" }, 401); }
+      if (await env.SUBS.get("f:" + r.uid)) await env.SUBS.delete("f:" + r.uid);
+      return sessionOut(req, env, r.a, r.uid);
+    }
+    if (p === "/auth/recover") {
+      if (!ID_RE.test(id) || !HEX64.test(b.rk || "") || !HEX64.test(b.k2 || "") || !HEX64.test(b.rk2 || "")) return J(req, { error: "bad input" }, 400);
+      if (ipBlocked(ip)) return J(req, { error: "slow down" }, 429);
+      const r = await accountOf(env, id); if (!r) { ipFail(ip); return J(req, { error: "wrong" }, 401); }
+      if (await lockedOut(env, r.uid)) return J(req, { error: "locked" }, 429);
+      if (!ctEq(await pw(env, r.a.salt, "r" + b.rk), r.a.rh)) { ipFail(ip); await noteFail(env, r.uid); return J(req, { error: "wrong" }, 401); }
+      r.a.h = await pw(env, r.a.salt, b.k2); r.a.rh = await pw(env, r.a.salt, "r" + b.rk2); r.a.tv += 1; await env.SUBS.put("a:" + r.uid, JSON.stringify(r.a));
+      return sessionOut(req, env, r.a, r.uid);
+    }
+    const me = await authed(req, env); if (!me) return J(req, { error: "unauthorized" }, 401);
+    if (p === "/auth/password") {
+      if (!HEX64.test(b.k || "") || !HEX64.test(b.k2 || "")) return J(req, { error: "bad input" }, 400);
+      if (!ctEq(await pw(env, me.a.salt, b.k), me.a.h)) { ipFail(ip); return J(req, { error: "wrong" }, 401); }
+      me.a.h = await pw(env, me.a.salt, b.k2); me.a.tv += 1; await env.SUBS.put("a:" + me.uid, JSON.stringify(me.a)); return sessionOut(req, env, me.a, me.uid);
+    }
+    if (p === "/auth/delete") {
+      if (!HEX64.test(b.k || "") || !ctEq(await pw(env, me.a.salt, b.k), me.a.h)) { ipFail(ip); return J(req, { error: "wrong" }, 401); }
+      await env.SUBS.delete("a:" + me.uid); await env.SUBS.delete("u:" + (await sha(me.a.id))); await env.SUBS.delete("d:" + me.uid); return J(req, { ok: true });
+    }
+    return J(req, { error: "not found" }, 404);
+  }
+  if (p === "/sync") {
+    const me = await authed(req, env); if (!me) return J(req, { error: "unauthorized" }, 401);
+    const key = "d:" + me.uid;
+    if (req.method === "GET") { const rec = JSON.parse((await env.SUBS.get(key)) || "null"); return J(req, rec ? { upd: rec.upd, data: rec.data } : { upd: 0, data: null }); }
+    if (req.method === "DELETE") { await env.SUBS.delete(key); return J(req, { ok: true }); }
+    if (req.method === "PUT") {
+      let b; try { b = await readJson(req, MAX_SYNC_BYTES); } catch (e) { return J(req, { error: e.message === "big" ? "too large" : "bad json" }, e.message === "big" ? 413 : 400); }
+      if (!b || typeof b.data !== "object" || b.data === null || Array.isArray(b.data) || typeof b.data.v !== "number") return J(req, { error: "bad data" }, 400);
+      const cur = JSON.parse((await env.SUBS.get(key)) || "null"), curUpd = cur ? cur.upd : 0;
+      if ((b.base || 0) !== curUpd) return J(req, { error: "conflict", upd: curUpd, data: cur && cur.data }, 409);
+      const upd = Date.now(); await env.SUBS.put(key, JSON.stringify({ upd, data: b.data })); return J(req, { ok: true, upd });
+    }
+  }
+  return null;
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(req) });
     if (!ALLOWED_ORIGINS.includes(req.headers.get("Origin"))) return new Response("forbidden", { status: 403 });
     if (req.method === "GET" && url.pathname === "/vapid") return J(req, { key: env.VAPID_PUBLIC });
+    if (url.pathname.startsWith("/auth/") || url.pathname === "/sync") { const r = await handleAccount(req, env, url); if (r) return r; }
     if (req.method !== "POST") return J(req, { error: "not found" }, 404);
     if (url.pathname === "/estimate") return estimate(req, env);
     let b; try { const t = await req.text(); if (t.length > 4000) throw 0; b = JSON.parse(t); } catch (_) { return J(req, { error: "bad json" }, 400); }

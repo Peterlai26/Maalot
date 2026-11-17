@@ -45,4 +45,4 @@ SUBS.combos = () => {
   const cs = S.combos || [];
   return { title: "มื้อประจำ", html: cs.length ? `<div class="card" style="padding:4px 14px">${cs.map(c => `<div class="item"><div class="grow"><b>${esc(c.n)}</b><div class="xs muted">${c.items.map(x => esc(x.n)).join(", ")} · ${fmtN(comboKcal(c))} kcal</div></div><button class="iconbtn" data-act="combodel" data-id="${esc(c.id)}" aria-label="ลบ ${esc(c.n)}">${ic("trash", 18)}</button></div>`).join("")}</div>` : `<p class="muted" style="padding:24px 0;text-align:center">ยังไม่มีมื้อประจำ ในหน้าบันทึกอาหาร ใส่รายการแล้วกด “บันทึกเป็นมื้อประจำ”</p>` };
 };
-ACT.combodel = (a) => { S.combos = (S.combos || []).filter(x => x.id !== a.dataset.id); save(); rerenderSub(); };
+ACT.combodel = (a) => { S.combos = (S.combos || []).filter(x => x.id !== a.dataset.id); (S.del = S.del || {})["c:" + a.dataset.id] = Date.now(); save(); rerenderSub(); };

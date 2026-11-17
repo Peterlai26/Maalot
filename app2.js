@@ -315,7 +315,7 @@ function shortcutGo() {
 }
 (async function init() {
   const t0 = performance.now(); let first = true; try { first = !sessionStorage.getItem("maalot_splash"); sessionStorage.setItem("maalot_splash", "1"); } catch (e) { }
-  await loadStore(); applyTheme();
+  await loadStore(); applyTheme(); if (typeof startSync === "function") startSync();
   endSplash(first ? 1900 : 500, t0);
   if (!S.onboarded) { ONB = { step: 1, look: Object.assign({}, S.look), name: "", prof: Object.assign({}, S.prof) }; renderLanding(); }
   else { $("#onb").hidden = true; $("#app").hidden = false; $(".nav").hidden = false; touchStreak(); save(); show("home"); startReminders(); shortcutGo(); }
