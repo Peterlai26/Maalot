@@ -30,3 +30,4 @@ renderHub = function () {
   const inp = $("#hubq"); if (hubQ) { inp.focus(); inp.setSelectionRange(hubQ.length, hubQ.length); }
 };
 ACT.hubcat = (a) => { hubCat = a.dataset.c; renderHub(); };
+

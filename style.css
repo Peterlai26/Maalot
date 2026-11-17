@@ -618,3 +618,27 @@ body:has(.dbar) #sub.dress .dnext.fab { bottom: 96px; }
 .htile.amber .hic { background: #FFEFC2; color: #B66A0B; } .htile.green .hic { background: var(--green-soft); color: var(--green); } .htile.blue .hic { background: #E4E8FB; color: #3A48BD; } .htile.rose .hic { background: #FFE0EA; color: #D6336C; } .htile.violet .hic { background: var(--soft); color: var(--accent); }
 :root[data-theme="dark"] .htile.amber .hic { background: #4D4220; color: #F3D77F; } :root[data-theme="dark"] .htile.blue .hic { background: #28325F; color: #B5C0FF; } :root[data-theme="dark"] .htile.rose .hic { background: #55303F; color: #F7B1C0; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .htile.amber .hic { background: #4D4220; color: #F3D77F; } :root:not([data-theme="light"]) .htile.blue .hic { background: #28325F; color: #B5C0FF; } :root:not([data-theme="light"]) .htile.rose .hic { background: #55303F; color: #F7B1C0; } }
+
+/* ปุ่ม + เด่นขึ้น */
+.nav .fab { width: 70px; height: 70px; margin: -32px auto 0; flex-direction: column; gap: 0; padding: 0; border-width: 5px; box-shadow: 0 12px 26px -8px rgba(129, 85, 201, .75), 0 0 0 7px rgba(129, 85, 201, .13); }
+.nav .fab .ic { width: 28px; height: 28px; margin-top: 2px; } .nav .fab .fl { font-size: 11px; font-weight: 700; line-height: 1; margin-top: -1px; letter-spacing: .2px; }
+.nav .fab::after { inset: -9px; border-width: 3px; }
+@keyframes fabhop { 0%, 78%, 100% { transform: translateY(0); } 84% { transform: translateY(-9px); } 90% { transform: translateY(0); } 94% { transform: translateY(-4px); } }
+.nav.attn .fab { animation: fabhop 3.6s ease-in-out 2.4s infinite; }
+@media (prefers-reduced-motion: reduce) { .nav.attn .fab { animation: none; } }
+/* หน้าแรก: การ์ด 2 ใบ */
+.hq-grid.home { margin-top: 12px; } .hq-grid.home .hq { min-height: 124px; }
+/* สอนใช้ */
+#tut { position: fixed; inset: 0; z-index: 90; pointer-events: none; } #tut .tb { position: fixed; background: rgba(20, 10, 40, .66); pointer-events: auto; display: block; }
+#tut.done .tb { display: none; }
+#tut .tring { position: fixed; border-radius: 18px; border: 3px solid #fff; box-shadow: 0 0 0 4px rgba(240, 103, 155, .8); animation: tpulse 1.4s ease-in-out infinite; pointer-events: none; }
+@keyframes tpulse { 0%, 100% { box-shadow: 0 0 0 4px rgba(240, 103, 155, .85); } 50% { box-shadow: 0 0 0 11px rgba(240, 103, 155, .15); } }
+.tbub { position: fixed; left: 14px; right: 14px; max-width: 420px; margin: 0 auto; background: #fff; color: #24193B; border-radius: 22px; padding: 14px 16px; box-shadow: 0 18px 40px -10px rgba(0, 0, 0, .55); pointer-events: auto; font-size: 15px; line-height: 1.5; }
+.tbub p { margin: 6px 0 10px; } .tbub b { font-weight: 700; font-size: 16px; display: block; }
+.thead { display: flex; align-items: center; justify-content: space-between; } .tdots { display: inline-flex; gap: 5px; } .tdots i { width: 8px; height: 8px; border-radius: 50%; background: #DDD5EC; } .tdots i.on { background: #F0679B; width: 22px; border-radius: 6px; } .tdots i.ok { background: #8155C9; }
+.tskip { border: 0; background: none; color: #6B6080; font-size: 13px; padding: 4px 6px; text-decoration: underline; }
+.trow { display: flex; gap: 8px; justify-content: flex-end; } .tbub .btn.primary { background: #24193B; color: #fff; }
+.tbub .btn { color: #24193B; background: #fff; }
+#tutinv { position: fixed; inset: 0; z-index: 85; background: rgba(20, 10, 40, .45); display: flex; align-items: flex-end; padding-bottom: 120px; } #tutinv .tbub { position: relative; left: auto; right: auto; width: calc(100% - 28px); }
+@media (prefers-reduced-motion: reduce) { #tut .tring { animation: none; } }
+body:has(#tut) #instbar, body:has(#tutinv) #instbar { display: none; }
