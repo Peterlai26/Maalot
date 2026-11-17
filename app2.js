@@ -226,13 +226,6 @@ document.addEventListener("change", e => {
     S = merge(d); save(); toast("นำเข้าแล้ว"); closeAllSubs();
   }).catch(() => toast("ไฟล์ไม่ถูกต้อง"));
 });
-let PWA_EV = null;
-addEventListener("beforeinstallprompt", e => { e.preventDefault(); PWA_EV = e; });
-ACT.pwa = () => {
-  if (matchMedia("(display-mode: standalone)").matches || navigator.standalone) { toast("ติดตั้งเป็นแอปอยู่แล้ว"); return; }
-  if (PWA_EV) { PWA_EV.prompt(); PWA_EV = null; return; }
-  toast(/iPhone|iPad|iPod/.test(navigator.userAgent) ? "กดปุ่มแชร์ของ Safari แล้วเลือก เพิ่มไปยังหน้าจอโฮม" : "เปิดเมนูของเบราว์เซอร์ แล้วเลือก ติดตั้งแอป หรือ เพิ่มลงหน้าจอหลัก");
-};
 ACT.bkin = () => { try { const d = JSON.parse($("#bk").value); if (!d || !d.v) throw 0; S = merge(d); save(); toast("นำเข้าแล้ว"); closeAllSubs(); } catch (e) { toast("ข้อมูลไม่ถูกต้อง"); } };
 ACT.resetask = () => openModal(`<h2>เริ่มใหม่ทั้งหมด?</h2><p class="muted" style="margin:8px 0 14px">ข้อมูลทั้งหมดจะถูกลบและกู้คืนไม่ได้</p><div class="row"><button class="btn" style="flex:1" data-act="modalclose">ยกเลิก</button><button class="btn danger" style="flex:1" data-act="resetgo">ลบทั้งหมด</button></div>`);
 ACT.modalclose = closeModal;
