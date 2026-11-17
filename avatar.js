@@ -3,9 +3,13 @@ const INK = "#3B2A24";
 
 function figure(L, mood, rx) {
   rx = rx || 46; L = normLook(L);
-  const sk = L.skin, hc = L.hc, oc = L.oc, oc2 = (typeof DARKO !== "undefined" && DARKO[oc]) || shade(oc, -0.09), g = L.g, hs = L.hs || "bob";
+  const sk = L.skin, hc = L.hc, oc = L.oc, oc2 = (typeof DARKO !== "undefined" && DARKO[oc]) || shade(oc, -0.09), g = L.g, hs = L.hs || "pleat";
   let back = "", bangs = "";
-  if (hs === "short") {
+  if (hs === "pleat") {
+    const dk = shade(sk, -0.14), bare = !L.hat || L.hat === "none";
+    back = bare ? `<ellipse cx="0" cy="-52" rx="22" ry="14" fill="${sk}"/><path d="M-12 -52 Q-10 -60 -7 -63 M0 -53 Q0 -61 0 -66 M12 -52 Q10 -60 7 -63" fill="none" stroke="${dk}" stroke-width="2.6" stroke-linecap="round"/>` : "";
+    bangs = `<path d="M-30 -30 Q-26 -38 -20 -41 M-8 -38 Q-6 -43 -2 -45 M16 -39 Q20 -41 24 -38" fill="none" stroke="${dk}" stroke-width="2.4" stroke-linecap="round" opacity=".55"/>`;
+  } else if (hs === "short") {
     back = `<circle cx="0" cy="-6" r="52" fill="${hc}"/>`;
     bangs = `<path d="M-50 -2 C-54 -58 54 -58 50 -2 C40 -16 24 -22 0 -14 C-24 -22 -40 -16 -50 -2 Z" fill="${hc}"/>`;
   } else {
@@ -35,14 +39,14 @@ function figure(L, mood, rx) {
   else if (mood === "eat") { eyes = open; mouth = `<ellipse class="chew" cx="0" cy="32" rx="9" ry="8" fill="#8A4A3A"/>`; }
   else { eyes = open; mouth = smile; }
   const acc = wearFace(L.face) + wearHat(L.hat, hc);
-  const aL = -(rx - 2), aR = rx - 2, hL = -(rx + 4), hR = rx + 4, lw = 14 + Math.round((rx - 42) / 5);
+  rx = Math.round(rx * 0.86); const aL = -(rx - 2), aR = rx - 2, hL = -(rx + 4), hR = rx + 4, lw = 14 + Math.round((rx - 42) / 5);
   return `<g class="fig">${wearBack(L.back, rx)}
-<rect x="${-19 - (lw - 14) / 2}" y="-28" width="${lw}" height="22" rx="6" fill="${sk}"/><rect x="${5 - (lw - 14) / 2 + 0}" y="-28" width="${lw}" height="22" rx="6" fill="${sk}"/>
+<rect x="${-19 - (lw - 14) / 2}" y="-22" width="${lw}" height="16" rx="6" fill="${sk}"/><rect x="${5 - (lw - 14) / 2 + 0}" y="-22" width="${lw}" height="16" rx="6" fill="${sk}"/>
 ${wearShoes(L.shoe, lw)}
-<g class="armL"><ellipse cx="${aL}" cy="-54" rx="11" ry="26" fill="${oc}" transform="rotate(12 ${aL} -54)"/><circle cx="${hL}" cy="-30" r="9" fill="${sk}"/></g>
-<g class="armR"><ellipse cx="${aR}" cy="-54" rx="11" ry="26" fill="${oc}" transform="rotate(-12 ${aR} -54)"/><circle cx="${hR}" cy="-30" r="9" fill="${sk}"/><g transform="translate(${hR},-30)">${wearHand(L.hand)}</g></g>
-<g class="torso"><ellipse cx="0" cy="-54" rx="${rx}" ry="38" fill="${oc}"/><rect x="-22" y="-46" width="44" height="20" rx="9" fill="${oc2}"/>${wearPattern(L.pt, rx, oc)}</g>
-<g transform="translate(0,-134)"><g class="head">${back}<ellipse cx="0" cy="6" rx="50" ry="48" fill="${sk}"/>${bangs}${brow}${eyes}${lash}${wearCheek(L.cheek, bl)}${mouth}${acc}</g></g>${wearNeck(L.neck)}${wearBackFront(L.back, rx)}
+<g class="armL"><ellipse cx="${aL}" cy="-48" rx="10" ry="19" fill="${oc}" transform="rotate(14 ${aL} -48)"/><circle cx="${hL}" cy="-31" r="8.5" fill="${sk}"/></g>
+<g class="armR"><ellipse cx="${aR}" cy="-48" rx="10" ry="19" fill="${oc}" transform="rotate(-14 ${aR} -48)"/><circle cx="${hR}" cy="-31" r="8.5" fill="${sk}"/><g transform="translate(${hR},-31)">${wearHand(L.hand)}</g></g>
+<g class="torso"><ellipse cx="0" cy="-50" rx="${rx}" ry="33" fill="${oc}"/><rect x="-20" y="-42" width="40" height="18" rx="9" fill="${oc2}"/>${wearPattern(L.pt, rx, oc)}</g>
+<g transform="translate(0,-134) scale(1.18)"><g class="head">${back}<ellipse cx="0" cy="6" rx="50" ry="48" fill="${sk}"/>${bangs}${brow}${eyes}${lash}${wearCheek(L.cheek, bl)}${mouth}${acc}</g></g>${wearNeck(L.neck)}${wearBackFront(L.back, rx)}
 </g>`;
 }
 
@@ -74,4 +78,15 @@ ${D("ceil")}${D("wallC")}${D("wallR")}${D("floorL")}${D("floorR")}
 ${D("rug")}<ellipse cx="190" cy="270" rx="46" ry="7" fill="${night ? "#3B3355" : "#E8C9A8"}" opacity="0.7"/>${D("pet")}
 <g transform="translate(190,268)">${figure(o.look, fm === "eat" ? "eat" : fm, o.rx)}</g>
 ${fx}${bubble}</svg>`;
+}
+
+/* ย้ายตัวละครเดิมเป็นก้อนเกี๊ยว (ครั้งเดียว): ผิวและทรงผมที่ยังเป็นค่าเริ่มต้นเก่า */
+function migDumpling() {
+  try {
+    if (!S || !S.look || S.dumpMig) return;
+    const L = S.look;
+    if (L.skin === "#FBD9BE") L.skin = "#FFF1D6";
+    if ((!L.hs || L.hs === "bob") && (!L.hc || L.hc === "#6B4A3A")) { L.hs = "pleat"; }
+    S.dumpMig = 1; if (typeof save === "function") save();
+  } catch (e) { }
 }

@@ -7,9 +7,9 @@ const LFEAT = [
 ];
 const LTRY = ["ส้มตำ ไก่ย่าง ข้าวเหนียว", "กาแฟเย็น 2 แก้ว", "ราดหน้า"];
 const LLOOKS = [
-  { g: "neutral", skin: SKINS[0], hs: "ponytail", hc: "#D9A441", oc: "#F4A6C0", hat: "bow", hand: "balloon" },
-  { g: "neutral", skin: SKINS[3], hs: "curly", hc: "#2E2420", oc: "#2B4A9E", hat: "crown", neck: "bowtie", shoe: "red" },
-  { g: "neutral", skin: SKINS[1], hs: "short", hc: "#3FA7A0", oc: "#FFFFFF", pt: "stripes", hat: "cap", face: "sun", hand: "icecream" }
+  { g: "neutral", skin: "#FBD9BE", hs: "ponytail", hc: "#D9A441", oc: "#F4A6C0", hat: "bow", hand: "balloon" },
+  { g: "neutral", skin: "#C68B63", hs: "curly", hc: "#2E2420", oc: "#2B4A9E", hat: "crown", neck: "bowtie", shoe: "red" },
+  { g: "neutral", skin: "#F3C9A8", hs: "short", hc: "#3FA7A0", oc: "#FFFFFF", pt: "stripes", hat: "cap", face: "sun", hand: "icecream" }
 ];
 const LHILLS = '<svg class="lhills" viewBox="0 0 480 190" preserveAspectRatio="none" aria-hidden="true"><path d="M0 92C60 62 112 104 172 76S300 34 362 74S450 64 480 52V190H0Z" class="h1"/><path d="M0 130C70 100 122 140 202 112S340 92 402 124S462 114 480 104V190H0Z" class="h2"/><path d="M0 164C80 144 150 172 240 154S400 148 480 160V190H0Z" class="h3"/></svg>';
 function landTod() { try { const v = localStorage.getItem("wl_land_tod"); if (v) return v; } catch (e) {} const h = new Date().getHours(); return h >= 5 && h < 18 ? "day" : "night"; }

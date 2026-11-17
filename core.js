@@ -71,7 +71,7 @@ let dbRef = null, syncMode = "local", saveT = null;
 function blank() {
   return {
     v: 1, upd: 0, created: Date.now(), onboarded: false, name: "",
-    look: { g: "neutral", skin: "#FBD9BE", hs: "bob", hc: "#6B4A3A", oc: "#F4A58A", acc: "none" },
+    look: { g: "neutral", skin: "#FFF1D6", hs: "pleat", hc: "#6B4A3A", oc: "#F4A58A", acc: "none" },
     prof: { h: 165, w0: 70, age: 20, sex: "f", act: 1.2, def: 500 },
     owned: {}, coins: 20, coinLog: {}, weights: [], meals: [], works: [], water: {}, sleep: {}, waist: [],
     claimed: {}, del: {}, moods: {}, streak: { last: "", n: 0, best: 0 }, cheat: null, plan: null, shop: {}, nights: 0
@@ -114,6 +114,7 @@ async function loadStore() {
     }
   } catch (e) { dbRef = dbRef || null; }
   if (cloud && (cloud.upd || 0) >= (S.upd || 0)) { S = cloud; persistLocal(); }
+  migDumpling();
   syncMode = dbRef ? "cloud" : "local";
   if (dbRef && S.onboarded && !cloud) save();
 }

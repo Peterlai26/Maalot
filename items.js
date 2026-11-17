@@ -4,14 +4,14 @@ const WTABS = [
   { id: "self", n: "ตัวตน" }, { id: "eye", n: "ดวงตา" }, { id: "brow", n: "คิ้ว" }, { id: "mouth", n: "ปาก" }, { id: "cheek", n: "แก้ม" }, { id: "hs", n: "ทรงผม" }, { id: "hc", n: "สีผม" }, { id: "oc", n: "สีเสื้อ" }, { id: "pt", n: "ลายเสื้อ" },
   { id: "hat", n: "หมวก" }, { id: "face", n: "ใบหน้า" }, { id: "neck", n: "คอ" }, { id: "hand", n: "ถือ" }, { id: "shoe", n: "รองเท้า" }, { id: "back", n: "ด้านหลัง" }
 ];
-const SKINS = ["#FBD9BE", "#F3C9A8", "#E0AC84", "#C68B63", "#8D5A3C"];
+const SKINS = ["#FFF1D6", "#FBD9BE", "#F3C9A8", "#E0AC84", "#C68B63", "#8D5A3C"];
 /* รายการ: [id, ชื่อ, ราคา(0=ฟรี), โค้ดปลดล็อก(ถ้าไม่ใส่ = slot:id), เหรียญรางวัลที่ปลดล็อกให้ฟรี] */
 const WITEMS = {
   eye: [["round", "ตากลม", 0], ["bean", "ตาเม็ดถั่ว", 0], ["big", "ตาโต", 0], ["happy", "ตายิ้ม", 0], ["sharp", "ตาเรียว", 30], ["droopy", "ตาง่วง", 30], ["star", "ตาประกาย", 40], ["heart", "ตาหัวใจ", 60]],
   brow: [["auto", "ตามเพศ", 0], ["none", "ไม่มีคิ้ว", 0], ["arch", "คิ้วโค้ง", 0], ["flat", "คิ้วตรง", 0], ["thick", "คิ้วหนา", 0], ["dot", "คิ้วจุด", 20], ["cool", "คิ้วเท่", 30], ["worry", "คิ้วตก", 30]],
   mouth: [["smile", "ยิ้มธรรมดา", 0], ["tiny", "ปากจิ๋ว", 0], ["grin", "ยิ้มกว้าง", 0], ["open", "ยิ้มอ้าปาก", 0], ["cat", "ปากแมว", 30], ["smirk", "ยิ้มมุมปาก", 30]],
   cheek: [["blush", "แก้มแดง", 0], ["none", "ไม่มีแก้ม", 0], ["big", "แก้มป่อง", 0], ["freckles", "กระ", 0], ["lines", "ขีดเขิน", 30], ["heart", "แก้มหัวใจ", 40]],
-  hs: [["short", "ผมสั้น", 0], ["bob", "ประบ่า", 0], ["long", "ผมยาว", 0], ["buns", "จุกคู่", 0, "hs:buns"], ["ponytail", "หางม้า", 40], ["pigtails", "ผมแกละ", 40], ["curly", "ผมหยิกฟู", 50], ["messy", "ผมกระเซิง", 40], ["topknot", "มวยผม", 40]],
+  hs: [["pleat", "จุกเกี๊ยว", 0], ["short", "ผมสั้น", 0], ["bob", "ประบ่า", 0], ["long", "ผมยาว", 0], ["buns", "จุกคู่", 0, "hs:buns"], ["ponytail", "หางม้า", 40], ["pigtails", "ผมแกละ", 40], ["curly", "ผมหยิกฟู", 50], ["messy", "ผมกระเซิง", 40], ["topknot", "มวยผม", 40]],
   hc: [["#6B4A3A", "น้ำตาล", 0], ["#2E2420", "ดำ", 0], ["#C98A4B", "น้ำตาลทอง", 0], ["#9AA0AA", "เทา", 0], ["#E8579A", "ชมพูเข้ม", 0, "hc:#E8579A"], ["#7F77DD", "ม่วง", 60, "hc:#7F77DD"],
     ["#D9A441", "บลอนด์", 40], ["#B5473A", "แดงเข้ม", 40], ["#3FA7A0", "เขียวน้ำทะเล", 60], ["#2B4A9E", "น้ำเงิน", 50], ["#F2F0EA", "ขาว", 60], ["#F4A6C0", "ชมพูพาสเทล", 60], ["#8CC79A", "เขียวมิ้นต์", 60], ["#F08A3C", "ส้ม", 50]],
   oc: [["#F4A58A", "พีช", 0], ["#8CC79A", "เขียวอ่อน", 0], ["#8CC8E8", "ฟ้า", 0], ["#F7D58A", "เหลือง", 0], ["#B7A8F0", "ลาเวนเดอร์", 0, "oc:#B7A8F0"], ["#F0B84A", "ทอง", 80, "oc:#F0B84A"],
@@ -25,7 +25,7 @@ const WITEMS = {
   back: [["none", "ไม่มี", 0], ["bag", "เป้สะพายหลัง", 60], ["cape", "ผ้าคลุมแดง", 70], ["capeb", "ผ้าคลุมน้ำเงิน", 70], ["bfly", "ปีกผีเสื้อ", 90], ["wings", "ปีกนางฟ้า", 0, "back:wings", "log:2"]]
 };
 const WINDEX = {}; Object.keys(WITEMS).forEach(slot => WITEMS[slot].forEach(a => { const code = a[3] || (a[2] === 0 ? "" : slot + ":" + a[0]); WINDEX[slot + "|" + a[0]] = { slot, id: a[0], n: a[1], price: a[2], code: a[2] === 0 && !a[3] ? "" : code, medal: a[4] || "" }; }));
-const SLOT_DEFAULT = { eye: "round", brow: "auto", mouth: "smile", cheek: "blush", hs: "bob", hc: "#6B4A3A", oc: "#F4A58A", pt: "none", hat: "none", face: "none", neck: "none", hand: "none", shoe: "white", back: "none" };
+const SLOT_DEFAULT = { eye: "round", brow: "auto", mouth: "smile", cheek: "blush", hs: "pleat", hc: "#6B4A3A", oc: "#F4A58A", pt: "none", hat: "none", face: "none", neck: "none", hand: "none", shoe: "white", back: "none" };
 const LOCKHINT = { "hc:#E8579A": "ปลดล็อกจากภารกิจ: บันทึกอาหารครบ 7 วัน", "oc:#B7A8F0": "ปลดล็อกจากภารกิจ: ออกกำลังกายครบ 10 ครั้ง", "hs:buns": "ปลดล็อกจากภารกิจ: บันทึกมื้อเช้าครบ 5 วัน" };
 function itemOfCode(code) { for (const k in WINDEX) if (WINDEX[k].code === code) return WINDEX[k]; return null; }
 function medalCodeOf(code) { const w = itemOfCode(code); if (w && w.medal) return w.medal; return (typeof ROOM_CODE_MEDAL !== "undefined" && ROOM_CODE_MEDAL[code]) || ""; }
