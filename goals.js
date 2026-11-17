@@ -35,13 +35,22 @@ function goalsHome() {
   if (!G.picks.length) return `<div class="card goalcard"><span class="evic">${ic("target", 20)}</span><div class="grow"><b>ตั้งเป้าหมายสัปดาห์นี้</b><div class="xs muted">เลือกเองได้ 1–2 ข้อ ทำสำเร็จได้เหรียญพิเศษ</div></div><button class="btn sm primary" data-act="sub" data-n="goals">เลือก</button></div>`;
   return `<div class="card goalcard col"><div class="row between"><b>เป้าหมายสัปดาห์นี้</b><button class="linkbtn" data-act="sub" data-n="goals">แก้ไข</button></div>${G.picks.map(goalBar).join("")}</div>`;
 }
+const GDESC = { log: "จดอาหารอย่างน้อยวันละมื้อ", water: "ดื่มน้ำให้ครบ 8 แก้วในวันนั้น", work: "บันทึกการออกกำลังกายแต่ละครั้ง", mood: "บันทึกอารมณ์ประจำวัน", weigh: "ชั่งน้ำหนักแล้วจดตัวเลข" };
 SUBS.goals = () => {
-  const G = gState(), pick = id => G.picks.find(p => p.id === id);
-  const rows = GPOOL.map(d => {
-    const p = pick(d.id);
-    return `<div class="card gpick"><div class="row"><span class="glic">${ic(d.icon, 18)}</span><b>${esc(d.n)}</b></div><div class="row wrap" style="margin-top:8px;gap:6px">${d.lv.map((t, i) => `<button class="btn sm ${p && p.t === t ? "primary" : ""}" data-act="gpick" data-id="${d.id}" data-t="${t}" aria-pressed="${!!(p && p.t === t)}">${t} ${d.u}<span class="xs"> · +${GREWARD[i]}</span></button>`).join("")}${p ? `<button class="btn sm ghost" data-act="gdrop" data-id="${d.id}">เอาออก</button>` : ""}</div></div>`;
+  const G = gState(), pick = id => G.picks.find(p => p.id === id), full = G.picks.length >= GMAX, done = G.picks.filter(p => p.done).length;
+  const left = Math.max(1, Math.round((new Date(addDays(G.wk, 7) + "T00:00:00") - new Date(todayKey() + "T00:00:00")) / 864e5));
+  const frac = G.picks.reduce((s0, p) => s0 + (p.done ? 1 : Math.min(1, gProg(p) / p.t)), 0) / GMAX, C = 2 * Math.PI * 34;
+  const pot = G.picks.reduce((s0, p) => p.done ? s0 : s0 + GREWARD[Math.max(0, gDef(p.id).lv.indexOf(p.t))], 0) + (G.picks.length >= GMAX && done < GMAX ? GBONUS : 0);
+  const ov = `<div class="card gov"><div class="gov-ring"><svg viewBox="0 0 80 80" aria-hidden="true"><circle class="rb" cx="40" cy="40" r="34"/><circle class="rf" cx="40" cy="40" r="34" style="stroke-dasharray:${C.toFixed(1)};stroke-dashoffset:${(C * (1 - frac)).toFixed(1)}"/></svg><b>${done}/${GMAX}</b></div>
+<div class="gov-t"><b>${G.picks.length ? (done >= GMAX ? "ครบทุกเป้าแล้ว เก่งมาก!" : "ลุยต่อ เหลืออีก " + (GMAX - done) + " ข้อ") : "เลือกเป้าหมายสัปดาห์นี้"}</b><span class="xs muted">เลือกแล้ว ${G.picks.length}/${GMAX} ข้อ · รีเซ็ตวันจันทร์ (อีก ${left} วัน)</span><span class="gcoin">${ic("coin", 14)}${G.picks.length ? (pot ? "รอรับอีก +" + pot + " เหรียญ" : "รับครบแล้ว") : "ทำครบ 2 ข้อรับโบนัส +" + GBONUS}</span></div></div>`;
+  const cards = GPOOL.map((d, n) => {
+    const p = pick(d.id), v = p ? Math.min(p.t, gProg(p)) : 0, pct = p ? (p.done ? 100 : Math.round(v / p.t * 100)) : 0;
+    return `<div class="card gpick${p ? " on" : ""}${p && p.done ? " ok" : ""}${full && !p ? " full" : ""}" style="--i:${n}"><div class="gp-h"><span class="glic big">${ic(d.icon, 22)}</span><div class="grow"><b>${esc(d.n)}</b><span class="xs muted">${GDESC[d.id] || ""}</span></div>${p ? `<span class="gp-badge">${p.done ? ic("check", 13) + "สำเร็จ" : "ติดตามอยู่"}</span>` : ""}</div>
+${p ? `<div class="gp-prog"><div class="row between"><span class="xs muted">${p.done ? "ทำครบแล้ว" : v + "/" + p.t + " " + d.u}</span><span class="xs muted">${pct}%</span></div><div class="gbar"><i class="${p.done ? "ok" : ""}" style="width:${pct}%"></i></div></div>` : ""}
+<div class="gp-lv">${d.lv.map((t, i) => `<button class="gpl${p && p.t === t ? " on" : ""}" data-act="gpick" data-id="${d.id}" data-t="${t}" aria-pressed="${!!(p && p.t === t)}"><b>${t} ${d.u}</b><small>${LVN[i]}</small><i>${ic("coin", 12)}+${GREWARD[i]}</i></button>`).join("")}</div>
+${p && !p.done ? `<button class="linkbtn gp-drop" data-act="gdrop" data-id="${d.id}">เอาข้อนี้ออก</button>` : ""}</div>`;
   }).join("");
-  return { title: "เป้าหมายสัปดาห์นี้", html: `<p class="muted sm" style="margin-bottom:10px">เลือกได้สูงสุด ${GMAX} ข้อ นับความคืบหน้าตั้งแต่ตอนที่เลือก ทำครบทั้ง 2 ข้อได้โบนัสอีก ${GBONUS} เหรียญ รีเซ็ตทุกวันจันทร์</p>${G.picks.length ? `<div class="card goalcard col" style="margin-bottom:12px">${G.picks.map(goalBar).join("")}</div>` : ""}<div style="display:grid;gap:10px">${rows}</div>` };
+  return { title: "เป้าหมายสัปดาห์นี้", html: `${ov}${full ? `<div class="hint">${ic("sparkle", 18)}<span>เลือกครบ ${GMAX} ข้อแล้ว อยากเปลี่ยนข้อไหนให้กด “เอาข้อนี้ออก” ก่อนนะ</span></div>` : ""}<div class="gpgrid">${cards}</div>` };
 };
 ACT.gpick = (a) => {
   const G = gState(), id = a.dataset.id, t = +a.dataset.t, cur = G.picks.find(p => p.id === id), d = gDef(id);

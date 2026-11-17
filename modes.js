@@ -58,7 +58,8 @@ MODES.forEach(m => {
 });
 
 /* ---------- หน้าแบบแท็บ: รวมหลายโหมดเป็นหน้าเดียว ---------- */
-const HOSTTAB = {}, HOSTFRESH = {};
+const HOSTTAB = {}, HOSTFRESH = {}, ORIG = {};
+MODES.forEach(m => (m.tabs || []).forEach(t => { ORIG[t.sub] = SUBS[t.sub]; }));
 function lockedTab(st) {
   return `<div class="card mlock"><span class="ml-ic">${ic("lock", 26)}</span><b>ล็อกอยู่ตามวินัย IF</b><p class="muted sm">เปิดอีก ${dur(st.left)} (${hm(st.s)}) ตอนนี้ลองดื่มน้ำ หรือไปที่โหมดรับมือ</p><button class="btn primary" data-act="sub" data-n="crave" data-arg="night">ไปโหมดรับมือหิวดึก</button></div>`;
 }
@@ -69,14 +70,18 @@ MODES.forEach(m => {
     HOSTTAB[m.name] = tab.k; const fresh = HOSTFRESH[m.name]; HOSTFRESH[m.name] = false;
     const st = typeof iffState === "function" ? iffState() : null;
     const locked = st && !st.eating && (m.lock || []).includes(tab.k);
-    const r = locked ? { html: lockedTab(st) } : (SUBS[tab.sub]({}) || { html: "" });
+    const r = locked ? { html: lockedTab(st) } : (ORIG[tab.sub]({}) || { html: "" });
     const seg = `<div class="seg mtabs" role="tablist" style="--n:${tabs.length}">${tabs.map(t => `<button class="${t.k === tab.k ? "on" : ""}" role="tab" aria-selected="${t.k === tab.k}" data-act="modetab" data-m="${m.name}" data-k="${t.k}">${t.label}</button>`).join("")}</div>`;
     return { title: m.title, keepScroll: !!r.keepScroll, after: r.after, html: `${modeHero(m)}${seg}<div class="mbody${fresh ? " swap" : ""}">${r.html}</div>` };
   };
 });
+/* เปิดหน้าเดิมโดยตรง (เช่น ปุ่ม "แก้ไข" เป้าหมายบนหน้าแรก) ก็เข้าหน้าแบบแท็บเหมือนกัน: หัวและแท็บเดียวกันทุกทางเข้า */
+MODES.forEach(m => (m.tabs || []).forEach(t => {
+  SUBS[t.sub] = arg => { const top = subStack[subStack.length - 1]; if (top && top.name === t.sub) { top.name = m.name; top.arg = { id: t.k }; } HOSTTAB[m.name] = t.k; return SUBS[m.name]({ id: t.k }); };
+}));
 ACT.modetab = a => {
   const n = a.dataset.m; if (n === "crave" && a.dataset.k !== "night" && typeof stopNight === "function") stopNight();
-  HOSTTAB[n] = a.dataset.k; HOSTFRESH[n] = true; rerenderSub();
+  HOSTTAB[n] = a.dataset.k; HOSTFRESH[n] = true; const top = subStack[subStack.length - 1]; if (top && top.name === n) top.arg = { id: a.dataset.k }; rerenderSub();
 };
 { const _b = ACT.back; ACT.back = () => { const t = subStack[subStack.length - 1]; if (t && t.name === "crave" && typeof stopNight === "function") stopNight(); _b(); }; }
 
