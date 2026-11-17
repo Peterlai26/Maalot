@@ -49,8 +49,8 @@ function renderLanding() {
 /* ด่านสมัครสมาชิก: ต้องมีบัญชี (สมัครหรือเข้าสู่ระบบ) ก่อนถึงขั้นสร้างตัวละครและแต่งตัว ข้ามไม่ได้ */
 function startOnb() {
   if (typeof loggedIn === "function" && loggedIn()) { renderOnb(); return; }
-  ACC = { mode: "register", busy: false, err: "", gate: true, id: ACC.id };
-  openSub("account", {});
+  ACC = { mode: "register", busy: false, err: "", gate: true, pop: true, id: ACC.id };
+  openGate();
 }
 ACT.landgo = () => startOnb();
 ACT.landtod = () => { return;
