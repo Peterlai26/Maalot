@@ -1130,3 +1130,28 @@ input:not([type]), input[type="text"]:not(.bare), input[type="number"]:not(.bare
 @keyframes gmping { to { transform: scale(3.2); opacity: 0; } }
 .gm-t { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 12px; color: var(--muted); padding: 0 12px; }
 @media (prefers-reduced-motion: reduce) { .gm-route, .gm-ping { animation: none !important; } }
+/* สูตรอาหารในตู้เย็น */
+.frc { margin-bottom: 8px; animation: ptin .4s both; } .frc > .item { margin-bottom: 0; }
+.frr { display: flex; align-items: center; gap: 6px; width: 100%; margin-top: 4px; padding: 9px 12px; border-radius: 12px; border: 1px dashed var(--line); background: var(--soft); color: var(--accent); font: 600 12.5px var(--font-body); text-align: left; } .frr i { margin-left: auto; font-style: normal; }
+.frs { list-style: none; margin: 6px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.frs li { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; line-height: 1.55; animation: ptin .35s both; animation-delay: calc(var(--i) * 70ms); }
+.frs li b { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; display: grid; place-items: center; margin-top: 1px; }
+@media (prefers-reduced-motion: reduce) { .frc, .frs li { animation: none !important; } }
+.rchero { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 22px; color: #fff; background-image: linear-gradient(125deg, #E8884A, #F0679B 60%, #8D6CF0); background-size: 220% 220%; animation: mhflow 9s ease-in-out infinite; box-shadow: 0 14px 26px -16px #E8884A; }
+.rchero b { display: block; font: 800 20px var(--font-display); } .rchero span:not(.rch-ic) { font-size: 13px; opacity: .92; }
+.rch-ic { flex: none; width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; background: rgba(255,255,255,.25); animation: mhbob 3s ease-in-out infinite; }
+.rcchips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; } .rcchips span { padding: 6px 14px; border-radius: 999px; background: var(--soft); font-size: 13px; font-weight: 600; animation: gpop .35s both; animation-delay: calc(var(--i) * 50ms); }
+@media (prefers-reduced-motion: reduce) { .rchero, .rch-ic, .rcchips span { animation: none !important; } }
+/* แผนมื้อสัปดาห์: เลือกเอง + สุ่ม */
+.plbar { display: flex; gap: 8px; margin-bottom: 10px; } .plbar .btn { flex: 1; }
+.plstrip { display: flex; gap: 6px; margin-bottom: 10px; } .pld { flex: 1; padding: 8px 0; border-radius: 14px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); display: flex; flex-direction: column; align-items: center; gap: 2px; transition: transform .15s, background .2s; } .pld small { font-size: 11px; color: var(--muted); } .pld b { font: 800 16px var(--font-display); } .pld:active { transform: scale(.94); }
+.pld.on { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 8px 16px -10px var(--accent); animation: gpop .3s; } .pld.on small { color: #ffffffcc; }
+.plcard { padding: 14px; animation: ptin .35s both; } .pl-k.over { color: var(--danger, #d6356a); }
+.plms { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; } .plm { display: flex; gap: 6px; align-items: stretch; }
+.plm-b { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--soft); text-align: left; color: var(--ink); } .plm-b small { display: block; font-size: 11px; color: var(--muted); } .plm-b b { font-size: 14.5px; } .plm-b:active { transform: scale(.98); }
+.plm-r { flex: none; width: 46px; border-radius: 14px; background: var(--soft); color: var(--accent); display: grid; place-items: center; } .plm-r:active svg { transform: rotate(180deg); transition: transform .3s; }
+.plshop { margin-top: 10px; padding: 12px 14px; } .plshop summary { display: flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer; list-style: none; } .plshop summary::-webkit-details-marker { display: none; }
+.plpt { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 6px; } .plpt .pill { flex: none; padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); font: 700 13px var(--font-display); } .plpt .pill.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.plpl { display: flex; flex-direction: column; } .plpi { display: flex; align-items: center; gap: 8px; padding: 13px 4px; border-bottom: 1px solid var(--line); background: none; text-align: left; color: var(--ink); font-size: 14.5px; } .plpi[hidden] { display: none; } .plpi.cur { color: var(--accent); font-weight: 700; } .plpi:active { background: var(--soft); }
+.plm-ch { font-size: 22px; color: var(--muted); line-height: 1; }
+.plm-b, .plm-r, .plpi { border: 0; font-family: inherit; } .plpi { border-bottom: 1px solid var(--line); border-radius: 0; width: 100%; }
