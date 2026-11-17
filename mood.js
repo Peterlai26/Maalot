@@ -75,7 +75,7 @@ SUBS.mood = (arg) => {
 <div class="sec">14 วันที่ผ่านมา</div><div class="card"><div class="mhist">${hist}</div></div>
 <div class="sec">ข้อสังเกตจากข้อมูลของคุณ</div><div class="card">${insHTML}<p class="xs muted" style="margin-top:10px">เป็นแค่ข้อสังเกตจากข้อมูลที่บันทึก ไม่ใช่การวินิจฉัย และความเกี่ยวข้องไม่ได้แปลว่าเป็นสาเหตุ</p></div>
 ${low ? `<div class="hint">${ic("heart", 18)}<span>ช่วงนี้ดูเหมือนจะหนักอยู่นะ ถ้ารู้สึกแย่ติดต่อกันหลายวัน คุยกับคนที่ไว้ใจได้ หรือโทรสายด่วนสุขภาพจิต 1323 (ฟรี 24 ชั่วโมง) ได้เสมอ</span></div>` : ""}
-<p class="xs muted" style="margin-top:12px">อารมณ์ที่บันทึกเก็บในเครื่องนี้ และรวมอยู่ในไฟล์สำรองข้อมูล</p>`
+<p class="xs muted" style="margin-top:12px">อารมณ์ที่บันทึกรวมอยู่ในไฟล์สำรองข้อมูลด้วย</p>`
   };
 };
 const mdSt = () => { const t = subStack[subStack.length - 1]; return t && t.arg && t.arg.st; };

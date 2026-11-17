@@ -187,7 +187,7 @@ ACT.logwork = (a) => logText("work", a.dataset.t);
 SUBS.settings = () => {
   const p = S.prof;
   return {
-    title: "ตั้งค่าและข้อมูล", html: `<div class="hint">${ic("cloud", 18)}<span id="syncb"></span></div>
+    title: "ตั้งค่าและข้อมูล", html: `<div class="hint" hidden>${ic("cloud", 18)}<span id="syncb"></span></div>
 <div class="sec" style="margin-top:0">ธีมแอป</div><div class="palrow">${PALS.map(p => `<button class="palbtn ${(S.pal || "peach") === p[0] ? "on" : ""}" style="background:${p[2]}" data-act="setpal" data-p="${p[0]}" aria-label="ธีม${p[1]}"></button>`).join("")}</div>
 <div class="seg" style="margin-top:12px">${[["auto", "ตามเครื่อง"], ["light", "สว่าง"], ["dark", "มืด"]].map(m => `<button class="${(S.mode || "auto") === m[0] ? "on" : ""}" data-act="setmode" data-m="${m[0]}">${m[1]}</button>`).join("")}</div>
 <div class="sec">ข้อมูลส่วนตัว</div><div class="grid2"><div><label class="f" for="sh">ส่วนสูง (ซม.)</label><input id="sh" type="number" inputmode="decimal" value="${p.h}"/></div><div><label class="f" for="sa">อายุ</label><input id="sa" type="number" inputmode="numeric" value="${p.age}"/></div></div>
@@ -239,7 +239,7 @@ ACT.modalclose = closeModal;
 ACT.resetgo = () => { closeModal(); S = blank(); save(); closeAllSubsSilent(); ONB = { step: 1, look: Object.assign({}, S.look), name: "", prof: Object.assign({}, S.prof) }; renderOnb(); };
 
 /* ---------- ธีมและอนิเมชันเพิ่ม ---------- */
-const PALS = [["peach", "พีช", "#E8845F"], ["mint", "มิ้นต์", "#4FA574"], ["sky", "ฟ้า", "#4D93D1"], ["sakura", "ซากุระ", "#E8628A"], ["lavender", "ลาเวนเดอร์", "#8D78D8"]];
+const PALS = [["peach", "ฝัน", "#6B3FC0"], ["mint", "มิ้นต์", "#4FA574"], ["sky", "ฟ้า", "#4D93D1"], ["sakura", "ซากุระ", "#E8628A"], ["lavender", "ลาเวนเดอร์", "#8D78D8"]];
 function applyTheme() {
   const m = S.mode || "auto", dark = m === "dark" || (m === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches), r = document.documentElement;
   r.dataset.theme = dark ? "dark" : "light"; r.dataset.pal = S.pal || "peach";

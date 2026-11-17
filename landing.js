@@ -19,13 +19,13 @@ function renderLanding() {
 <section class="lhero"><div class="lclouds" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="lbrand"><img src="logo.svg" width="38" height="38" alt=""><span>Maalot</span></div>
 <h1 class="lhead">มื้อนี้กินอะไรมา<br>บอกน้องก้อนได้เลย</h1>
-<p class="lsub">พิมพ์เป็นประโยคธรรมดา น้องจดและประมาณแคลอรี่ให้ ไม่ต้องนับเอง และไม่มีใครตัดสิน</p>
+<p class="lsub">พิมพ์เป็นประโยคธรรมดา น้องจดและประมาณแคลอรี่ให้<br>ไม่ต้องนับเอง ไม่มีใครตัดสิน</p>
 <button class="lcta" data-act="landgo">เริ่มจดมื้อแรก ${ic("arrow", 18)}</button>
-<p class="lfine">ฟรี ไม่ต้องสมัคร ข้อมูลอยู่ในเครื่องของคุณ</p>${LHILLS}</section>
+<p class="lfine">ฟรี ไม่ต้องสมัคร เริ่มได้ในสองนาที</p>${LHILLS}</section>
 <section class="lroom"><div class="lring"><div class="lroom-in">${room}</div></div></section>
 ${typeof GOOGLE_CLIENT_ID !== "undefined" && GOOGLE_CLIENT_ID ? '<div class="llogin"><p>มีบัญชีอยู่แล้ว เข้าสู่ระบบเพื่อดึงข้อมูลเดิมกลับมา</p><div class="gbtn" style="min-height:44px;display:flex;justify-content:center"></div></div>' : ""}
 <section class="lpaper"><h2>พิมพ์เหมือนเล่าให้เพื่อนฟัง</h2><p class="lp">ไม่ต้องค้นเมนูทีละอย่าง แอปแยกรายการและประมาณพลังงานให้</p>
-<div class="lplum"><div class="lin">ข้าวมันไก่ 1 จาน กับชานมไข่มุก</div>
+<div class="lplum"><div class="lin" data-t="ข้าวมันไก่ 1 จาน กับชานมไข่มุก">ข้าวมันไก่ 1 จาน กับชานมไข่มุก</div>
 <div class="lrow"><span>ข้าวมันไก่</span><b>600 kcal</b></div><div class="lrow"><span>ชานมไข่มุก</span><b>400 kcal</b></div>
 <div class="ltot"><span>รวมมื้อนี้</span><b>1,000 kcal</b></div><p class="lnote">แก้จำนวนและตัวเลขได้ทุกรายการ</p></div>
 <ul class="lfeat">${LFEAT.map(f => `<li><span class="lchip">${ic(f[0], 20)}</span><div><b>${f[1]}</b><span>${f[2]}</span></div></li>`).join("")}</ul></section>
@@ -34,8 +34,30 @@ ${typeof GOOGLE_CLIENT_ID !== "undefined" && GOOGLE_CLIENT_ID ? '<div class="llo
 <button class="lcta dark" data-act="landgo">เริ่มจดมื้อแรก ${ic("arrow", 18)}</button>
 <p class="ldisc">สำหรับผู้ใหญ่ 18 ปีขึ้นไป ใช้เป็นข้อมูลทั่วไป ไม่ใช่คำแนะนำทางการแพทย์ ถ้ามีโรคประจำตัว ตั้งครรภ์ หรือกังวลเรื่องการกิน ควรปรึกษาแพทย์</p></section>
 </div>`;
-  window.scrollTo(0, 0);
+  window.scrollTo(0, 0); landAnim(el);
   if (typeof acctRenderBtn === "function") acctRenderBtn();
   setTimeout(() => { const w = $(".lroom"); if (w) { w.classList.add("wave"); setTimeout(() => w.classList.remove("wave"), 3200); } }, 650);
 }
 ACT.landgo = () => renderOnb();
+
+function landAnim(el) {
+  const demo = $(".lplum", el), feat = $(".lfeat", el), lin = demo && $(".lin", demo);
+  const calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const run = () => {
+    if (calm || !lin) { demo && demo.classList.add("go"); return; }
+    const t = lin.dataset.t; let i = 0; lin.textContent = ""; lin.classList.add("typing");
+    const tick = () => {
+      if (!lin.isConnected) return;
+      lin.textContent = t.slice(0, ++i);
+      if (i < t.length) setTimeout(tick, 55);
+      else setTimeout(() => { lin.classList.remove("typing"); demo.classList.add("go"); }, 350);
+    };
+    tick();
+  };
+  if (!("IntersectionObserver" in window)) { run(); feat && feat.classList.add("in"); return; }
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return; io.unobserve(e.target);
+    if (e.target === demo) run(); else e.target.classList.add("in");
+  }), { threshold: .35 });
+  demo && io.observe(demo); feat && io.observe(feat);
+}

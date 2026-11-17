@@ -1,22 +1,22 @@
 /* ห้องอุ่นๆ ของน้องก้อน: โทนครีม พีช ใบไม้ ไม่ใช้ม่วงเข้มแบบแอปสุขภาพทั่วไป */
 :root {
-  --bg: #FFF6EC; --card: #FFFFFF; --ink: #3B2A24; --muted: #8A6F63; --line: #EBD9C8;
-  --accent: #E8845F; --accent-ink: #FFFFFF; --soft: #FDE7D9; --green: #5FA877; --green-soft: #E3F3E6;
-  --blue-soft: #E1F0F8; --blue-ink: #2A6A8A; --warn-soft: #FFF0C9; --warn-ink: #7A5A00; --danger-soft: #FCE3E0; --danger-ink: #A33A2D;
-  --font-display: "Mali", "Noto Sans Thai", system-ui, sans-serif; --font-body: "Noto Sans Thai", system-ui, sans-serif;
+  --bg: #F9F5ED; --card: #FFFFFF; --ink: #24193B; --muted: #6B6080; --line: #DDD5EC;
+  --accent: #6B3FC0; --accent-ink: #FFFFFF; --soft: #ECE7F6; --green: #3F9A68; --green-soft: #E0F2E7;
+  --blue-soft: #E4E8FB; --blue-ink: #3A48BD; --warn-soft: #FFF0C9; --warn-ink: #7A5A00; --danger-soft: #FCE3E8; --danger-ink: #A33A55;
+  --font-display: "Prompt", "Noto Sans Thai", system-ui, sans-serif; --font-body: "Prompt", "Noto Sans Thai", system-ui, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #241D2B; --card: #322A3D; --ink: #F5E9E0; --muted: #BBA9B8; --line: #4A3F58;
-    --accent: #F29A78; --accent-ink: #2A1A14; --soft: #4B3A47; --green: #7CC795; --green-soft: #2F4538;
-    --blue-soft: #2C3F4D; --blue-ink: #A9D6EE; --warn-soft: #4D4220; --warn-ink: #F3D77F; --danger-soft: #55312E; --danger-ink: #F7B1A8;
+    --bg: #170F27; --card: #251A3A; --ink: #F4EEFB; --muted: #B6A9CF; --line: #3A2D55;
+    --accent: #B79CFF; --accent-ink: #1A0F2E; --soft: #34274F; --green: #7CC795; --green-soft: #264236;
+    --blue-soft: #28325F; --blue-ink: #B5C0FF; --warn-soft: #4D4220; --warn-ink: #F3D77F; --danger-soft: #55303F; --danger-ink: #F7B1C0;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #241D2B; --card: #322A3D; --ink: #F5E9E0; --muted: #BBA9B8; --line: #4A3F58;
-  --accent: #F29A78; --accent-ink: #2A1A14; --soft: #4B3A47; --green: #7CC795; --green-soft: #2F4538;
-  --blue-soft: #2C3F4D; --blue-ink: #A9D6EE; --warn-soft: #4D4220; --warn-ink: #F3D77F; --danger-soft: #55312E; --danger-ink: #F7B1A8;
+  --bg: #170F27; --card: #251A3A; --ink: #F4EEFB; --muted: #B6A9CF; --line: #3A2D55;
+    --accent: #B79CFF; --accent-ink: #1A0F2E; --soft: #34274F; --green: #7CC795; --green-soft: #264236;
+    --blue-soft: #28325F; --blue-ink: #B5C0FF; --warn-soft: #4D4220; --warn-ink: #F3D77F; --danger-soft: #55303F; --danger-ink: #F7B1C0;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -451,3 +451,46 @@ body:has(#onb.dream:not([hidden])), body:has(#sub.dress:not([hidden])) { backgro
 .lblue p { margin-top: 12px; font-size: 14.5px; line-height: 1.65; color: #DDE2FF; }
 .lend { padding: 46px 4px 0; text-align: center; } .lend .lcta { margin-top: 22px; }
 .ldisc { margin: 28px auto 0; max-width: 40ch; font-size: 12px; line-height: 1.65; color: var(--dr-mute); }
+
+/* โทนฝันทั้งแอป: ปุ่มทรงแคปซูล การ์ดมนใหญ่ ปุ่มหลักสีม่วงเข้ม */
+body { font-family: var(--font-body); }
+.card, .letter, .hint { border-radius: 22px; }
+.stage { border-radius: 26px; }
+.btn { border-radius: 999px; border-width: 1.5px; font-weight: 500; transition: transform .12s; }
+.btn:active, .tile:active { transform: scale(.97); }
+.btn.primary { background: #24193B; color: #fff; }
+:root[data-theme="dark"] .btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn.sm { border-radius: 999px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { background: var(--accent); color: var(--accent-ink); } }
+.tile { border-radius: 20px; }
+.chip { border-width: 1.5px; }
+.seg { border-radius: 999px; } .seg button { border-radius: 999px; }
+.nav { border-top: 0; box-shadow: 0 -1px 0 var(--line); }
+.nav .fab { background: linear-gradient(135deg, #8155C9, #F0679B 60%, #4C5DDA); color: #fff; }
+input[type=text], input[type=number], input[type=time], textarea, select { border-radius: 16px; border-width: 1.5px; }
+#sheet .panel { border-radius: 30px 30px 0 0; } #modal .panel { border-radius: 28px; }
+h1, h2, h3 { font-family: var(--font-display); }
+
+/* หน้าแรก: จังหวะเข้าของข้อความ เมฆลอย และเดโมพิมพ์ */
+@keyframes lrise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes ldrift { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(26px); } }
+@keyframes lnudge { 0%, 100% { transform: none; } 50% { transform: translateX(4px); } }
+@keyframes lpop { 0% { opacity: 0; transform: translateY(8px) scale(.94); } 70% { transform: scale(1.03); } 100% { opacity: 1; transform: none; } }
+@keyframes lcaret { 50% { opacity: 0; } }
+.lbrand, .lhead, .lsub, .lcta, .lfine { animation: lrise .7s cubic-bezier(.2, .8, .25, 1) both; }
+.lbrand { animation-delay: .05s; } .lhead { animation-delay: .18s; } .lsub { animation-delay: .34s; } .lcta { animation-delay: .5s; } .lfine { animation-delay: .62s; }
+.lclouds i { animation: ldrift 14s ease-in-out infinite; } .lclouds i:nth-child(2) { animation-duration: 18s; animation-direction: reverse; } .lclouds i:nth-child(3) { animation-duration: 22s; }
+.lcta svg { animation: lnudge 1.6s ease-in-out infinite; }
+.lcta { text-wrap: balance; }
+.lsub, .lp, .lblue p, .lnote { text-wrap: balance; }
+.lplum .lin.typing::after { content: ""; display: inline-block; width: 2px; height: 1.05em; margin-left: 2px; vertical-align: -2px; background: currentColor; animation: lcaret .8s steps(1) infinite; }
+.lplum:not(.go) .lrow, .lplum:not(.go) .ltot, .lplum:not(.go) .lnote { opacity: 0; }
+.lplum.go .lrow, .lplum.go .ltot, .lplum.go .lnote { animation: lpop .5s cubic-bezier(.2, .9, .3, 1.2) both; }
+.lplum.go .lrow:nth-of-type(1) { animation-delay: .05s; } .lplum.go .lrow:nth-of-type(2) { animation-delay: .35s; } .lplum.go .ltot { animation-delay: .7s; } .lplum.go .lnote { animation-delay: .95s; }
+.lfeat li { opacity: 0; transform: translateY(14px); transition: opacity .5s, transform .5s; } .lfeat.in li { opacity: 1; transform: none; }
+.lfeat.in li:nth-child(2) { transition-delay: .08s; } .lfeat.in li:nth-child(3) { transition-delay: .16s; } .lfeat.in li:nth-child(4) { transition-delay: .24s; }
+@media (prefers-reduced-motion: reduce) {
+  .lbrand, .lhead, .lsub, .lcta, .lfine, .lclouds i, .lcta svg { animation: none; }
+  .lplum .lrow, .lplum .ltot, .lplum .lnote { opacity: 1 !important; animation: none !important; } .lfeat li { opacity: 1; transform: none; transition: none; }
+}
+.hint[hidden] { display: none; }

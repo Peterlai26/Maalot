@@ -88,7 +88,7 @@ function save() {
     badge();
   }, 900);
 }
-function badge() { const b = $("#syncb"); if (b) b.textContent = syncMode === "cloud" ? "บันทึกในบัญชีของคุณแล้ว ใช้ต่อได้ทุกเครื่อง" : "บันทึกในเครื่องนี้เท่านั้น"; }
+function badge() { const b = $("#syncb"); if (b) { b.textContent = syncMode === "cloud" ? "บันทึกในบัญชีของคุณแล้ว ใช้ต่อได้ทุกเครื่อง" : ""; b.parentElement.hidden = !b.textContent; } }
 function readSnap(s) {
   if (!s) return null;
   try { const ex = typeof s.exists === "function" ? s.exists() : s.exists; if (ex === false) return null; } catch (e) { }
