@@ -40,9 +40,10 @@ parseFood = function (text) {
   return text.split(SPLIT).map(s => s.trim()).filter(Boolean).flatMap(splitBySpace).map(seg => {
     const q = qtyOf(seg), r = matchFood(seg);
     if (r) {
-      const core = skel(seg.replace(FILLER, "")).length || 1, cov = skel(r.key).length / core;
+      const core = skel(seg.replace(FILLER, "")).length || 1, cov = skel(r.key.replace(FILLER, "")).length / core;
+      const riceMiss = /ข้าว/.test(seg) && !/ข้าว/.test(r.key + r.f[0]);
       const it = { n: r.f[0], k1: r.f[1], q, raw: seg }; const my = r.f[5]; if (my) { it.my = my.id; if (my.p !== undefined) NK.forEach(([a]) => { it[a] = my[a] || 0; }); }
-      if (cov >= 0.7) { it.known = true; if (r.d > 0) it.fz = seg; return withNutr(it); }
+      if (cov >= 0.7 && !riceMiss) { it.known = true; if (r.d > 0) it.fz = seg; return withNutr(it); }
       /* ชื่อยาวกว่าที่รู้จักมาก เช่น "ซูชิแซลมอน" ไม่ใช่ "แซลมอนย่าง": ให้ AI ดู ถ้า AI ไม่ได้ค่อยใช้ตัวเลือกใกล้เคียง */
       return { n: seg.replace(/\d+(\.\d+)?|ครึ่ง/g, "").trim() || seg, k1: 0, q, known: false, raw: seg, cand: it };
     }
