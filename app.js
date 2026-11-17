@@ -54,10 +54,10 @@ function renderOnb() {
     EDIT = EDIT && EDIT.host === renderOnb ? Object.assign(EDIT, { look: ONB.look }) : { look: ONB.look, rx: 46, name: ONB.name, host: renderOnb, mode: "wear", tab: "self", onb: true, sel: null };
     el.innerHTML = `<div class="inner"><p class="muted sm">ขั้นที่ 1 จาก 3</p><h1>สร้างตัวแทนของคุณ</h1><p class="muted sm" style="margin:4px 0 12px">เลือกหน้าตาที่ชอบ เปลี่ยนใหม่ได้ทุกเมื่อ แล้วกดต่อไปที่มุมขวาล่างของภาพ</p>${lookEditor()}</div>`;
   } else if (ONB.step === 2) {
-    const p = ONB.prof, sx = p.sex;
+    const p = ONB.prof, sx = p.sex, v = k => ONB.set ? p[k] : "";
     el.innerHTML = `<div class="inner"><p class="muted sm">ขั้นที่ 2 จาก 3</p><h1>ตัวละครจะมีรูปร่างเหมือนคุณ</h1><p class="muted sm" style="margin:4px 0 8px">กรอกตัวเลขจริง เก็บไว้ในบัญชีของคุณเท่านั้น</p>
-<div class="grid2"><div><label class="f" for="ph">ส่วนสูง (ซม.)</label><input id="ph" type="number" inputmode="decimal" value="${p.h}"/></div><div><label class="f" for="pw">น้ำหนักตอนนี้ (กก.)</label><input id="pw" type="number" inputmode="decimal" step="0.1" value="${p.w0}"/></div></div>
-<div class="grid2"><div><label class="f" for="pa">อายุ (ปี)</label><input id="pa" type="number" inputmode="numeric" value="${p.age}"/></div><div><label class="f" for="px">สูตรคำนวณพลังงานใช้ค่าของ</label><select id="px"><option value="f" ${sx === "f" ? "selected" : ""}>หญิง</option><option value="m" ${sx === "m" ? "selected" : ""}>ชาย</option></select></div></div>
+<div class="grid2"><div><label class="f" for="ph">ส่วนสูง (ซม.)</label><input id="ph" type="number" inputmode="decimal" placeholder="เช่น 160" value="${v("h")}"/></div><div><label class="f" for="pw">น้ำหนักตอนนี้ (กก.)</label><input id="pw" type="number" inputmode="decimal" step="0.1" placeholder="เช่น 60" value="${v("w0")}"/></div></div>
+<div class="grid2"><div><label class="f" for="pa">อายุ (ปี)</label><input id="pa" type="number" inputmode="numeric" placeholder="เช่น 25" value="${v("age")}"/></div><div><label class="f" for="px">สูตรคำนวณพลังงานใช้ค่าของ</label><select id="px"><option value="f" ${sx === "f" ? "selected" : ""}>หญิง</option><option value="m" ${sx === "m" ? "selected" : ""}>ชาย</option></select></div></div>
 <label class="f" for="pc">กิจวัตรประจำวัน</label><select id="pc"><option value="1.2" ${p.act === 1.2 ? "selected" : ""}>นั่งเรียนหรือทำงานเป็นหลัก</option><option value="1.3" ${p.act === 1.3 ? "selected" : ""}>เดินไปมาบ้าง</option><option value="1.4" ${p.act === 1.4 ? "selected" : ""}>ยืนหรือเดินเยอะ</option></select>
 <label class="f" for="pd">ความเร็วในการลด</label><select id="pd"><option value="300" ${p.def === 300 ? "selected" : ""}>เบา ค่อยเป็นค่อยไป (ลดวันละ 300 kcal)</option><option value="500" ${p.def === 500 ? "selected" : ""}>ปกติ (ลดวันละ 500 kcal)</option><option value="700" ${p.def === 700 ? "selected" : ""}>จริงจัง (ลดวันละ 700 kcal)</option></select>
 <div class="hint" id="onbmsg">${ic("heart", 18)}<span>แอปนี้ออกแบบสำหรับผู้ใหญ่ 18 ปีขึ้นไป และไม่ใช่คำแนะนำทางการแพทย์</span></div>
@@ -78,11 +78,12 @@ ACT.onbback = () => { ONB.step = Math.max(1, ONB.step - 1); renderOnb(); };
 ACT.onb2 = () => {
   const h = parseFloat($("#ph").value), w = parseFloat($("#pw").value), a = parseInt($("#pa").value, 10);
   const msg = $("#onbmsg span");
+  if (isNaN(h) || isNaN(w) || isNaN(a)) { msg.textContent = "กรอกส่วนสูง น้ำหนัก และอายุก่อนนะ"; return; }
   if (!(h >= 120 && h <= 220)) { msg.textContent = "ส่วนสูงควรอยู่ระหว่าง 120 ถึง 220 ซม."; return; }
   if (!(w >= 35 && w <= 250)) { msg.textContent = "น้ำหนักควรอยู่ระหว่าง 35 ถึง 250 กก."; return; }
   if (!(a >= 18 && a <= 90)) { msg.textContent = a < 18 ? "แอปนี้ออกแบบสำหรับผู้ใหญ่ 18 ปีขึ้นไป ถ้าอยากปรับน้ำหนักควรคุยกับผู้ปกครองหรือแพทย์ก่อนนะ" : "อายุควรอยู่ระหว่าง 18 ถึง 90 ปี"; return; }
   ONB.prof = { h, w0: w, age: a, sex: $("#px").value, act: parseFloat($("#pc").value), def: parseInt($("#pd").value, 10) };
-  ONB.step = 3; renderOnb();
+  ONB.set = true; ONB.step = 3; renderOnb();
 };
 ACT.onb3 = () => {
   S.look = Object.assign({}, ONB.look); const bad = fixLocked(S.look); S.name = (ONB.name || "").trim() || "น้องก้อน";
