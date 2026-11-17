@@ -732,3 +732,7 @@ button.item { background: none; border: 0; border-bottom: 1px solid var(--line);
 /* ฟื้นตัว (recover.js) */
 .rdot { width: 14px; height: 14px; border-radius: 50%; flex: 0 0 auto; display: inline-block; }
 .row.between { justify-content: space-between; }
+
+/* หน้าเริ่มต้น (สแปลชและหน้าแรกก่อนใช้งาน) เป็นธีมสว่างเสมอ แม้เครื่องตั้งโหมดมืด */
+.splash { --bg: #F9F5ED; --soft: #ECE7F6; --ink: #24193B; --muted: #6B6080; --accent: #6B3FC0; --card: #FFFFFF; color-scheme: light; }
+.ltod { display: none !important; }

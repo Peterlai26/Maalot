@@ -12,7 +12,7 @@ const LLOOKS = [
   { g: "neutral", skin: "#F3C9A8", hs: "short", hc: "#3FA7A0", oc: "#FFFFFF", pt: "stripes", hat: "cap", face: "sun", hand: "icecream" }
 ];
 const LHILLS = '<svg class="lhills" viewBox="0 0 480 190" preserveAspectRatio="none" aria-hidden="true"><path d="M0 92C60 62 112 104 172 76S300 34 362 74S450 64 480 52V190H0Z" class="h1"/><path d="M0 130C70 100 122 140 202 112S340 92 402 124S462 114 480 104V190H0Z" class="h2"/><path d="M0 164C80 144 150 172 240 154S400 148 480 160V190H0Z" class="h3"/></svg>';
-function landTod() { try { const v = localStorage.getItem("wl_land_tod"); if (v) return v; } catch (e) {} const h = new Date().getHours(); return h >= 5 && h < 18 ? "day" : "night"; }
+function landTod() { return "day"; } /* หน้าเริ่มต้นเป็นธีมสว่างเสมอ */
 function landRoom(t) { return scene({ look: S.look, mood: "happy", rx: 46, period: t === "day" ? "morning" : "night", owned: {}, room: ROOM_DEFAULT, l1: "สวัสดีนะ", l2: "กินอะไรมาบ้าง" }); }
 function renderLanding() {
   const tod = landTod();
@@ -47,7 +47,8 @@ function renderLanding() {
   setTimeout(() => { const w = $(".lroom"); if (w) { w.classList.add("wave"); setTimeout(() => w.classList.remove("wave"), 3200); } }, 650);
 }
 ACT.landgo = () => renderOnb();
-ACT.landtod = () => {
+ACT.landtod = () => { return;
+  /* ปิดการสลับกลางคืนไว้ */
   const root = $(".land"); if (!root) return; const t = root.dataset.tod === "day" ? "night" : "day";
   root.dataset.tod = t; try { localStorage.setItem("wl_land_tod", t); } catch (e) {}
   const w = $(".lroom-in"); if (w) w.innerHTML = landRoom(t);
