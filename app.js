@@ -228,10 +228,27 @@ ${isF ? `<label class="f" for="lgsearch" style="margin-top:10px">หรือค
 ${LG.busy ? '<div class="hint pulse-ring">' + ic("sparkle", 18) + "<span>กำลังดูให้อยู่…</span></div>" : ""}
 <div class="card" style="margin-top:12px;padding:6px 14px">${rows || '<div class="muted sm" style="padding:14px 0">ยังไม่มีรายการ พิมพ์แล้วกดตีความ หรือกดเพิ่มเอง</div>'}</div>
 ${LG.items.length ? `<div class="row between" style="margin-top:12px"><span class="muted">${isF ? "รวมมื้อนี้" : "เผาผลาญประมาณ"}</span><b style="font-size:20px">${isF ? "+" : "-"}${fmtN(tot)} kcal</b></div>` : ""}
+${isF && LG.items.length && (LG.photo || LG.items.some(x => x.ai)) ? `<button class="btn block" style="margin-top:10px" data-act="askai">${ic("sparkle", 18)}ไม่มั่นใจตัวเลข? ถามเอไอตัวอื่นเทียบดู</button>` : ""}
 <label class="f" for="lgwhen">บันทึกของวัน</label><select id="lgwhen" data-in="lgwhen"><option value="today" ${LG.when === "today" ? "selected" : ""}>วันนี้</option><option value="yest" ${LG.when === "yest" ? "selected" : ""}>เมื่อวาน</option></select>
 <button class="btn primary block" style="margin-top:14px" data-act="lgsave">บันทึก</button>
 <p class="xs muted" style="margin-top:8px;text-align:center">${isF ? "ตัวเลขแคลอรี่เป็นค่าประมาณ แก้ไขได้ทุกรายการ" : "แคลอรี่คำนวณจากชนิดกิจกรรม เวลา และน้ำหนักตัว เป็นค่าประมาณ"}</p>`
   };
+};
+/* ---------- ไม่มั่นใจตัวเลข: สร้างพรอมพ์ให้เอาไปถามเอไอตัวไหนก็ได้ (แนบรูปเอง) แล้วกลับมาแก้ตัวเลขในแอพ ---------- */
+function askPrompt() {
+  const mine = LG.items.filter(x => x.n && x.n.trim()).map(x => `- ${x.n}: ${fmtN(Math.round(x.k1 * x.q))} kcal`).join("\n");
+  const src = LG.photo ? "อาหารในรูปที่แนบมา" : "อาหารต่อไปนี้: " + (LG.text || LG.items.map(x => x.n).join(", "));
+  return `ช่วยประเมินพลังงาน (kcal) ของ${src}\n\nวิธีประเมิน:\n1) แยกเป็นรายการ นับจำนวนที่เห็น (ชิ้น จาน ชาม แก้ว) ทีละรายการให้ครบ\n2) kcal เป็นยอดรวมของทั้งหมดที่เห็น ไม่ใช่ต่อชิ้นหรือต่อเสิร์ฟ\n3) ประเมินขนาดจริงจากภาชนะ ช้อนส้อม หรือมือที่เห็นในรูป\n4) รวมพลังงานที่มองไม่เห็นด้วย เช่น น้ำมันทอด/ผัด แป้งชุบ ซอส ชีส กะทิ น้ำตาลในเครื่องดื่ม\n5) ถ้าไม่แน่ใจ ให้บอกเป็นช่วง (ต่ำสุด-สูงสุด) พร้อมค่ากลาง และบอกว่าอะไรทำให้ไม่แน่ใจ\n6) สรุปท้ายสุดเป็นตาราง: รายการ | จำนวน | kcal รวม และบอก kcal รวมทั้งหมดของมื้อนี้\n\nแอพที่ฉันใช้ประเมินไว้ว่า:\n${mine || "-"}\nช่วยตรวจว่าตัวเลขนี้สมเหตุสมผลไหม ถ้าไม่ ให้บอกค่าที่ถูกต้องกว่า`;
+}
+ACT.askai = () => openModal(`<h2>ถามเอไอตัวอื่นเทียบดู</h2><p class="muted sm" style="margin:8px 0 10px">คัดลอกพรอมพ์นี้ไปวางในแชทเอไอตัวไหนก็ได้ (ChatGPT, Gemini, Claude ฯลฯ)${LG.photo ? " แล้วแนบรูปอาหารเดียวกันไปด้วย" : ""} ได้ตัวเลขแล้วกลับมาแก้ช่อง kcal ของแต่ละรายการในแอพได้เลย</p>
+<textarea id="askp" readonly rows="9" style="font-size:13px">${esc(askPrompt())}</textarea>
+<div class="row wrap" style="margin-top:10px"><button class="btn primary" style="flex:1" data-act="askcopy">คัดลอกพรอมพ์</button>${LG.photo ? '<button class="btn" style="flex:1" data-act="askshare">ส่งรูป + พรอมพ์</button>' : ""}</div>
+<button class="btn ghost block" style="margin-top:8px" data-act="modalclose">ปิด</button>`);
+ACT.askcopy = () => { const t = $("#askp"); try { t.select(); navigator.clipboard.writeText(t.value).then(() => toast("คัดลอกพรอมพ์แล้ว"), () => toast("กดค้างที่ข้อความแล้วเลือกคัดลอกได้เลย")); } catch (e) { toast("กดค้างที่ข้อความแล้วเลือกคัดลอกได้เลย"); } };
+ACT.askshare = async () => {
+  const t = ($("#askp") || {}).value || "", f = new File([LG.photo], "food.jpg", { type: LG.photo.type || "image/jpeg" });
+  if (navigator.canShare && navigator.canShare({ files: [f] })) { try { await navigator.share({ files: [f], text: t }); return; } catch (e) { if (e && e.name === "AbortError") return; } }
+  try { const a = document.createElement("a"); a.href = URL.createObjectURL(LG.photo); a.download = "food.jpg"; document.body.appendChild(a); a.click(); a.remove(); toast("บันทึกรูปแล้ว กดคัดลอกพรอมพ์แล้วแนบรูปเองได้เลย"); } catch (e) { toast("กดคัดลอกพรอมพ์แล้วแนบรูปเองนะ"); }
 };
 ACT.lgtab = (a) => { LG.text = ($("#lgtext") || {}).value || LG.text; LG.tab = a.dataset.t; LG.items = LG.text ? (LG.tab === "food" ? parseFood(LG.text) : parseWork(LG.text)) : []; rerenderSub(); };
 function lgSearch(q) {
@@ -264,7 +281,7 @@ async function handlePhoto(file) {
   if (!file) return;
   if (!LG || !$("#sub") || $("#sub").hidden) { LG = { tab: "food", text: "", items: [], when: "today", busy: false }; subStack = [{ name: "log", arg: {} }]; }
   LG.tab = "food"; LG.busy = true; renderSub();
-  try { const b = await shrinkImage(file); const res = await claudeEstimate(null, b); if (!res.length) throw new Error("empty"); LG.items = res; toast("ดูรูปแล้ว ลองตรวจตัวเลขอีกที"); }
+  try { const b = await shrinkImage(file); LG.photo = b; const res = await claudeEstimate(null, b); if (!res.length) throw new Error("empty"); LG.items = res; toast("ดูรูปแล้ว ลองตรวจตัวเลขอีกที"); }
   catch (e) { toast(estMsg(e, true)); }
   LG.busy = false; renderSub();
 }
