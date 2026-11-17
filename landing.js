@@ -5,6 +5,7 @@ const LFEAT = [
   ["target", "ภารกิจเล็กๆ", "เก็บเหรียญไปแต่งตัวและตกแต่งห้อง"],
   ["mail", "จดหมายสัปดาห์จากน้องก้อน", "น้ำเสียงใจดี ไม่ตัดสิน"]
 ];
+const LTRY = ["ส้มตำ ไก่ย่าง ข้าวเหนียว", "กาแฟเย็น 2 แก้ว", "ราดหน้า"];
 const LLOOKS = [
   { g: "neutral", skin: SKINS[0], hs: "ponytail", hc: "#D9A441", oc: "#F4A6C0", hat: "bow", hand: "balloon" },
   { g: "neutral", skin: SKINS[3], hs: "curly", hc: "#2E2420", oc: "#2B4A9E", hat: "crown", neck: "bowtie", shoe: "red" },
@@ -30,8 +31,11 @@ function renderLanding() {
 ${typeof GOOGLE_CLIENT_ID !== "undefined" && GOOGLE_CLIENT_ID ? '<div class="llogin"><p>มีบัญชีอยู่แล้ว เข้าสู่ระบบเพื่อดึงข้อมูลเดิมกลับมา</p><div class="gbtn" style="min-height:44px;display:flex;justify-content:center"></div></div>' : ""}
 <section class="lpaper"><h2>พิมพ์เหมือนเล่าให้เพื่อนฟัง</h2><p class="lp">ไม่ต้องค้นเมนูทีละอย่าง แอปแยกรายการและประมาณพลังงานให้</p>
 <div class="lplum"><div class="lin" data-t="ข้าวมันไก่ 1 จาน กับชานมไข่มุก">ข้าวมันไก่ 1 จาน กับชานมไข่มุก</div>
-<div class="lrow"><span>ข้าวมันไก่</span><b>600 kcal</b></div><div class="lrow"><span>ชานมไข่มุก</span><b>400 kcal</b></div>
-<div class="ltot"><span>รวมมื้อนี้</span><b>1,000 kcal</b></div><p class="lnote">แก้จำนวนและตัวเลขได้ทุกรายการ</p></div>
+<div class="lrows"></div>
+<div class="lsum"><svg viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="34" class="lbg"/><circle cx="42" cy="42" r="34" class="lfg" pathLength="100"/></svg><div><span>รวมมื้อนี้</span><p><b class="lnum">0</b> kcal</p><small class="lpct"></small></div></div>
+<p class="lnote">แก้จำนวนและตัวเลขได้ทุกรายการในแอป</p>
+<form class="ltry" autocomplete="off"><label for="ltryin">ลองพิมพ์อาหารของคุณเอง</label><div class="ltryrow"><input id="ltryin" type="text" placeholder="เช่น ส้มตำ ไก่ย่าง ข้าวเหนียว" maxlength="80" enterkeyhint="go"><button type="submit" class="ltrybtn">ลอง</button></div>
+<div class="ltrychips">${LTRY.map(t => `<button type="button" data-act="landtry" data-t="${t}">${t}</button>`).join("")}</div></form></div>
 <ul class="lfeat">${LFEAT.map(f => `<li><span class="lchip">${ic(f[0], 20)}</span><div><b>${f[1]}</b><span>${f[2]}</span></div></li>`).join("")}</ul></section>
 <section class="lblue"><h2>แต่งตัวให้น้อง ตกแต่งห้องให้ถูกใจ</h2><div class="lcast">${cast}</div><p>หมวก ทรงผม เสื้อ ของที่ถือ สัตว์เลี้ยง และของตกแต่งห้องกว่า 150 ชิ้น ได้มาจากเหรียญที่เก็บจากการจดบันทึก</p></section>
 <section class="lend"><h2>สร้างตัวละครของคุณได้เลย</h2><p class="lp">สร้างตัวละคร ใส่ส่วนสูงและน้ำหนัก แล้วจดมื้อแรก ใช้เวลาไม่ถึง 2 นาที</p>
@@ -50,17 +54,44 @@ ACT.landtod = () => {
   const r = $(".lroom"); if (r) { r.classList.remove("wave"); void r.offsetWidth; r.classList.add("wave"); setTimeout(() => r.classList.remove("wave"), 3200); }
 };
 
+const LGOAL = 2000;
+function landCount(el, to) {
+  cancelAnimationFrame(el._raf); const calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const from = +el.dataset.v || 0; el.dataset.v = to;
+  if (calm) { el.textContent = Math.round(to).toLocaleString("en-US"); return; }
+  const t0 = performance.now(), d = 800;
+  const step = now => { const p = Math.min(1, (now - t0) / d), e = 1 - Math.pow(1 - p, 3); el.textContent = Math.round(from + (to - from) * e).toLocaleString("en-US"); if (p < 1 && el.isConnected) el._raf = requestAnimationFrame(step); };
+  el._raf = requestAnimationFrame(step);
+}
+function landShow(text) {
+  const demo = $(".lplum"); if (!demo) return false;
+  const items = parseFood(text).slice(0, 6); if (!items.length) return false;
+  let tot = 0;
+  $(".lrows", demo).innerHTML = items.map((it, i) => {
+    const kc = Math.round(it.k1 * it.q); if (it.known) tot += kc;
+    const q = it.q !== 1 ? ` × ${it.q}` : "";
+    return `<div class="lrow" style="animation-delay:${(i * .28 + .05).toFixed(2)}s"><span>${esc(it.n)}${q}</span>${it.known ? `<b>${kc.toLocaleString("en-US")} kcal</b>` : `<b class="unk">ใส่เองในแอป</b>`}</div>`;
+  }).join("");
+  const pct = Math.min(100, Math.round(tot / LGOAL * 100));
+  demo.classList.add("go");
+  const fg = $(".lfg", demo); fg.style.strokeDashoffset = 100; void fg.getBoundingClientRect(); fg.style.strokeDashoffset = 100 - pct;
+  landCount($(".lnum", demo), tot);
+  $(".lpct", demo).textContent = tot ? `ราว ${pct}% ของพลังงานต่อวัน (อ้างอิง ${LGOAL.toLocaleString("en-US")} kcal)` : "ยังไม่รู้จักเมนูนี้ ในแอปใส่แคลอรี่เองได้";
+  return true;
+}
 function landAnim(el) {
   const demo = $(".lplum", el), feat = $(".lfeat", el), lin = demo && $(".lin", demo);
   const calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const form = $(".ltry", el);
+  if (form) form.onsubmit = e => { e.preventDefault(); landTry($("#ltryin").value); };
   const run = () => {
-    if (calm || !lin) { demo && demo.classList.add("go"); return; }
+    if (calm || !lin) { landShow(lin.dataset.t); return; }
     const t = lin.dataset.t; let i = 0; lin.textContent = ""; lin.classList.add("typing");
     const tick = () => {
-      if (!lin.isConnected) return;
+      if (!lin.isConnected || demo.dataset.user) return;
       lin.textContent = t.slice(0, ++i);
       if (i < t.length) setTimeout(tick, 55);
-      else setTimeout(() => { lin.classList.remove("typing"); demo.classList.add("go"); }, 350);
+      else setTimeout(() => { lin.classList.remove("typing"); if (!demo.dataset.user) landShow(t); }, 350);
     };
     tick();
   };
@@ -71,3 +102,10 @@ function landAnim(el) {
   }), { threshold: .35 });
   demo && io.observe(demo); feat && io.observe(feat);
 }
+function landTry(text) {
+  text = (text || "").trim(); const demo = $(".lplum"); if (!demo) return;
+  if (!text) { toast("พิมพ์อาหารที่กินก่อนนะ"); return; }
+  demo.dataset.user = "1"; const lin = $(".lin", demo); lin.classList.remove("typing"); lin.textContent = text;
+  landShow(text);
+}
+ACT.landtry = a => { const t = a.dataset.t; $("#ltryin").value = t; landTry(t); };

@@ -512,3 +512,22 @@ h1, h2, h3 { font-family: var(--font-display); }
 .land[data-tod="day"] .lblue { background: #F2A71B; color: #3A2410; } .land[data-tod="day"] .lblue h2 { color: #3A2410; } .land[data-tod="day"] .lblue p { color: #5A3A12; }
 .land[data-tod="day"] .lchip { background: #FFEFC2; color: #B66A0B; }
 #onb.dream .land[data-tod="night"] .lhead { color: #fff; }
+
+/* ลองพิมพ์เอง + วงแหวนรวมมื้อ */
+.lsum { display: flex; align-items: center; gap: 16px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, .18); }
+.lsum svg { width: 84px; height: 84px; flex: 0 0 84px; transform: rotate(-90deg); } .lsum circle { fill: none; stroke-width: 9; }
+.lsum .lbg { stroke: rgba(255, 255, 255, .14); } .lsum .lfg { stroke: var(--dr-pink); stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 1s cubic-bezier(.2, .8, .25, 1); }
+.lsum span { font-size: 13px; color: #B8ACD6; } .lsum p { margin: 2px 0 0; font-size: 15px; color: #fff; } .lsum .lnum { font: 700 30px/1.1 var(--font-dr); color: var(--dr-pink); }
+.lsum small { display: block; margin-top: 2px; font-size: 12px; line-height: 1.45; color: #B8ACD6; }
+.lplum .lrow .unk { color: #B8ACD6; font-weight: 400; font-size: 13px; }
+.lplum:not(.go) .lsum, .lplum:not(.go) .lnote { opacity: 0; }
+.lplum .lsum, .lplum .lnote { transition: opacity .5s; }
+.ltry { margin-top: 16px; padding-top: 14px; border-top: 1px dashed rgba(255, 255, 255, .22); }
+.ltry label { display: block; font-size: 13px; color: #D5CBEE; margin-bottom: 8px; }
+.ltryrow { display: flex; gap: 8px; }
+#onb.dream .ltry input { flex: 1; min-width: 0; background: rgba(255, 255, 255, .1); color: #fff; border: 1.5px solid rgba(255, 255, 255, .28); border-radius: 999px; padding: 11px 16px; font: 16px var(--font-dr); }
+#onb.dream .ltry input::placeholder { color: #A89CC6; } #onb.dream .ltry input:focus { outline: 0; border-color: var(--dr-pink); }
+.ltrybtn { flex: 0 0 auto; padding: 0 20px; border: 0; border-radius: 999px; background: var(--dr-pink); color: #fff; font: 600 15px var(--font-dr); min-height: 44px; }
+.ltrybtn:active, .ltrychips button:active { transform: scale(.95); }
+.ltrychips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.ltrychips button { padding: 6px 12px; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, .25); background: transparent; color: #E7DEFF; font: 13px var(--font-dr); }
