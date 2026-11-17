@@ -981,3 +981,29 @@ input[type=password], input[type=email] { width: 100%; background: var(--card); 
 .lgmenu.open .lgm { opacity: 1; pointer-events: auto; transform: translate(var(--x), var(--y)) scale(1); }
 .lgm em { position: absolute; top: calc(100% + 3px); left: 50%; transform: translateX(-50%); white-space: nowrap; font-style: normal; font-size: 10.5px; font-weight: 600; color: var(--ink); background: var(--card); padding: 0 7px; border-radius: 999px; box-shadow: 0 2px 6px -2px rgba(36, 25, 59, .4); }
 .lgmenu.open .lgm.hl, .lgmenu.open .lgm:active { transform: translate(var(--x), var(--y)) scale(1.28); background: var(--accent); color: var(--accent-ink); z-index: 2; }
+
+/* ---- เมนูวงโค้งแบบเรียบร้อย: ส่วนโค้งเดียว ป้ายชื่ออยู่นอกวง ฉากหลังหรี่ให้ชัดว่าเป็นอีกชั้น ---- */
+.lgm { width: 44px; height: 44px; margin: -22px 0 0 -22px; }
+.lgm em { top: 50%; left: 50%; transform: translate(calc(-50% + var(--ex, 0px)), calc(-50% + var(--ey, 0px))); font-size: 11px; opacity: 0; pointer-events: none; transition: opacity .2s .18s; }
+.lgmenu.open .lgm em { opacity: 1; }
+.lgmenu .lgscrim { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; border: 0; padding: 0; background: rgba(36, 25, 59, .5); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity .25s; cursor: default; }
+.lgmenu.open .lgscrim { opacity: 1; pointer-events: auto; }
+.lgaidwrap .lgaid { position: relative; z-index: 31; }
+/* เวลา + วัน อยู่แถวเดียวกัน วันเป็นปุ่มสลับที่มีแถบเลื่อน */
+.lgdt { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } .lgdt.one { grid-template-columns: 1fr; } .lgdt-c { min-width: 0; } .lgdt-c label.f { margin-top: 12px; }
+.lgdt-c input[type=time] { width: 100%; min-height: 46px; border-radius: 16px; font-weight: 600; }
+.whenseg { position: relative; height: 46px; padding: 3px; border-radius: 16px; }
+.whenseg button { position: relative; z-index: 1; min-height: 40px; background: transparent !important; box-shadow: none !important; font-weight: 600; color: var(--muted); border-radius: 13px; transition: color .2s; } .whenseg button.on { color: var(--accent); }
+.whenseg .wsi { position: absolute; top: 3px; left: 3px; width: calc(50% - 3px); height: calc(100% - 6px); border-radius: 13px; background: var(--card); box-shadow: 0 6px 14px -8px rgba(36, 25, 59, .55); transition: transform .38s cubic-bezier(.2, 1.2, .4, 1); }
+/* แถวรายการ: ไอคอนอาหาร / ภาพท่าออกกำลังกาย */
+.lgav { flex: none; width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; background: var(--soft); color: var(--accent); animation: ptin .35s both; }
+.lgrow { gap: 12px; }
+/* ตัวอย่างผลหลังบันทึก / เปรียบเทียบสนุกๆ */
+.lgproj { margin-top: 8px; padding: 10px 14px; border-radius: 16px; border: 1px dashed var(--line); background: var(--card); }
+.lgbar2 { display: block; height: 8px; border-radius: 999px; background: var(--soft); margin-top: 7px; overflow: hidden; } .lgbar2 b { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--green), #8BCB6B); animation: mbar 1s cubic-bezier(.2, .9, .3, 1) both; }
+.lgproj.over .lgbar2 b { background: linear-gradient(90deg, #F4A340, #E0547E); }
+.lgfun { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding: 10px 14px; border-radius: 16px; background: var(--warn-soft); color: var(--warn-ink); font-size: 13px; } .lgfun svg { flex: none; animation: mfwig 2.2s ease-in-out infinite; transform-origin: 50% 80%; }
+.lgbar .btn.primary.ready { animation: lgready 1.8s ease-in-out infinite; }
+.lgsave svg { margin-right: 2px; }
+@keyframes lgready { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ink) 38%, transparent); } 50% { box-shadow: 0 0 0 7px transparent; } }
+@media (prefers-reduced-motion: reduce) { .lgav, .lgbar2 b, .lgfun svg, .lgbar .btn.primary.ready, .whenseg .wsi { animation: none !important; transition: none !important; } }

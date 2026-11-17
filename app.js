@@ -195,6 +195,13 @@ function ifStrip() {
   const L = m.live(), C = 2 * Math.PI * 21;
   return `<button class="ifstrip" data-act="sub" data-n="iff"><span class="ifs-bg" aria-hidden="true"><i></i><i></i><i></i></span><span class="ifs-ic"><svg viewBox="0 0 50 50" aria-hidden="true"><circle class="ibb" cx="25" cy="25" r="21"/><circle class="ibf" cx="25" cy="25" r="21" style="stroke-dasharray:${C.toFixed(1)};stroke-dashoffset:${(C * (1 - Math.max(0, Math.min(100, L.pct)) / 100)).toFixed(1)}"/></svg><b>IF</b></span><span class="ifs-t"><b>โหมด IF</b><span>${L.line}</span></span><span class="ifs-go">${ic("back", 18)}</span></button>`;
 }
+function lgExtra(isF, tot) {
+  if (isF) {
+    const k = LG.when === "yest" ? addDays(todayKey(), -1) : todayKey(), i = dayInfo(k), tgt = targetOn(k) + i.wk, after = i.eaten + tot, pct = Math.max(0, Math.min(100, Math.round(after / Math.max(1, tgt) * 100))), over = after > tgt;
+    return `<div class="lgproj${over ? " over" : ""}"><div class="row between"><span class="xs muted">หลังบันทึก ${LG.when === "yest" ? "เมื่อวาน" : "วันนี้"}จะเป็น</span><b class="sm">${fmtN(after)} / ${fmtN(tgt)} kcal</b></div><i class="lgbar2"><b style="width:${pct}%"></b></i></div>`;
+  }
+  const n = tot / 600; return `<div class="lgfun">${ic("sparkle", 16)}<span>เผาผลาญเท่ากับข้าวมันไก่ ${n < 0.1 ? "ไม่ถึงครึ่งจาน" : n < 0.75 ? "ราวครึ่งจาน" : (Math.round(n * 10) / 10) + " จาน"} · เก่งมาก</span></div>`;
+}
 /* หัวหน้าบันทึก: บอกยอดของวันนี้ให้เห็นทันที มีแถบวิ่ง */
 function logHero(isF) {
   const k = todayKey(), i = dayInfo(k), tgt = targetOn(k) + i.wk, pct = Math.max(0, Math.min(100, Math.round(i.eaten / Math.max(1, tgt) * 100)));
@@ -204,16 +211,16 @@ function logHero(isF) {
 /* ทางลัดจดอาหาร/ออกกำลังกาย: กดปุ่มด้านขวาแล้วตัวเลือกกระจายเป็นวงโค้งล้อมรอบปุ่ม แตะเลือกหรือกดค้างแล้วลากไปปล่อยบนตัวเลือกก็ได้
    ตัวเลือกที่ต้องมีหน้าจอเพิ่ม (ค้นหา ตัวอย่าง ของฉัน) เปิดเป็นหน้าต่างเล็กด้านล่าง */
 const LOGX = { chips: "" }, LGM = { down: false, drag: false, x0: 0, y0: 0, suppress: false };
-function lgMenuHTML(isF, hasMine) {
-  const it = isF ? [["camera", "camera", "ถ่ายรูป"], ["gallery", "book", "เลือกรูป"]].concat(typeof ACT.myfadd === "function" ? [["label", "bowl", "ขนมซอง"]] : [], [["add", "plus", "เพิ่มเอง"], ["search", "search", "ค้นหา"]], hasMine ? [["mine", "heart", "ของฉัน"]] : []) : [["add", "plus", "เพิ่มเอง"], ["ex", "sparkle", "ตัวอย่าง"]];
-  /* ทุกตัวเลือกอยู่เหนือแถบปุ่มและไม่ล้นขอบขวา: 4 ตัวขึ้นไปจัดสลับวงนอก/วงในเพื่อไม่ให้ชนกัน */
-  const n = it.length, ang = n === 1 ? [110] : n === 2 ? [122, 86] : n === 3 ? [130, 100, 70] : it.map((_, i) => 150 - 80 * i / (n - 1)), rad = i => n < 4 ? 112 : (i % 2 ? 112 : 152);
-  return `<div class="lgmenu" role="menu" aria-label="ทางลัด">${it.map((t, i) => { const a = ang[i] * Math.PI / 180; return `<button type="button" class="lgm" role="menuitem" style="--i:${i};--x:${(Math.cos(a) * rad(i)).toFixed(1)}px;--y:${(-Math.sin(a) * rad(i)).toFixed(1)}px" data-act="lgmenu" data-k="${t[0]}">${ic(t[1], 20)}<em>${t[2]}</em></button>`; }).join("")}</div>`;
+function lgMenuHTML(isF) {
+  const it = isF ? [["camera", "camera", "ถ่ายรูป"], ["gallery", "book", "เลือกรูป"]].concat(typeof ACT.myfadd === "function" ? [["label", "bowl", "ขนมซอง"]] : [], [["add", "plus", "เพิ่มเอง"], ["search", "search", "ค้นหา"]]) : [["add", "plus", "เพิ่มเอง"], ["ex", "sparkle", "ตัวอย่าง"]];
+  /* เรียงบนส่วนโค้งเดียว ระยะห่างเท่ากัน อยู่เหนือแถบปุ่ม ไม่ล้นขอบขวา ป้ายชื่ออยู่ด้านนอกของวง */
+  const n = it.length, a0 = n === 1 ? 110 : n === 2 ? 130 : 168, a1 = n === 1 ? 110 : n === 2 ? 98 : 80, R = n > 3 ? 128 : 108;
+  return `<div class="lgmenu" role="menu" aria-label="ทางลัด"><button type="button" class="lgscrim" data-act="lgscrim" tabindex="-1" aria-label="ปิดเมนู"></button>${it.map((t, i) => { const a = (n === 1 ? a0 : a0 + (a1 - a0) * i / (n - 1)) * Math.PI / 180, c = Math.cos(a), sn = Math.sin(a); return `<button type="button" class="lgm" role="menuitem" style="--i:${i};--x:${(c * R).toFixed(1)}px;--y:${(-sn * R).toFixed(1)}px;--ex:${(c * 50).toFixed(1)}px;--ey:${(-sn * 38).toFixed(1)}px" data-act="lgmenu" data-k="${t[0]}">${ic(t[1], 20)}<em>${t[2]}</em></button>`; }).join("")}</div>`;
 }
 function aidHTML(sec) {
   const isF = LG.tab === "food", ex = (isF ? ["ข้าวมันไก่ 1 จาน", "กาแฟเย็น", "ส้มตำ ไก่ย่าง ข้าวเหนียว", "ชานมไข่มุก"] : ["วิดพื้น 3 เซ็ต 12 ครั้ง", "วิ่ง 20 นาที", "สควอต 3 เซ็ต 15 ครั้ง", "เดิน 30 นาที"]).map((t, i) => `<button type="button" class="lgx" style="--i:${i}" data-act="lgex" data-t="${t}">${ic("sparkle", 12)}${t}</button>`).join("");
-  const body = sec === "search" ? `<input id="lgsearch" type="text" data-in="lgsearch" placeholder="เช่น กะเพรา ชาเขียว ส้มโอ" autocomplete="off"/><div id="lgres" class="logchips" style="margin-top:10px"></div><div class="aids">หรือแตะตัวอย่าง</div><div class="lgex">${ex}</div>` : sec === "mine" ? `<div class="aidx">${LOGX.chips}</div>` : `<div class="lgex">${ex}</div>`;
-  return `<div class="aid"><div class="aidh"><h2>${sec === "search" ? "ค้นหาเมนูและตัวอย่าง" : sec === "mine" ? "ของที่เคยบันทึกไว้" : "ตัวอย่างให้แตะ"}</h2><button class="gx2" data-act="sheetclose" aria-label="ปิด">${ic("x", 18)}</button></div>${body}</div>`;
+  const body = sec === "search" ? `<input id="lgsearch" type="text" data-in="lgsearch" placeholder="เช่น กะเพรา ชาเขียว ส้มโอ" autocomplete="off"/><div id="lgres" class="logchips" style="margin-top:10px"></div><div class="aids">หรือแตะตัวอย่าง</div><div class="lgex">${ex}</div>${LOGX.chips.trim() ? `<div class="aids">ของที่เคยบันทึกไว้</div><div class="aidx">${LOGX.chips}</div>` : ""}` : sec === "mine" ? `<div class="aidx">${LOGX.chips}</div>` : `<div class="lgex">${ex}</div>`;
+  return `<div class="aid"><div class="aidh"><h2>${sec === "search" ? "ค้นหาเมนู" : sec === "mine" ? "ของที่เคยบันทึกไว้" : "ตัวอย่างให้แตะ"}</h2><button class="gx2" data-act="sheetclose" aria-label="ปิด">${ic("x", 18)}</button></div>${body}</div>`;
 }
 function lgMenuOpen(open) {
   const m = document.querySelector(".lgmenu"), b = document.querySelector(".lgaid"); if (!m) return;
@@ -221,6 +228,8 @@ function lgMenuOpen(open) {
   m.querySelectorAll(".lgm").forEach(i => i.classList.remove("hl"));
 }
 ACT.lgaid = () => { if (LGM.suppress) { LGM.suppress = false; return; } const m = document.querySelector(".lgmenu"); lgMenuOpen(!(m && m.classList.contains("open"))); };
+ACT.lgscrim = () => lgMenuOpen(false);
+ACT.lgwhenset = a => { LG.when = a.dataset.v; document.querySelectorAll(".whenseg button").forEach(b => b.classList.toggle("on", b.dataset.v === LG.when)); const i = document.querySelector(".whenseg .wsi"); if (i) i.style.transform = `translateX(${LG.when === "yest" ? "100%" : "0"})`; };
 ACT.lgmenu = a => {
   const k = a.dataset.k, sheet = sec => { openSheet(aidHTML(sec)); if (sec === "search") setTimeout(() => { const i = $("#lgsearch"); if (i) i.focus(); }, 280); };
   lgMenuOpen(false);
@@ -267,13 +276,14 @@ SUBS.log = (arg) => {
   const rows = LG.items.map((it, i) => {
     if (isF) {
       const k = Math.round(it.k1 * it.q); tot += k;
-      return `<div class="item"><div class="grow">${it.known ? `<b>${esc(it.n)}</b>${it.ai ? ' <span class="chip blue xs">AI ประเมิน</span>' : ""}${macroLine(it)}${aiNote(it)}` : `<input type="text" data-in="lgn" data-i="${i}" value="${esc(it.n)}" placeholder="ชื่ออาหาร" aria-label="ชื่ออาหาร"/><div class="xs muted" style="margin-top:4px">ไม่รู้จักเมนูนี้ กรอกแคลอรี่เองหรือให้ AI ประเมิน</div>`}
+      const fk = typeof foodKind === "function" ? foodKind(it.n) : { icon: "bowl", cat: "meal" };
+      return `<div class="item lgrow"><span class="lgav fc-${fk.cat}">${ic(fk.icon, 20)}</span><div class="grow">${it.known ? `<b>${esc(it.n)}</b>${it.ai ? ' <span class="chip blue xs">AI ประเมิน</span>' : ""}${macroLine(it)}${aiNote(it)}` : `<input type="text" data-in="lgn" data-i="${i}" value="${esc(it.n)}" placeholder="ชื่ออาหาร" aria-label="ชื่ออาหาร"/><div class="xs muted" style="margin-top:4px">ไม่รู้จักเมนูนี้ กรอกแคลอรี่เองหรือให้ AI ประเมิน</div>`}
 <div class="row" style="margin-top:6px"><div class="stepper"><button data-act="lgq" data-i="${i}" data-d="-0.5" aria-label="ลดปริมาณ">${ic("minus", 16)}</button><span style="min-width:34px;text-align:center">${it.q}</span><button data-act="lgq" data-i="${i}" data-d="0.5" aria-label="เพิ่มปริมาณ">${ic("plus", 16)}</button></div>
 <span class="xs muted">× </span><input type="number" inputmode="numeric" style="width:80px;min-height:36px;padding:6px 8px" data-in="lgk" data-i="${i}" value="${it.k1}" aria-label="แคลอรี่ต่อหน่วย"/><span class="xs muted">kcal</span></div></div>
 <div style="text-align:right"><b>${fmtN(k)}</b><div class="xs muted">kcal</div><button class="iconbtn" data-act="lgrm" data-i="${i}" aria-label="ลบรายการ">${ic("trash", 18)}</button></div></div>`;
     }
     const c = workCalc(it, kg); tot += c.k;
-    return `<div class="item" style="align-items:flex-start"><div class="grow">${it.known ? `<b>${esc(it.n)}</b>` : `<input type="text" data-in="lgn" data-i="${i}" value="${esc(it.n)}" placeholder="ชื่อกิจกรรม" aria-label="ชื่อกิจกรรม"/>`}
+    return `<div class="item lgrow" style="align-items:flex-start">${typeof workThumb === "function" ? workThumb({ n: it.n }, 1) : ""}<div class="grow">${it.known ? `<b>${esc(it.n)}</b>` : `<input type="text" data-in="lgn" data-i="${i}" value="${esc(it.n)}" placeholder="ชื่อกิจกรรม" aria-label="ชื่อกิจกรรม"/>`}
 <div class="grid2" style="margin-top:6px;gap:6px"><label class="xs muted">เซ็ต<input type="number" inputmode="numeric" data-in="lgw" data-f="sets" data-i="${i}" value="${it.sets || ""}" style="min-height:36px;padding:6px 8px"/></label><label class="xs muted">ครั้งต่อเซ็ต<input type="number" inputmode="numeric" data-in="lgw" data-f="reps" data-i="${i}" value="${it.reps || ""}" style="min-height:36px;padding:6px 8px"/></label>
 <label class="xs muted">วินาที<input type="number" inputmode="numeric" data-in="lgw" data-f="secs" data-i="${i}" value="${it.secs || ""}" style="min-height:36px;padding:6px 8px"/></label><label class="xs muted">นาที<input type="number" inputmode="numeric" data-in="lgw" data-f="mins" data-i="${i}" value="${it.mins || ""}" style="min-height:36px;padding:6px 8px"/></label></div>
 ${it.known ? (c.assumed ? '<div class="xs muted" style="margin-top:4px">ไม่ได้บอกเวลา ใช้ 10 นาทีเป็นค่าเริ่มต้น</div>' : "") : `<div class="row" style="margin-top:6px"><span class="xs muted">เผาผลาญ</span><input type="number" inputmode="numeric" style="width:80px;min-height:36px;padding:6px 8px" data-in="lgm" data-i="${i}" value="${it.km || ""}"/><span class="xs muted">kcal</span></div>`}</div>
@@ -289,10 +299,10 @@ ${it.known ? (c.assumed ? '<div class="xs muted" style="margin-top:4px">ไม�
 ${hasUnknown ? `<button class="btn block" style="margin-top:8px" data-act="lgai">${ic("sparkle", 16)}ให้ AI ประเมินรายการที่ไม่รู้จัก</button>` : ""}
 ${LG.busy ? '<div class="hint pulse-ring">' + ic("sparkle", 18) + "<span>กำลังดูให้อยู่…</span></div>" : ""}</div>
 <div class="card" style="margin-top:12px;padding:6px 14px">${rows || `<div class="lgempty"><span class="lge-ic">${ic(isF ? "bowl" : "dumbbell", 30)}</span><b>${isF ? "ยังไม่มีรายการอาหาร" : "ยังไม่มีรายการออกกำลังกาย"}</b><span>${isF ? "พิมพ์ด้านบน แตะตัวอย่าง หรือถ่ายรูปได้เลย" : "บอกท่า เซ็ต ครั้ง หรือเวลา แล้วกดตีความ"}</span></div>`}</div>
-${LG.items.length ? `<div class="row between lgtotal" style="margin-top:12px"><span class="muted">${isF ? "รวมมื้อนี้" : "เผาผลาญประมาณ"}</span><b style="font-size:20px">${isF ? "+" : "-"}${fmtN(tot)} kcal</b></div>` : ""}
+${LG.items.length ? `<div class="row between lgtotal" style="margin-top:12px"><span class="muted">${isF ? "รวมมื้อนี้" : "เผาผลาญประมาณ"}</span><b style="font-size:20px">${isF ? "+" : "-"}${fmtN(tot)} kcal</b></div>${lgExtra(isF, tot)}` : ""}
 ${isF && (LG.photo || (LG.items.length && LG.items.some(x => x.ai))) ? `<button class="btn block" style="margin-top:10px" data-act="askai">${ic("sparkle", 18)}ไม่มั่นใจตัวเลข? ถามเอไอตัวอื่นเทียบดู</button>` : ""}
 <label class="f" for="lgwhen">บันทึกของวัน</label><select id="lgwhen" data-in="lgwhen"><option value="today" ${LG.when === "today" ? "selected" : ""}>วันนี้</option><option value="yest" ${LG.when === "yest" ? "selected" : ""}>เมื่อวาน</option></select>
-<button class="btn primary block go" style="margin-top:14px" data-act="lgsave">บันทึก</button>
+<button class="btn primary block go lgsave" style="margin-top:14px" data-act="lgsave">${ic("check", 18)}บันทึก${LG.items.length ? " " + (isF ? "+" : "-") + fmtN(tot) + " kcal" : ""}</button>
 <p class="xs muted" style="margin-top:8px;text-align:center">${isF ? "ตัวเลขแคลอรี่เป็นค่าประมาณ แก้ไขได้ทุกรายการ" : "แคลอรี่คำนวณจากชนิดกิจกรรม เวลา และน้ำหนักตัว เป็นค่าประมาณ"}</p>`
   };
 };
