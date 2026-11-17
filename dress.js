@@ -17,7 +17,7 @@ function dressItems(kind, tab) {
 function dressCur(kind, slot) { return kind === "wear" ? EDIT.look[slot] || SLOT_DEFAULT[slot] : (EDIT.room || {})[slot] || ROOM_DEFAULT[slot]; }
 
 function dressScene() { return scene({ look: EDIT.look, mood: "happy", rx: EDIT.rx, period: periodNow(), owned: S.owned, room: EDIT.room || ROOM_DEFAULT, l1: "", l2: "" }); }
-const NEXTBTN = (cls) => `<button class="btn primary dnext ${cls || ""}" data-act="onb1">ต่อไป ${ic("arrow", 16)}</button>`;
+const NEXTBTN = (cls) => `<button class="btn primary dnext ${cls || ""}" data-act="onb1">ต่อไป ${ic("arrow", 14)}</button>`;
 function dressPreview(sc) {
   return `<div class="dprevwrap"><div class="dwin"><div class="dprev stage">${sc.replace('viewBox="0 0 380 300"', 'viewBox="66 50 248 234"')}</div></div>${EDIT.onb ? NEXTBTN() : ""}</div>`;
 }
