@@ -9,7 +9,71 @@
   "background_color": "#FFF6EC",
   "theme_color": "#FFF6EC",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "จดอาหาร",
+      "short_name": "จดอาหาร",
+      "description": "บอกน้องก้อนว่ากินอะไรมา",
+      "url": "./?a=food",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ดื่มน้ำ 1 แก้ว",
+      "short_name": "ดื่มน้ำ",
+      "description": "เพิ่มน้ำอีกหนึ่งแก้ว",
+      "url": "./?a=water",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ออกกำลังกาย",
+      "short_name": "ออกกำลัง",
+      "description": "บันทึกการออกกำลังกาย",
+      "url": "./?a=work",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ชั่งน้ำหนัก",
+      "short_name": "ชั่งน้ำหนัก",
+      "description": "ใส่น้ำหนักวันนี้",
+      "url": "./?a=weight",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }
