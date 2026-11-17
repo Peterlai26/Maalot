@@ -355,7 +355,7 @@ async function handlePhoto(file) {
   if (!file) return;
   if (!LG || !$("#sub") || $("#sub").hidden) { LG = { tab: "food", text: "", items: [], when: "today", busy: false }; subStack = [{ name: "log", arg: {} }]; }
   LG.tab = "food"; LG.busy = true; renderSub();
-  try { const b = await shrinkImage(file); LG.photo = b; const res = await claudeEstimate(null, b); if (!res.length) throw new Error("empty"); LG.items = res; toast("ดูรูปแล้ว ลองตรวจตัวเลขอีกที"); }
+  try { const b = await shrinkImage(file); LG.photo = b; const res = await claudeEstimate(null, b); if (!res.length) throw new Error("empty"); LG.items = (LG.items || []).concat(res); LG.shots = (LG.shots || 0) + 1; toast(LG.shots > 1 ? "เพิ่มจากรูปที่ " + LG.shots + " แล้ว รายการเดิมยังอยู่" : "ดูรูปแล้ว ลองตรวจตัวเลขอีกที"); }
   catch (e) { toast(estMsg(e, true)); }
   LG.busy = false; renderSub();
   if (LG.photo) ACT.askai(); /* หลังถ่ายรูป เด้งหน้าถามเอไอตัวอื่นให้เลย */
