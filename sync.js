@@ -156,41 +156,11 @@ ${reg ? `<label class="f" for="apw2">ยืนยันรหัสผ่าน<
   return { m, reg, rec, err, expired, form };
 }
 /* ---------- ป๊อปอัพสมัครสมาชิก (ด่านก่อนสร้างตัวละคร) ---------- */
-/* น้องเกี๊ยวนอนตะแคง เท้าศอกชันหัว (ท่าพระไสยาสน์) นอนทับอยู่บนหัวข้อ ใช้สีผิวและสีเสื้อตามที่แต่งไว้
-   วาดเป็นรูปทรงคน: ลำตัวมีอก เอว สะโพก ขาเรียวลงไปถึงข้อเท้า แขนงอต่อเนื่องที่ศอก มีคอ หู คิ้ว และมือรองแก้ม */
-function lyingMascot(busy) {
-  let sk = "#FFF1D6", sh = "#8155C9";
-  try { const lk = normLook(S.look); if (/^#[0-9a-f]{6}$/i.test(lk.skin)) sk = lk.skin; if (/^#[0-9a-f]{6}$/i.test(lk.oc)) sh = lk.oc; } catch (e) { }
-  const sr = sh.toLowerCase() === "#8155c9" ? "#4C5DDA" : "#8155C9", K = "#2A1D45", dk = "rgba(42,29,69,.16)";
-  const arm = (pts, w, c) => `<polyline points="${pts}" fill="none" stroke="${K}" stroke-width="${w + 4.6}" stroke-linecap="round" stroke-linejoin="round"/><polyline points="${pts}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
-  const shape = (d, c) => `<path d="${d}" fill="${c}" stroke="${K}" stroke-width="2.4" stroke-linejoin="round"/>`;
-  const shoe = (cx, cy) => `<rect x="${cx - 6}" y="${cy - 12}" width="13" height="24" rx="6.5" fill="#F0679B" stroke="${K}" stroke-width="2.2"/>`;
-  const mouth = busy ? `<ellipse cx="58" cy="57" rx="4.6" ry="4.2" fill="#8A4A3A"/>` : `<path d="M51 55.5 Q58 62 65 55.5" fill="none" stroke="#8A4A3A" stroke-width="2.5" stroke-linecap="round"/>`;
-  return `<svg class="lymas" viewBox="0 0 300 130" role="img" aria-label="น้องเกี๊ยวนอนตะแคง">
-<rect x="12" y="104" width="276" height="16" rx="8" fill="#F28DAA" stroke="${K}" stroke-width="2.4"/><path d="M26 112 H274" stroke="#FFD27A" stroke-width="2.4" stroke-dasharray="1 6.5" stroke-linecap="round"/>
-<g class="lyfoot2">${shape("M176 87 C204 89 230 93 249 95 C257 96.5 257 103 249 104 L176 104 Z", sk)}${shoe(255, 92)}</g>
-<g class="lybody">${shape("M80 76 C98 68 126 68 150 74 L156 100 C130 105 100 105 84 101 C72 96 70 83 80 76 Z", sh)}
-<path d="M82 78 Q90 84 100 80" fill="none" stroke="${K}" stroke-width="1.8" stroke-linecap="round" opacity=".5"/>
-
-<g class="lyfoot1">${shape("M184 75 C208 75 230 78 249 81 C257 83 257 92 249 94 C230 96 208 95 184 94 Z", sk)}${shoe(257, 83)}</g>
-${shape("M148 75 C164 71 182 74 192 79 L196 101 C178 106 160 106 152 102 Z", sr)}<path d="M152 80 Q172 76 193 83" fill="none" stroke="${K}" stroke-width="1.6" opacity=".4"/>
-${shape("M62 60 L90 70 L86 86 L66 76 Z", sk)}
-<g class="lyhead"><g transform="rotate(-10 58 44)"><ellipse cx="86" cy="46" rx="4.5" ry="7" fill="${sk}" stroke="${K}" stroke-width="2.2"/><circle cx="58" cy="44" r="29" fill="${sk}" stroke="${K}" stroke-width="2.6"/>
-<ellipse cx="58" cy="17" rx="12" ry="7" fill="${sk}" stroke="${K}" stroke-width="2.4"/><path d="M50 15 Q52 10 54 8 M58 14 Q58 9 58 6 M66 15 Q64 10 62 8" fill="none" stroke="${K}" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
-<path d="M42 38 Q47 35 52 38 M64 38 Q69 35 74 38" fill="none" stroke="${K}" stroke-width="2" stroke-linecap="round" opacity=".7"/>
-<ellipse cx="47" cy="46" rx="3.6" ry="4.6" fill="${K}"/><ellipse cx="69" cy="46" rx="3.6" ry="4.6" fill="${K}"/><circle cx="48.2" cy="44.2" r="1.3" fill="#fff"/><circle cx="70.2" cy="44.2" r="1.3" fill="#fff"/>
-<ellipse cx="39" cy="54" rx="5.5" ry="3.5" fill="#F58AB0" opacity=".55"/><ellipse cx="77" cy="54" rx="5.5" ry="3.5" fill="#F58AB0" opacity=".55"/>${mouth}</g></g>
-${arm("90,77 63,96 45,69", 15, sk)}${arm("90,77 76,86.5", 15, sh)}
-<ellipse cx="43" cy="66" rx="9" ry="10.5" fill="${sk}" stroke="${K}" stroke-width="2.2" transform="rotate(-20 43 66)"/><path d="M36 60 Q41 64 38 70 M41 58 Q47 62 44 69" fill="none" stroke="${K}" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
-${arm("104,76 132,86 168,84", 14, sk)}${arm("104,76 120,82", 14, sh)}
-<ellipse cx="172" cy="84" rx="8.5" ry="7" fill="${sk}" stroke="${K}" stroke-width="2.2"/></g></svg>`;
-}
 function gateHtml() {
-  const P = accParts(), stars = '<i style="--x:8%;--y:20%"></i><i style="--x:88%;--y:12%;--d:.7s"></i><i style="--x:76%;--y:70%;--d:1.3s"></i><i style="--x:14%;--y:76%;--d:1.9s"></i>';
+  const P = accParts();
   const head = P.rec ? ["ลืมรหัสผ่านใช่ไหม", "ใช้รหัสกู้คืนตั้งรหัสใหม่ ข้อมูลของคุณยังอยู่"] : P.reg ? ["สมัครสมาชิกก่อนสร้างน้องเกี๊ยว", "ข้อมูลที่จดไว้จะอยู่กับบัญชี ไม่หายเวลาเปลี่ยนมือถือ ใช้ได้ทุกเครื่อง"] : ["ยินดีต้อนรับกลับมา", "เข้าสู่ระบบเพื่อดึงน้องเกี๊ยวและข้อมูลของคุณกลับมา"];
   const form = P.reg ? P.form.replace(/(id="apw"[^>]*>)/, '$1<i class="pwbar" aria-hidden="true"><b></b></i>') : P.form;
   return `<div class="gate"><button class="gx" data-act="modalclose" aria-label="ปิด">${ic("x", 18)}</button>
-<div class="gmas${ACC.busy ? " busy" : ""}">${stars}${lyingMascot(ACC.busy)}</div>
 <h2>${head[0]}</h2><p class="muted sm gsub">${head[1]}</p>${P.err}${form}</div>`;
 }
 function openGate() { openModal(gateHtml()); const p = document.querySelector("#modal .panel"); if (p) p.classList.add("gatep"); }

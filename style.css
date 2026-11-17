@@ -815,15 +815,10 @@ input[type=password], input[type=email] { width: 100%; background: var(--card); 
 /* ---------- ป๊อปอัพสมัครสมาชิก: เด้งขึ้นกลางจอ น้องเกี๊ยวลอยและกะพริบ ดาวระยิบ แถบความแข็งแรงรหัสผ่าน ---------- */
 #modal:has(.gatep) { animation: gfade .25s ease-out both; backdrop-filter: blur(3px); }
 #modal .panel.gatep { position: relative; padding: 20px 18px 18px; transform-origin: 50% 80%; animation: gatein .6s cubic-bezier(.2, 1.35, .4, 1) both; box-shadow: 0 30px 60px -20px rgba(36, 25, 59, .55); }
-.gate > :not(.gx):not(.gmas) { animation: ptin .45s cubic-bezier(.2, .9, .3, 1) both; }
-.gate > :nth-child(4) { animation-delay: .05s; } .gate > :nth-child(5) { animation-delay: .1s; } .gate > :nth-child(6) { animation-delay: .15s; } .gate > :nth-child(n+7) { animation-delay: .2s; }
-.gate h2 { text-align: center; font-size: 20px; } .gsub { text-align: center; margin: 4px 0 10px; }
+.gate > :not(.gx) { animation: ptin .45s cubic-bezier(.2, .9, .3, 1) both; }
+.gate > :nth-child(3) { animation-delay: .05s; } .gate > :nth-child(4) { animation-delay: .1s; } .gate > :nth-child(5) { animation-delay: .15s; } .gate > :nth-child(n+6) { animation-delay: .2s; }
+.gate h2 { text-align: center; font-size: 20px; padding: 0 34px; margin-top: 2px; } .gsub { text-align: center; margin: 4px 0 10px; }
 .gx { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border: 0; border-radius: 50%; display: grid; place-items: center; background: var(--soft); color: var(--muted); cursor: pointer; z-index: 2; }
-.gmas { position: relative; width: 100%; height: 132px; margin: 2px 0 -8px; display: grid; place-items: end center; }
-.gmas::before { content: ""; position: absolute; width: 250px; height: 110px; bottom: 8px; border-radius: 50%; background: radial-gradient(circle at 50% 40%, var(--soft), transparent 70%); animation: gpulse 2.6s ease-in-out infinite; }
-.gmas svg { position: relative; width: 272px; height: auto; overflow: visible; }
-.gmas.busy i { animation-duration: .8s; } .gmas.busy .lyfoot1, .gmas.busy .lyfoot2 { animation-duration: .5s; }
-.gmas i { position: absolute; left: var(--x); top: var(--y); width: 10px; height: 10px; background: var(--accent); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); opacity: 0; animation: gtwk 2s ease-in-out var(--d, 0s) infinite; }
 .gate .btn.primary { position: relative; overflow: hidden; isolation: isolate; }
 .gate .btn.primary::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .35) 50%, transparent 65%); transform: translateX(-120%); animation: pcshine 3s ease-in-out .8s infinite; }
 .gate input:focus { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
@@ -832,16 +827,5 @@ input[type=password], input[type=email] { width: 100%; background: var(--card); 
 .pwbar b[data-l="1"] { background: #E8A33D; } .pwbar b[data-l="2"] { background: #8CBF5A; } .pwbar b[data-l="3"] { background: var(--green); }
 @keyframes gfade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes gatein { 0% { opacity: 0; transform: translateY(60px) scale(.82) rotate(-2.5deg); } 100% { opacity: 1; transform: none; } }
-@keyframes gbob { 0%, 100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-6px) rotate(1.5deg); } }
-@keyframes gpulse { 0%, 100% { transform: scale(1); opacity: .9; } 50% { transform: scale(1.12); opacity: .6; } }
-@keyframes gtwk { 0%, 100% { opacity: 0; transform: scale(.3) rotate(0); } 50% { opacity: 1; transform: scale(1.2) rotate(45deg); } }
-@media (prefers-reduced-motion: reduce) { #modal:has(.gatep), #modal .panel.gatep, .gate > *, .gmas::before, .gmas svg, .gmas i, .gate .btn.primary::after { animation: none; } .gmas i { opacity: .8; } }
+@media (prefers-reduced-motion: reduce) { #modal:has(.gatep), #modal .panel.gatep, .gate > *, .gate .btn.primary::after { animation: none; } }
 
-/* น้องเกี๊ยวนอนตะแคง: หายใจเบาๆ หัวเอียงไปมา เท้ากระดกสลับ */
-.lybody { animation: gbreath 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
-.lyhead { animation: ghead 4.4s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
-.lyfoot1, .lyfoot2 { animation: gfoot 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: 0% 50%; } .lyfoot2 { animation-delay: .45s; }
-@keyframes gbreath { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.012, 1.045); } }
-@keyframes ghead { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-3.5deg); } }
-@keyframes gfoot { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-5deg); } }
-@media (prefers-reduced-motion: reduce) { .lybody, .lyhead, .lyfoot1, .lyfoot2 { animation: none; } }
