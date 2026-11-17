@@ -361,3 +361,92 @@ body.dmin .dnext.fab { opacity: 1; pointer-events: auto; transform: none; }
 .dinfo { flex: 1; min-width: 0; } .dbtns { display: flex; gap: 8px; flex-shrink: 0; }
 
 .dcolor.locked .dthumb { opacity: .85; filter: none; } .dcolor .dthumb { box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+
+/* ====== ร้านก้อน: สไตล์ร้านค้าไทย (กันสาด ผ้าขาวม้า ป้ายราคา เพกบอร์ด) ใช้กับหน้าแรกและหน้าแต่งตัว ====== */
+:root { --sh-red: #D9382F; --sh-red-d: #A5231C; --sh-teal: #12857D; --sh-teal-d: #0B625C; --sh-bamboo: #E3B16A; --sh-yellow: #FFD23F; --sh-ink: #1F1915; --font-shop: "Chonburi", "Noto Sans Thai", serif;
+  --sh-awn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='48' viewBox='0 0 56 48'%3E%3Cg stroke='%231F1915' stroke-width='2.5' stroke-linejoin='round'%3E%3Cpath d='M0 1H28V32A14 14 0 0 1 0 32Z' fill='%23D9382F'/%3E%3Cpath d='M28 1H56V32A14 14 0 0 1 28 32Z' fill='%23FFFFFF'/%3E%3C/g%3E%3C/svg%3E");
+  --sh-peg: radial-gradient(circle, rgba(255,255,255,.2) 2.4px, transparent 3px);
+  --sh-gingham: linear-gradient(90deg, rgba(217,56,47,.62) 50%, transparent 50%), linear-gradient(rgba(217,56,47,.62) 50%, transparent 50%); }
+#onb.shopwall, #sub.dress { background-color: var(--sh-teal); background-image: var(--sh-peg); background-size: 24px 24px; color: #fff; }
+body:has(#onb.shopwall:not([hidden])), body:has(#sub.dress:not([hidden])) { background: var(--sh-teal-d); }
+#onb.shopwall .muted, #sub.dress .muted { color: rgba(255, 255, 255, .82); }
+#onb.shopwall h1, #sub.dress .subhead h2 { font-family: var(--font-shop); font-weight: 400; color: #fff; letter-spacing: .2px; }
+#onb.shopwall h1 { font-size: 26px; line-height: 1.3; }
+#sub.dress .iconbtn { color: #fff; }
+#sub.dress .subhead .chip { background: var(--sh-yellow); color: var(--sh-red); border: 2.5px solid var(--sh-ink); box-shadow: 2px 2px 0 var(--sh-ink); font-weight: 700; }
+#sub.dress label.f, #onb.shopwall label.f { color: #fff; font-weight: 600; }
+#sub.dress input[type=text], #onb.shopwall input[type=text] { background: #fff; color: var(--sh-ink); border: 2.5px solid var(--sh-ink); border-radius: 8px; box-shadow: 3px 3px 0 var(--sh-ink); }
+
+/* กันสาด + หน้าต่างร้าน (ภาพตัวอย่างตัวละคร) */
+.dawn, .lawn { height: 48px; background: var(--sh-awn) repeat-x 0 0 / 56px 48px; position: relative; z-index: 3; filter: drop-shadow(0 3px 0 rgba(31, 25, 21, .35)); }
+#sub.dress .dprevwrap, #onb.shopwall .dprevwrap { position: relative; width: 280px; margin: 8px auto 12px; }
+#sub.dress .dawn, #onb.shopwall .dawn { margin: 0; background-position: 0 0; }
+.dwin { margin-top: -3px; padding: 9px; background-color: #fff; background-image: var(--sh-gingham); background-size: 18px 18px; border: 3px solid var(--sh-ink); box-shadow: 6px 6px 0 var(--sh-ink); position: relative; z-index: 2; }
+#sub.dress .dprev, #onb.shopwall .dprev { height: 216px; width: 100%; border: 3px solid var(--sh-ink); border-radius: 3px; background: #fff; box-shadow: none; }
+#sub.dress .dnext, #onb.shopwall .dnext { position: absolute; right: 18px; bottom: 18px; z-index: 4; }
+
+/* ปุ่มและแท็บ: ขอบหมึกหนา เงาแข็งเยื้อง */
+#sub.dress .btn, #onb.shopwall .btn { border: 2.5px solid var(--sh-ink); border-radius: 8px; background: #fff; color: var(--sh-ink); box-shadow: 3px 3px 0 var(--sh-ink); font-weight: 700; transition: transform .08s, box-shadow .08s; }
+#sub.dress .btn:active, #onb.shopwall .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--sh-ink); }
+#sub.dress .btn.primary, #onb.shopwall .btn.primary { background: var(--sh-red); color: #fff; }
+#sub.dress .btn.sm.sel { background: var(--sh-yellow); }
+#sub.dress .btn.buy { background: var(--sh-yellow); color: var(--sh-red); }
+#sub.dress .btn.buy.poor { background: #fff; color: #8a7f76; }
+#sub.dress .dnext, #onb.shopwall .dnext { font-family: var(--font-shop); font-weight: 400; font-size: 17px; border-radius: 8px; min-height: 44px; padding: 8px 12px 8px 16px; }
+#sub.dress .seg, #onb.shopwall .seg { display: flex; gap: 10px; background: none; border: 0; padding: 0; margin: 6px 4px 8px; }
+#sub.dress .seg button { flex: 1; border: 2.5px solid var(--sh-ink); background: #fff; color: var(--sh-ink); border-radius: 8px; box-shadow: 3px 3px 0 var(--sh-ink); font-weight: 700; min-height: 42px; }
+#sub.dress .seg button.on { background: var(--sh-red); color: #fff; }
+#sub.dress .dstick, #onb.shopwall .dstick { background: var(--sh-teal-d); border-bottom: 3px solid var(--sh-ink); padding: 8px 16px 8px; }
+#sub.dress .dtab, #onb.shopwall .dtab { border: 2.5px solid var(--sh-ink); border-radius: 6px; background: #fff; color: var(--sh-ink); font-weight: 600; box-shadow: 2px 2px 0 var(--sh-ink); padding: 6px 13px; margin: 2px 4px 4px 0; }
+#sub.dress .dtab.on, #onb.shopwall .dtab.on { background: var(--sh-red); color: #fff; font-weight: 700; }
+#sub.dress .dmini, #onb.shopwall .dmini { border: 2.5px solid var(--sh-ink); border-radius: 6px; background: #fff; }
+#sub.dress .dfilter .chip, #onb.shopwall .dfilter .chip { background: #fff; color: var(--sh-ink); border: 2px solid var(--sh-ink); border-radius: 4px; font-weight: 600; box-shadow: 2px 2px 0 var(--sh-ink); }
+#sub.dress .dfilter .chip.on { background: var(--sh-yellow); }
+
+/* ของแต่ละชิ้นเป็นป้ายบนเพกบอร์ด */
+#sub.dress .dgrid, #onb.shopwall .dgrid { gap: 16px 12px; padding: 18px 0 6px; }
+#sub.dress .dcell, #onb.shopwall .dcell { background: #fff; color: var(--sh-ink); border: 2.5px solid var(--sh-ink); border-radius: 8px; box-shadow: 3px 3px 0 var(--sh-ink); padding: 6px; transition: transform .08s, box-shadow .08s; }
+#sub.dress .dcell:active, #onb.shopwall .dcell:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--sh-ink); }
+#sub.dress .dcell.on, #onb.shopwall .dcell.on { background: #FFF1B0; border-color: var(--sh-ink); }
+#sub.dress .dcell.sel:not(.on), #onb.shopwall .dcell.sel:not(.on) { outline: 3px solid var(--sh-red); outline-offset: 2px; }
+#sub.dress .dthumb, #onb.shopwall .dthumb { border: 2px solid var(--sh-ink); border-radius: 4px; background: #D9F0EC; }
+#sub.dress .dname, #onb.shopwall .dname { color: var(--sh-ink); font-weight: 600; font-size: 12px; }
+#sub.dress .dcell.locked .dthumb { opacity: .72; filter: grayscale(.2); }
+#sub.dress .dbadge, #onb.shopwall .dbadge { position: absolute; top: -9px; right: -7px; left: auto; background: var(--sh-yellow); color: var(--sh-red); border: 2px solid var(--sh-ink); border-radius: 4px; font-family: var(--font-shop); font-size: 12px; padding: 1px 6px; transform: rotate(5deg); box-shadow: 2px 2px 0 var(--sh-ink); gap: 3px; }
+#sub.dress .dbadge.lk, #onb.shopwall .dbadge.lk { background: #fff; color: var(--sh-ink); padding: 3px 5px; }
+#sub.dress .dbadge.ok, #onb.shopwall .dbadge.ok { top: -12px; left: -10px; right: auto; width: 46px; height: 46px; border: 2.5px solid var(--sh-red); border-radius: 50%; background: rgba(255, 255, 255, .92); color: var(--sh-red); font-family: "Noto Sans Thai", sans-serif; font-weight: 800; font-size: 11px; padding: 0; display: grid; place-items: center; transform: rotate(-14deg); box-shadow: none; text-align: center; line-height: 1.1; }
+
+/* แถบซื้อ = ใบเสร็จ */
+#sub.dress .dbar { background: #fff; color: var(--sh-ink); border: 2.5px solid var(--sh-ink); border-radius: 6px; box-shadow: 4px 4px 0 var(--sh-ink); margin: 16px 4px 10px; bottom: 10px; padding: 16px 12px 12px; position: sticky; }
+#sub.dress .dbar::before { content: ""; position: absolute; left: 10px; right: 10px; top: 6px; border-top: 2px dashed #b8aca0; }
+#sub.dress .dinfo { color: var(--sh-ink); }
+#sub.dress .dbody .muted { color: rgba(255, 255, 255, .88); }
+
+/* หน้าแรก */
+.land { padding: 0 0 36px; color: #fff; }
+.land .lawn { margin: -14px -16px 0; }
+.lsign { position: relative; display: block; width: max-content; max-width: 90%; margin: 14px auto 0; padding: 4px 20px 6px; background: var(--sh-bamboo); border: 3px solid var(--sh-ink); border-radius: 6px; box-shadow: 4px 4px 0 var(--sh-ink); transform: rotate(-1.5deg); text-align: center; color: var(--sh-ink); }
+.lsign::before, .lsign::after { content: ""; position: absolute; top: -16px; width: 3px; height: 16px; background: var(--sh-ink); }
+.lsign::before { left: 18%; } .lsign::after { right: 18%; }
+.lsign-name { display: block; font-family: var(--font-shop); font-size: 40px; line-height: 1.15; }
+.lsign-th { display: block; font-size: 13px; font-weight: 700; letter-spacing: 2px; margin-top: -2px; }
+.lwin { position: relative; margin: 26px 6px 0; padding: 10px; background-color: #fff; background-image: var(--sh-gingham); background-size: 20px 20px; border: 3px solid var(--sh-ink); box-shadow: 7px 7px 0 var(--sh-ink); }
+.lwin-in { border: 3px solid var(--sh-ink); background: #fff; line-height: 0; } .lwin-in svg { width: 100%; height: auto; display: block; }
+.ltag { position: absolute; right: -8px; top: -20px; padding: 5px 12px 5px 22px; background: var(--sh-yellow); color: var(--sh-red); border: 2.5px solid var(--sh-ink); border-radius: 4px; font-family: var(--font-shop); font-size: 14px; line-height: 1.25; transform: rotate(6deg); box-shadow: 3px 3px 0 var(--sh-ink); }
+.ltag::before { content: ""; position: absolute; left: 6px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border: 2px solid var(--sh-ink); border-radius: 50%; background: var(--sh-teal); }
+.lhead { margin: 28px 4px 0; font-family: var(--font-shop); font-weight: 400; font-size: 30px; line-height: 1.35; color: #fff; text-shadow: 3px 3px 0 var(--sh-ink); }
+.lsub { margin: 12px 4px 0; font-size: 16px; line-height: 1.65; max-width: 34ch; color: rgba(255, 255, 255, .95); }
+.lcta { display: block; width: calc(100% - 8px); margin: 22px 4px 0; padding: 15px 16px; background: var(--sh-red); color: #fff; border: 3px solid var(--sh-ink); border-radius: 10px; box-shadow: 5px 5px 0 var(--sh-ink); font-family: var(--font-shop); font-size: 21px; transition: transform .08s, box-shadow .08s; }
+.lcta:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--sh-ink); }
+.lfine { margin: 12px 4px 0; font-size: 13px; color: rgba(255, 255, 255, .85); }
+.llogin { margin: 18px 4px 0; padding: 12px; background: rgba(255, 255, 255, .14); border: 2px dashed rgba(255, 255, 255, .7); border-radius: 8px; } .llogin p { font-size: 13px; margin-bottom: 8px; }
+.lboard { margin: 34px 4px 0; padding: 18px 16px 8px; background: #fff; color: var(--sh-ink); border: 3px solid var(--sh-ink); border-radius: 14px; box-shadow: 6px 6px 0 var(--sh-ink); outline: 3px dotted var(--sh-teal); outline-offset: -11px; }
+.lboard h2 { font-family: var(--font-shop); font-weight: 400; font-size: 21px; color: var(--sh-red); margin: 0 0 6px; }
+.lrow { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 2px dashed #d7cfc6; } .lrow:first-of-type { border-top: 0; }
+.lrow .bunbul { flex-shrink: 0; margin-top: 3px; } .lrow b { display: block; font-family: var(--font-shop); font-weight: 400; font-size: 16px; } .lrow span { display: block; font-size: 13.5px; line-height: 1.55; color: #5b514a; }
+.lsteps { list-style: none; counter-reset: st; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 26px 4px 0; padding: 0; }
+.lsteps li { counter-increment: st; position: relative; padding: 18px 8px 10px; background: var(--sh-yellow); color: var(--sh-ink); border: 2.5px solid var(--sh-ink); border-radius: 4px; box-shadow: 3px 3px 0 var(--sh-ink); font-size: 12.5px; font-weight: 700; line-height: 1.35; text-align: center; }
+.lsteps li::before { content: counter(st); position: absolute; left: 50%; top: -12px; width: 24px; height: 24px; margin-left: -12px; display: grid; place-items: center; background: var(--sh-red); color: #fff; border: 2.5px solid var(--sh-ink); border-radius: 50%; font-family: var(--font-shop); font-size: 12px; }
+.ldisc { margin: 26px 4px 0; font-size: 12px; line-height: 1.6; color: rgba(255, 255, 255, .78); }
+.land .lwin.wave .armR { animation: wavearm .5s ease-in-out 6 alternate; }
+#sub.dress .subhead { background: var(--sh-teal); background-image: var(--sh-peg); background-size: 24px 24px; }

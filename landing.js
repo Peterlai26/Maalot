@@ -1,29 +1,30 @@
-/* หน้าแรกสำหรับผู้ใช้ใหม่ ก่อนเข้าขั้นสร้างตัวละคร */
+/* หน้าแรกของผู้ใช้ใหม่: ร้านเล็กๆ ที่มีกันสาด ตัวละครยืนอยู่หน้าต่างร้าน และป้ายเมนูว่าในแอปทำอะไรได้บ้าง */
+const BOARD = [
+  ["พิมพ์ว่ากินอะไร", "แอปแยกรายการและประมาณแคลอรี่ให้ แก้ตัวเลขเองได้"],
+  ["ดูแนวโน้มน้ำหนัก", "เฉลี่ย 7 วัน ตัวเลขแกว่งรายวันไม่ทำให้ตกใจ"],
+  ["เล่าอารมณ์วันนี้", "ดูว่าอารมณ์เกี่ยวกับการกินหรือเปล่า"],
+  ["ทำภารกิจเล็กๆ", "เก็บเหรียญไปแต่งตัวและตกแต่งห้องให้น้อง"],
+  ["อ่านจดหมายสัปดาห์", "น้องสรุปให้ด้วยน้ำเสียงใจดี ไม่ตัดสิน"]
+];
+const BUN = '<svg class="bunbul" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 15c0-6 4-10 9-10s9 4 9 10c0 3-4 5-9 5s-9-2-9-5Z" fill="#fff" stroke="#1F1915" stroke-width="1.8"/><path d="M12 5.4c-.3 1.4-.8 2.2-1.6 3M12 5.4c.3 1.4.8 2.2 1.6 3" stroke="#1F1915" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>';
 function renderLanding() {
-  const el = $("#onb"); el.hidden = false; $("#app").hidden = true; $(".nav").hidden = true;
-  const feats = [
-    ["bowl", "พิมพ์แล้วจดให้", "เขียนว่า ข้าวมันไก่ แล้วก็ชานม แอปช่วยแยกเป็นรายการและประมาณพลังงานให้"],
-    ["chart", "ดูแนวโน้มจริงๆ", "กราฟน้ำหนักเฉลี่ย 7 วัน ดูภาพรวมได้โดยไม่ต้องกังวลกับตัวเลขที่แกว่งรายวัน"],
-    ["user", "ตัวละครของคุณ", "ตัวละครมีรูปร่างตามคุณ แต่งตัวได้ และได้เหรียญจากการทำภารกิจเล็กๆ"],
-    ["mail", "จดหมายประจำสัปดาห์", "สรุปสัปดาห์ที่ผ่านมาด้วยน้ำเสียงอบอุ่น ไม่ตัดสิน ไม่กดดัน"]
-  ];
-  const steps = [["สร้างตัวละคร", "เลือกหน้าตาที่ชอบ"], ["กรอกข้อมูลเล็กน้อย", "ส่วนสูง น้ำหนัก อายุ"], ["เริ่มจดได้เลย", "ไม่ต้องสมัครสมาชิก"]];
+  const el = $("#onb"); el.hidden = false; $("#app").hidden = true; $(".nav").hidden = true; el.classList.add("shopwall");
+  const room = scene({ look: S.look, mood: "happy", rx: 46, period: "noon", owned: {}, room: ROOM_DEFAULT, l1: "สวัสดีนะ", l2: "กินอะไรมาบ้าง" });
   el.innerHTML = `<div class="inner land">
-<div class="land-hero"><img class="land-logo" src="logo.svg" alt="" width="84" height="84"><span class="chip soft">${ic("sparkle", 15)}ห้องอุ่นๆ สำหรับดูแลตัวเอง</span>
-<h1 class="land-h1">Maalot <span class="land-th">มาลด</span></h1>
-<p class="land-sub">จดการกิน ออกกำลังกาย และน้ำหนัก โดยมีตัวละครของคุณเป็นเพื่อนในห้องอุ่นๆ ไม่ต้องกดเยอะ ไม่ต้องกดดันตัวเอง</p>
-<div class="land-stage">${lookPreview(S.look, 46)}</div>
-<button class="btn primary block land-cta" data-act="landgo">เริ่มเลย ใช้เวลาไม่ถึง 2 นาที</button>
-<p class="xs muted" style="text-align:center;margin-top:8px">ฟรี ไม่ต้องสมัครสมาชิก</p></div>
-<h2 class="land-sec">มีอะไรในนี้</h2>
-<div class="col">${feats.map(f => `<div class="card land-feat"><span class="land-ic">${ic(f[0], 22)}</span><div><h3>${f[1]}</h3><p class="muted sm">${f[2]}</p></div></div>`).join("")}</div>
-<h2 class="land-sec">เริ่มยังไง</h2>
-<div class="col">${steps.map((s, i) => `<div class="row land-step"><span class="land-n">${i + 1}</span><div><b>${s[0]}</b><div class="muted sm">${s[1]}</div></div></div>`).join("")}</div>
-<h2 class="land-sec">ข้อมูลของคุณ</h2>
-<div class="hint" style="margin-top:0">${ic("lock", 18)}<span>ข้อมูลเก็บในเบราว์เซอร์ของคุณเอง ไม่ถูกส่งไปที่อื่น สำรองเป็นไฟล์ได้ และติดตั้งเป็นแอปบนมือถือได้จากหน้าตั้งค่า</span></div>
-<button class="btn primary block land-cta" style="margin-top:18px" data-act="landgo">เริ่มสร้างตัวละคร</button>
-<p class="xs muted" style="margin-top:14px;text-align:center">สำหรับผู้ใหญ่ 18 ปีขึ้นไป ใช้เป็นข้อมูลทั่วไป ไม่ใช่คำแนะนำทางการแพทย์ ถ้ามีโรคประจำตัว ตั้งครรภ์ หรือกังวลเรื่องการกิน ควรปรึกษาแพทย์</p>
+<div class="lawn" aria-hidden="true"></div>
+<div class="lsign"><span class="lsign-name">Maalot</span><span class="lsign-th">มาลด</span></div>
+<div class="lwin"><div class="lwin-in">${room}</div><span class="ltag">ใช้เวลา<br>2 นาที</span></div>
+<h1 class="lhead">มื้อนี้กินอะไรมา<br>บอกน้องก้อนได้เลย</h1>
+<p class="lsub">พิมพ์เป็นประโยคธรรมดา เดี๋ยวน้องจดและประมาณแคลอรี่ให้ ไม่ต้องนับเอง และไม่มีใครตัดสิน</p>
+<button class="lcta" data-act="landgo">เริ่มจดมื้อแรก</button>
+<p class="lfine">ฟรี ไม่ต้องสมัคร ข้อมูลอยู่ในเครื่องของคุณ</p>
+${typeof GOOGLE_CLIENT_ID !== "undefined" && GOOGLE_CLIENT_ID ? '<div class="llogin"><p>มีบัญชีอยู่แล้ว เข้าสู่ระบบเพื่อดึงข้อมูลเดิมกลับมา</p><div class="gbtn" style="min-height:44px;display:flex;justify-content:center"></div></div>' : ""}
+<section class="lboard" aria-label="ในแอปมีอะไรบ้าง"><h2>ในแอปมีอะไรบ้าง</h2>${BOARD.map(r => `<div class="lrow">${BUN}<div><b>${r[0]}</b><span>${r[1]}</span></div></div>`).join("")}</section>
+<ol class="lsteps"><li>สร้างตัวละคร</li><li>ใส่ส่วนสูงและน้ำหนัก</li><li>จดมื้อแรก</li></ol>
+<p class="ldisc">สำหรับผู้ใหญ่ 18 ปีขึ้นไป ใช้เป็นข้อมูลทั่วไป ไม่ใช่คำแนะนำทางการแพทย์ ถ้ามีโรคประจำตัว ตั้งครรภ์ หรือกังวลเรื่องการกิน ควรปรึกษาแพทย์</p>
 </div>`;
   window.scrollTo(0, 0);
+  if (typeof acctRenderBtn === "function") acctRenderBtn();
+  setTimeout(() => { const w = $(".lwin"); if (w) { w.classList.add("wave"); setTimeout(() => w.classList.remove("wave"), 3200); } }, 650);
 }
 ACT.landgo = () => renderOnb();
