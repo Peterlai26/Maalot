@@ -30,9 +30,9 @@ function renderSub() {
   const top = subStack[subStack.length - 1], def = SUBS[top.name](top.arg || {});
   const el = $("#sub"); el.hidden = false;
   el.innerHTML = '<div class="inner"><div class="subhead"><button class="iconbtn" data-act="back" aria-label="ย้อนกลับ">' + ic("back", 24) + "</button><h2>" + def.title + "</h2>" + (def.right || "") + "</div>" + def.html + "</div>";
-  el.classList.remove("dress"); if (def.after) def.after(el); if (typeof RIG !== "undefined") RIG.thumbs(el); if (!def.keepScroll) el.scrollTop = 0;
+  el.classList.remove("dress"); el.classList.add("enter"); clearTimeout(el._en); el._en = setTimeout(() => el.classList.remove("enter"), 1100); if (def.after) def.after(el); if (typeof RIG !== "undefined") RIG.thumbs(el); if (!def.keepScroll) el.scrollTop = 0;
 }
-function rerenderSub() { const el = $("#sub"), y = el.scrollTop; const top = subStack[subStack.length - 1]; if (!top) return; const def = SUBS[top.name](top.arg || {}); el.innerHTML = '<div class="inner"><div class="subhead"><button class="iconbtn" data-act="back" aria-label="ย้อนกลับ">' + ic("back", 24) + "</button><h2>" + def.title + "</h2>" + (def.right || "") + "</div>" + def.html + "</div>"; el.classList.remove("dress"); if (def.after) def.after(el); if (typeof RIG !== "undefined") RIG.thumbs(el); el.scrollTop = y; }
+function rerenderSub() { const el = $("#sub"), y = el.scrollTop; const top = subStack[subStack.length - 1]; if (!top) return; const def = SUBS[top.name](top.arg || {}); el.innerHTML = '<div class="inner"><div class="subhead"><button class="iconbtn" data-act="back" aria-label="ย้อนกลับ">' + ic("back", 24) + "</button><h2>" + def.title + "</h2>" + (def.right || "") + "</div>" + def.html + "</div>"; el.classList.remove("dress", "enter"); if (def.after) def.after(el); if (typeof RIG !== "undefined") RIG.thumbs(el); el.scrollTop = y; }
 function show(v) {
   view = v; closeAllSubsSilent();
   $$(".view").forEach(e => { e.hidden = e.id !== "v-" + v; });

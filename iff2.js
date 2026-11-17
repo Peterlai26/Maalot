@@ -65,15 +65,37 @@ iffBanner = function () {
 };
 /* ---------- หน้า IF ---------- */
 const IFSCREEN = [["ตั้งครรภ์หรือให้นมบุตร", "pg"], ["เป็นเบาหวาน หรือใช้ยาลดน้ำตาล/อินซูลิน", "db"], ["มีโรคที่แพทย์สั่งคุมการกิน (เช่น โรคหัวใจ ไต ความดัน กรดไหลย้อนรุนแรง)", "dz"], ["เคยหรือกำลังมีปัญหาการกิน (กินไม่หยุด อาเจียนหลังกิน กลัวอ้วนมาก)", "ed"]];
+/* นาฬิกา 24 ชั่วโมง: ส่วนโค้งสีเขียว = ช่วงกิน ที่เหลือ = ช่วงงด จุดขาวเต้น = ตอนนี้ (เที่ยงคืนอยู่บนสุด) */
+const IFD_C = 2 * Math.PI * 76;
+function iffDial(eat, startMin, st) {
+  const el = eat / 24 * IFD_C, so = startMin / 1440 * IFD_C, d = new Date(), nowA = (d.getHours() * 60 + d.getMinutes()) / 1440 * 360 - 90;
+  const ticks = Array.from({ length: 24 }, (_, i) => { const a = i / 24 * 2 * Math.PI, big = i % 6 === 0, r1 = big ? 58 : 62, r2 = 66; return `<line x1="${(100 + Math.cos(a) * r1).toFixed(1)}" y1="${(100 + Math.sin(a) * r1).toFixed(1)}" x2="${(100 + Math.cos(a) * r2).toFixed(1)}" y2="${(100 + Math.sin(a) * r2).toFixed(1)}" class="${big ? "tb" : ""}"/>`; }).join("");
+  const lbl = [["00", 0], ["06", 90], ["12", 180], ["18", 270]].map(([t, a]) => { const r = Math.PI / 180 * (a - 90); return `<text x="${(100 + Math.cos(r) * 48).toFixed(1)}" y="${(104 + Math.sin(r) * 48).toFixed(1)}" text-anchor="middle">${t}</text>`; }).join("");
+  const label = !st ? "ช่วงกิน" : st.paused ? "วันพัก" : st.eating ? "กินได้" : "งดอยู่";
+  return `<svg class="ifdial" viewBox="0 0 200 200" role="img" aria-label="นาฬิกา 24 ชั่วโมง ช่วงกิน ${hm(startMin)} ถึง ${hm(Math.min(1439, startMin + eat * 60))}">
+<circle class="idt" cx="100" cy="100" r="76"/><circle class="ide" cx="100" cy="100" r="76" transform="rotate(-90 100 100)" style="stroke-dasharray:${el.toFixed(1)} ${(IFD_C - el).toFixed(1)};stroke-dashoffset:${(-so).toFixed(1)}"/>
+<g class="idk">${ticks}</g><g class="idl">${lbl}</g>
+<text class="idc" x="100" y="100" text-anchor="middle">${label}</text><text class="ids" x="100" y="118" text-anchor="middle">${hm(startMin)}–${hm(Math.min(1439, startMin + eat * 60))}</text>
+<g class="idn" style="transform:rotate(${nowA.toFixed(1)}deg)"><circle class="idnr" cx="176" cy="100" r="9"/><circle class="idnd" cx="176" cy="100" r="6"/></g></svg>`;
+}
+setInterval(() => { document.querySelectorAll(".ifdial .idn").forEach(g => { const d = new Date(); g.style.transform = `rotate(${((d.getHours() * 60 + d.getMinutes()) / 1440 * 360 - 90).toFixed(1)}deg)`; }); }, 30000);
+/* ตอนตั้งค่า: เลือกรูปแบบหรือเวลาเริ่ม วงนาฬิกาเลื่อนตามทันที */
+document.addEventListener("change", e => {
+  if (!e.target || (e.target.id !== "ifw" && e.target.id !== "ifs")) return; const dial = document.querySelector(".ifdial"); if (!dial) return;
+  const eat = +$("#ifw").value, sm = +$("#ifs").value * 60, el = eat / 24 * IFD_C, so = sm / 1440 * IFD_C, arc = dial.querySelector(".ide");
+  arc.style.strokeDasharray = `${el.toFixed(1)} ${(IFD_C - el).toFixed(1)}`; arc.style.strokeDashoffset = (-so).toFixed(1);
+  dial.querySelector(".ids").textContent = `${hm(sm)}–${hm(Math.min(1439, sm + eat * 60))}`; dial.classList.remove("pop"); void dial.getBoundingClientRect(); dial.classList.add("pop");
+  const sum = document.getElementById("ifsum"); if (sum) sum.textContent = `กิน ${eat} ชม. · งด ${24 - eat} ชม. ต่อวัน`;
+});
 function iffSetup() {
   const under = bmiOf(estW()) < 18.5;
-  return { title: "โหมด IF", html: `<p class="muted" style="margin-bottom:10px">ตั้งวินัยช่วงเวลากินให้ชัด กินเฉพาะในช่วงที่เลือก นอกช่วงนั้นโหมดกินบางอย่างจะล็อก และการบันทึกอาหารต้องยืนยันก่อน แอปนี้จำกัดการงดไม่เกิน ${IFF_CAP_FAST} ชั่วโมงต่อวัน</p>
+  return { title: "โหมด IF", html: `${typeof modeHero === "function" ? modeHero(modeOf("iff")) : ""}<div class="card ifdialcard">${iffDial(8, 660, null)}<div class="ifd-side"><b id="ifsum">กิน 8 ชม. · งด 16 ชม. ต่อวัน</b><span class="xs muted">เลือกรูปแบบและเวลาเริ่มด้านล่าง วงนาฬิกาจะเลื่อนตามให้ดู</span></div></div><p class="muted" style="margin:10px 0">ตั้งวินัยช่วงเวลากินให้ชัด กินเฉพาะในช่วงที่เลือก นอกช่วงนั้นโหมดกินบางอย่างจะล็อก และการบันทึกอาหารต้องยืนยันก่อน แอปนี้จำกัดการงดไม่เกิน ${IFF_CAP_FAST} ชั่วโมงต่อวัน</p>
 ${under ? `<div class="hint">${ic("lock", 18)}<span>น้ำหนักตอนนี้อยู่ในเกณฑ์ต่ำ โหมดนี้จึงปิดไว้เพื่อความปลอดภัย</span></div>` : `<div class="scard"><b class="sm">ก่อนเริ่ม ตอบให้ตรงตามจริง</b><p class="xs muted" style="margin:4px 0 8px">ถ้ามีข้อใดข้อหนึ่ง IF อาจไม่ปลอดภัยสำหรับคุณ ควรปรึกษาแพทย์ก่อน</p>${IFSCREEN.map(q => `<label class="row" style="gap:10px;align-items:flex-start;margin-top:8px"><input type="checkbox" class="ifq" data-q="${q[1]}" style="width:22px;height:22px;margin-top:2px"/><span class="sm">${q[0]}</span></label>`).join("")}<div id="ifwarn" class="hint" style="display:none;margin-top:10px">${ic("heart", 18)}<span>จากที่ตอบ ไม่แนะนำให้เริ่ม IF ด้วยตัวเอง ควรปรึกษาแพทย์หรือนักกำหนดอาหารก่อน แอปนี้ไม่ใช่คำแนะนำทางการแพทย์</span></div></div>
 <label class="f" for="ifw">รูปแบบ</label><select id="ifw"><option value="12">${IFFW[12]}</option><option value="10">${IFFW[10]}</option><option value="8" selected>${IFFW[8]}</option></select>
 <label class="f" for="ifs">เริ่มกินมื้อแรกเวลา</label><select id="ifs">${[8, 9, 10, 11, 12].map(h => `<option value="${h}" ${h === 11 ? "selected" : ""}>${pad(h)}:00</option>`).join("")}</select>
 <label class="f" for="ifl">ตั้งใจทำกี่วัน</label><select id="ifl"><option value="3">3 วัน</option><option value="7" selected>7 วัน</option><option value="14">14 วัน</option></select>
 <label class="row" style="margin-top:14px;gap:10px;align-items:flex-start"><input id="ifok" type="checkbox" style="width:22px;height:22px;margin-top:2px"/><span class="sm">เข้าใจว่าถ้าเวียนหัว ใจสั่น มือสั่น หรือไม่ไหว ต้องหยุดและกินทันที ออกจากโหมดได้ทุกเมื่อ</span></label>
-<button class="btn primary block" style="margin-top:14px" data-act="iffstart">เริ่มวินัย</button>`}
+<button class="btn primary block go" style="margin-top:14px" data-act="iffstart">เริ่มวินัย</button>`}
 <div class="sec">สิ่งที่จะเกิดเมื่อเปิดโหมด</div><div class="card sm">ล็อก: สุ่มเมนู และของในตู้เย็น (ช่วงงด)<br>ต้องยืนยัน: บันทึกอาหารนอกช่วงกิน<br>ใช้ได้ตลอด: น้ำ โหมดหิวดึก ออกกำลังกาย ชั่งน้ำหนัก<br>มีวันพัก ผ่อนผัน 30 นาที และปุ่ม “ไม่ไหว” เมื่อไม่สบาย</div>` };
 }
 document.addEventListener("change", e => { if (e.target && e.target.classList && e.target.classList.contains("ifq")) { const any = [...document.querySelectorAll(".ifq")].some(x => x.checked), w = $("#ifwarn"); if (w) w.style.display = any ? "flex" : "none"; } });
@@ -105,13 +127,13 @@ SUBS.iff = () => {
   const f = S.iff, st = iffState(); if (!st) return iffSetup(); iffSync(true);
   const tk = todayKey(), need = 24 - f.eat, skips = (f.skip || []).filter(k => k >= f.from && k <= addDays(f.from, f.len - 1)).length, must = Math.max(1, f.len - skips);
   const fasted = st.eating || st.paused ? null : iffFastedNow(st), pct = fasted === null ? 0 : Math.min(100, Math.round(fasted / need * 100));
-  const dots = []; for (let i = 0; i < f.len; i++) { const k = addDays(f.from, i), r = iffDayR(k).r; dots.push(`<span class="iffdot ${r === "ok" ? "ok" : r === "bad" || r === "none" ? "bad" : r === "skip" ? "skip" : ""} ${k === tk ? "now" : ""}" title="${fmtD(k)}">${r === "ok" ? ic("check", 14) : r === "bad" || r === "none" ? ic("x", 14) : r === "skip" ? ic("moon", 13) : i + 1}</span>`); }
+  const dots = []; for (let i = 0; i < f.len; i++) { const k = addDays(f.from, i), r = iffDayR(k).r; dots.push(`<span style="--i:${i}" class="iffdot ${r === "ok" ? "ok" : r === "bad" || r === "none" ? "bad" : r === "skip" ? "skip" : ""} ${k === tk ? "now" : ""}" title="${fmtD(k)}">${r === "ok" ? ic("check", 14) : r === "bad" || r === "none" ? ic("x", 14) : r === "skip" ? ic("moon", 13) : i + 1}</span>`); }
   const passes = Array.from({ length: f.len }, (_, i) => iffDayR(addDays(f.from, i)).r).filter(r => r === "ok").length;
   const done = Object.values(S.iffDays || {}).filter(d => d.fast !== null && d.fast !== undefined), avgF = done.length ? done.reduce((s, d) => s + d.fast, 0) / done.length : null, maxF = done.length ? Math.max.apply(null, done.map(d => d.fast)) : null, kept = done.length ? Math.round(done.filter(d => d.ok).length / done.length * 100) : null;
   const warn = iffNutrWarn(st), rc = typeof remCfg === "function" ? remCfg() : { on: false };
   const hero = `<div class="dhero">${dayRing(st.paused ? 0 : st.eating ? Math.round((1 - st.left / (f.eat * 60)) * 100) : pct, false)}<div class="dh-in"><div class="xs muted">${st.paused ? "วันพัก" : st.eating ? "ช่วงกินเหลือ" : "งดมาแล้ว"}</div><div class="dh-big" style="font-size:24px">${st.paused ? "พัก" : st.eating ? dur(st.left).replace(" ชม. ", ":").replace(" นาที", "") : fmtHM(fasted).replace(" ชม. ", ":").replace(" นาที", "")}</div><div class="xs muted">${st.paused || st.eating ? "ชม.:นาที" : "ชม.:นาที"}</div></div><div class="dh-side"><div><span class="xs muted">${IFFW[f.eat].split("(")[1].replace(")", "")}</span><b>${st.paused ? "พัก" : st.eating ? "กินได้" : "งดกิน"}</b></div><div><span class="xs muted">ช่วงกิน</span><b>${hm(st.s)}–${hm(st.e)}</b></div><div><span class="xs muted">${st.eating ? "ปิดอีก" : "เปิดอีก"}</span><b>${st.paused ? "-" : dur(st.left)}</b></div></div></div>`;
   const acts = `<div class="ifacts">${!st.eating && !st.paused ? `<button class="btn danger" data-act="iffhelp">${ic("heart", 16)}ไม่ไหว / เวียนหัว</button>` : ""}${st.paused ? `<button class="btn" data-act="iffunskip">${ic("timer", 16)}กลับมาทำต่อวันนี้</button>` : `<button class="btn" data-act="iffskip">${ic("moon", 16)}วันพักวันนี้</button>`}<button class="btn" data-act="iffshift">${ic("timer", 16)}ขยับช่วงกิน</button></div>`;
-  return { title: "โหมด IF", html: `${hero}${acts}${warn ? `<div class="hint warnh" style="margin-top:10px">${ic("heart", 18)}<span>${warn}</span></div>` : ""}
+  return { title: "โหมด IF", html: `${hero}${acts}<div class="card ifdialcard">${iffDial(f.eat, st.s, st)}<div class="ifd-side"><span class="ifleg"><i class="g"></i>ช่วงกิน ${hm(st.s)}–${hm(st.e)}</span><span class="ifleg"><i class="v"></i>ช่วงงด ${24 - f.eat} ชม.</span><span class="xs muted">จุดขาวที่เต้นอยู่คือเวลาตอนนี้</span></div></div>${warn ? `<div class="hint warnh" style="margin-top:10px">${ic("heart", 18)}<span>${warn}</span></div>` : ""}
 <div class="sgt">ความคืบหน้า ผ่านแล้ว ${passes}/${must} วัน${skips ? ` (วันพัก ${skips})` : ""}</div><div class="iffbar">${dots.join("")}</div>
 <p class="xs muted" style="margin-top:8px">วันที่ผ่านคือวันที่มื้อแรกและมื้อสุดท้ายอยู่ในช่วงกิน (ผ่อนผัน ${IFF_GRACE} นาที) ผ่านวันละ +3 เหรียญ</p>
 ${passes >= must && !f.claimed ? `<button class="btn primary block" style="margin-top:12px" data-act="iffclaim">รับรางวัลครบวินัย 40 เหรียญ</button>` : ""}
