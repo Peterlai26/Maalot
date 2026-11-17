@@ -783,8 +783,8 @@ svg.mmap { display: block; width: 100%; max-width: 250px; height: auto; margin: 
 /* ---------- หน้าโปรแกรม: ทางเข้าหลัก 3 ช่อง ---------- */
 .pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0 4px; }
 .pgrid > * { animation: ptin .5s cubic-bezier(.2, .9, .3, 1) both; } .pgrid > :nth-child(2) { animation-delay: .08s; } .pgrid > :nth-child(3) { animation-delay: .16s; }
-.pbig, .ptile { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 22px; text-align: left; color: var(--ink); cursor: pointer; transition: transform .12s; }
-.pbig:active, .ptile:active { transform: scale(.97); }
+.pbig, .hubt { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 22px; text-align: left; color: var(--ink); cursor: pointer; transition: transform .12s; }
+.pbig:active, .hubt:active { transform: scale(.97); }
 .pbig { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 4px; padding: 14px 14px 12px; background: linear-gradient(135deg, var(--soft), var(--card) 75%); }
 .pbig::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, .5) 50%, transparent 60%); transform: translateX(-130%); animation: pcshine 4.2s ease-in-out 1s infinite; pointer-events: none; }
 .pb-top { display: flex; align-items: center; justify-content: space-between; font-size: 17px; }
@@ -792,8 +792,8 @@ svg.mmap { display: block; width: 100%; max-width: 250px; height: auto; margin: 
 .pb-s { font-size: 12.5px; color: var(--muted); }
 .pb-th { display: flex; gap: 8px; margin-top: 8px; }
 .pb-th .rt { flex: 1; min-width: 0; width: auto; height: auto; aspect-ratio: 1; max-width: 76px; border-radius: 16px; animation: pfloat 2.6s ease-in-out calc(var(--i, 0) * .35s) infinite; }
-.ptile { display: flex; flex-direction: column; gap: 3px; padding: 14px; min-height: 132px; }
-.ptile b { font-size: 15px; line-height: 1.3; margin-top: 8px; font-weight: 600; } .pt-s { font-size: 12px; opacity: .8; }
+.hubt { display: flex; flex-direction: column; gap: 3px; padding: 14px; min-height: 132px; }
+.hubt b { font-size: 15px; line-height: 1.3; margin-top: 8px; font-weight: 600; } .pt-s { font-size: 12px; opacity: .8; }
 .t-stat { background: var(--blue-soft); color: var(--blue-ink); } .t-gps { background: var(--green-soft); color: var(--green); }
 .t-stat .pt-s, .t-gps .pt-s { color: inherit; } .t-stat b, .t-gps b { color: var(--ink); }
 .pt-ic { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: flex-end; justify-content: center; gap: 4px; padding-bottom: 11px; background: rgba(255, 255, 255, .55); }
@@ -806,3 +806,5 @@ svg.mmap { display: block; width: 100%; max-width: 250px; height: auto; margin: 
 @keyframes pgbob { 0%, 100% { transform: translateX(-2px); } 50% { transform: translateX(3px); } }
 @keyframes pspin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .pgrid > *, .pbig::after, .pb-go svg, .pb-th .rt, .pt-ic, .pt-ic i, .t-gps::after { animation: none; } .pt-ic i { height: 16px; } }
+
+.rt.sm { width: 46px; height: 46px; border-radius: 13px; }

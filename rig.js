@@ -203,7 +203,10 @@ const RIG = (() => {
   const oLib = SUBS.lib, oTrain = SUBS.train;
   let mineOnly = false;
   const tags = e => `${["", "เริ่มต้น", "ปานกลาง", "ชำนาญ"][e.lvl] || ""}${e.eq.length ? " · " + e.eq.map(k => (EQN[k] || k).split(" ")[0]).join(" ") : " · ไม่ใช้อุปกรณ์"}${e.out ? " · กลางแจ้ง" : ""}`;
-  const thumbOf = e => e.rig && RIG.has(e.rig) ? `<canvas class="rigthumb rt" data-ex="${e.rig}"${e.noDumb ? ' data-nd="1"' : ""} role="img" aria-label="ภาพตัวอย่างท่า${esc(e.n)}"></canvas>` : `<span class="rt ph" aria-hidden="true">${ic("dumbbell", 26)}</span>`;
+  const thumbOf = (e, sm) => e && e.rig && RIG.has(e.rig) ? `<canvas class="rigthumb rt${sm ? " sm" : ""}" data-ex="${e.rig}"${e.noDumb ? ' data-nd="1"' : ""} role="img" aria-label="ภาพตัวอย่างท่า${esc(e.n)}"></canvas>` : `<span class="rt${sm ? " sm" : ""} ph" aria-hidden="true">${ic("dumbbell", sm ? 20 : 26)}</span>`;
+  /* ใช้ได้ทุกหน้าที่ขึ้นชื่อท่า: exThumb(ท่า) และ workThumb(รายการที่บันทึกไว้ จับคู่กับท่าในคลังตามชื่อ) */
+  window.exThumb = thumbOf;
+  window.workThumb = (w, sm) => thumbOf(typeof mgOfWork === "function" ? mgOfWork(w) : null, sm);
   const libRow = e => { const m = typeof MMAP !== "undefined" ? MMAP.names(e) : e.mus; return `<button class="item" style="width:100%;text-align:left" data-act="sub" data-n="lib" data-arg="${e.id}">${thumbOf(e)}<div class="grow"><b>${e.n}</b><div class="xs muted">${e.sets ? e.sets + " เซ็ต × " : ""}${e.reps ? e.reps + " ครั้ง" : e.secs ? e.secs + " วินาที" : e.mins ? e.mins + " นาที" : ""}${m ? " · " + esc(m) : ""}</div><div class="xs muted">${tags(e)}</div></div>${ic("play", 18)}</button>`; };
   /* รายการท่า: ไม่ได้เลือกส่วนไหนจะแบ่งตามหมวด ถ้าเลือกส่วนของร่างกายจะเรียงท่าที่ตรงมากที่สุดก่อน */
   const ORDER = ["ขาและก้น", "อก แขน ไหล่", "หลัง", "แกนกลางลำตัว", "คาร์ดิโอ", "ยืดเหยียด"];

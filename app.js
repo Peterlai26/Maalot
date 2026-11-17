@@ -30,9 +30,9 @@ function renderSub() {
   const top = subStack[subStack.length - 1], def = SUBS[top.name](top.arg || {});
   const el = $("#sub"); el.hidden = false;
   el.innerHTML = '<div class="inner"><div class="subhead"><button class="iconbtn" data-act="back" aria-label="ย้อนกลับ">' + ic("back", 24) + "</button><h2>" + def.title + "</h2>" + (def.right || "") + "</div>" + def.html + "</div>";
-  el.classList.remove("dress"); if (def.after) def.after(el); if (!def.keepScroll) el.scrollTop = 0;
+  el.classList.remove("dress"); if (def.after) def.after(el); if (typeof RIG !== "undefined") RIG.thumbs(el); if (!def.keepScroll) el.scrollTop = 0;
 }
-function rerenderSub() { const el = $("#sub"), y = el.scrollTop; const top = subStack[subStack.length - 1]; if (!top) return; const def = SUBS[top.name](top.arg || {}); el.innerHTML = '<div class="inner"><div class="subhead"><button class="iconbtn" data-act="back" aria-label="ย้อนกลับ">' + ic("back", 24) + "</button><h2>" + def.title + "</h2>" + (def.right || "") + "</div>" + def.html + "</div>"; el.classList.remove("dress"); if (def.after) def.after(el); el.scrollTop = y; }
+function rerenderSub() { const el = $("#sub"), y = el.scrollTop; const top = subStack[subStack.length - 1]; if (!top) return; const def = SUBS[top.name](top.arg || {}); el.innerHTML = '<div class="inner"><div class="subhead"><button class="iconbtn" data-act="back" aria-label="ย้อนกลับ">' + ic("back", 24) + "</button><h2>" + def.title + "</h2>" + (def.right || "") + "</div>" + def.html + "</div>"; el.classList.remove("dress"); if (def.after) def.after(el); if (typeof RIG !== "undefined") RIG.thumbs(el); el.scrollTop = y; }
 function show(v) {
   view = v; closeAllSubsSilent();
   $$(".view").forEach(e => { e.hidden = e.id !== "v-" + v; });
@@ -338,7 +338,7 @@ ACT.csave = () => { const c = parseFloat($("#cv").value); if (!(c >= 30 && c <= 
 SUBS.today = () => {
   const k = todayKey(), i = dayInfo(k), tgt = targetOn(k);
   const ml = i.meals.map(m => `<div class="item"><div class="grow"><b>${esc(m.n)}</b><div class="xs muted">${m.t}</div></div><span>+${fmtN(m.k)}</span><button class="iconbtn" data-act="delm" data-id="${m.id}" aria-label="ลบ">${ic("trash", 18)}</button></div>`).join("");
-  const wl = i.works.map(m => `<div class="item"><div class="grow"><b>${esc(m.n)}</b><div class="xs muted">${m.t}</div></div><span class="muted">-${fmtN(m.k)}</span><button class="iconbtn" data-act="delwk" data-id="${m.id}" aria-label="ลบ">${ic("trash", 18)}</button></div>`).join("");
+  const wl = i.works.map(m => `<div class="item">${typeof workThumb === "function" ? workThumb(m, 1) : ""}<div class="grow"><b>${esc(m.n)}</b><div class="xs muted">${m.t}</div></div><span class="muted">-${fmtN(m.k)}</span><button class="iconbtn" data-act="delwk" data-id="${m.id}" aria-label="ลบ">${ic("trash", 18)}</button></div>`).join("");
   return {
     title: "บันทึกวันนี้", html: `<div class="grid2"><div class="card"><div class="muted xs">กินแล้ว</div><div style="font-size:22px;font-weight:600">${fmtN(i.eaten)}</div></div><div class="card"><div class="muted xs">เป้าวันนี้</div><div style="font-size:22px;font-weight:600">${fmtN(tgt)}</div></div></div>
 <div class="sec">อาหาร</div><div class="card" style="padding:4px 14px">${ml || '<div class="muted sm" style="padding:12px 0">ยังไม่มีบันทึก</div>'}</div>
