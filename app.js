@@ -297,10 +297,10 @@ ${hist ? '<div class="sec">ย้อนหลัง</div><div class="card" style
 };
 ACT.wsave = () => {
   const w = parseFloat($("#wv").value); if (!(w >= 30 && w <= 300)) { toast("ใส่น้ำหนักให้ถูกต้องนะ"); return; }
-  const d = todayKey(); S.weights = S.weights.filter(x => x.d !== d).concat([{ d, w }]).sort((a, b) => a.d < b.d ? -1 : 1);
+  const d = todayKey(); S.weights = S.weights.filter(x => x.d !== d).concat([{ d, w, t: Date.now() }]).sort((a, b) => a.d < b.d ? -1 : 1);
   earn(3); touchStreak(); save(); closeAllSubs(); toast("บันทึกน้ำหนักแล้ว " + f1(w) + " กก."); refresh();
 };
-ACT.delw = (a) => { S.weights = S.weights.filter(x => x.d !== a.dataset.d); save(); rerenderSub(); };
+ACT.delw = (a) => { S.weights = S.weights.filter(x => x.d !== a.dataset.d); (S.del = S.del || {})["wt:" + a.dataset.d] = Date.now(); save(); rerenderSub(); };
 SUBS.water = () => {
   const k = todayKey(), n = S.water[k] || 0, sl = S.sleep[k] || 0;
   return {
@@ -315,7 +315,7 @@ SUBS.waist = () => {
   const hist = S.waist.slice(-8).reverse().map(x => `<div class="item"><div class="grow">${fmtD(x.d)}</div><b>${f1(x.c)} ซม.</b></div>`).join("");
   return { title: "รอบเอว", html: `<label class="f" for="cv">รอบเอววันนี้ (ซม.)</label><input id="cv" type="number" inputmode="decimal" step="0.5"/><button class="btn primary block" style="margin-top:12px" data-act="csave">บันทึก</button>${hist ? '<div class="sec">ย้อนหลัง</div><div class="card" style="padding:4px 14px">' + hist + "</div>" : ""}<p class="xs muted" style="margin-top:12px">รูปความคืบหน้ายังไม่มีในเวอร์ชันนี้ ตอนนี้เก็บเป็นตัวเลขส่วนตัว</p>` };
 };
-ACT.csave = () => { const c = parseFloat($("#cv").value); if (!(c >= 30 && c <= 250)) { toast("ใส่รอบเอวให้ถูกต้องนะ"); return; } const d = todayKey(); S.waist = S.waist.filter(x => x.d !== d).concat([{ d, c }]).sort((a, b) => a.d < b.d ? -1 : 1); save(); rerenderSub(); toast("บันทึกรอบเอวแล้ว"); };
+ACT.csave = () => { const c = parseFloat($("#cv").value); if (!(c >= 30 && c <= 250)) { toast("ใส่รอบเอวให้ถูกต้องนะ"); return; } const d = todayKey(); S.waist = S.waist.filter(x => x.d !== d).concat([{ d, c, t: Date.now() }]).sort((a, b) => a.d < b.d ? -1 : 1); save(); rerenderSub(); toast("บันทึกรอบเอวแล้ว"); };
 SUBS.today = () => {
   const k = todayKey(), i = dayInfo(k), tgt = targetOn(k);
   const ml = i.meals.map(m => `<div class="item"><div class="grow"><b>${esc(m.n)}</b><div class="xs muted">${m.t}</div></div><span>+${fmtN(m.k)}</span><button class="iconbtn" data-act="delm" data-id="${m.id}" aria-label="ลบ">${ic("trash", 18)}</button></div>`).join("");
@@ -327,8 +327,8 @@ SUBS.today = () => {
 <div class="row" style="margin-top:14px"><button class="btn" style="flex:1" data-act="sub" data-n="log" data-arg="food">${ic("plus", 18)}เพิ่มอาหาร</button><button class="btn" style="flex:1" data-act="sub" data-n="log" data-arg="work">${ic("plus", 18)}เพิ่มออกกำลัง</button></div>`
   };
 };
-ACT.delm = (a) => { S.meals = S.meals.filter(m => m.id !== a.dataset.id); save(); rerenderSub(); };
-ACT.delwk = (a) => { S.works = S.works.filter(m => m.id !== a.dataset.id); save(); rerenderSub(); };
+ACT.delm = (a) => { S.meals = S.meals.filter(m => m.id !== a.dataset.id); (S.del = S.del || {})["m:" + a.dataset.id] = Date.now(); save(); rerenderSub(); };
+ACT.delwk = (a) => { S.works = S.works.filter(m => m.id !== a.dataset.id); (S.del = S.del || {})["k:" + a.dataset.id] = Date.now(); save(); rerenderSub(); };
 
 /* ---------- ทุกโหมด ---------- */
 const TILES = [

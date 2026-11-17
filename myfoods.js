@@ -56,7 +56,7 @@ ACT.mypick = (a) => {
   const m = (S.myfoods || []).find(x => x.id === a.dataset.id); if (!m || !LG) return; LG.text = ($("#lgtext") || {}).value || LG.text;
   LG.items.push(withNutr(Object.assign({ n: m.n, k1: m.k, q: 1, known: true, my: m.id }, m.p !== undefined ? { p: m.p, c: m.c || 0, f: m.f || 0, fb: m.fb || 0, sg: m.sg || 0, na: m.na || 0 } : {}))); rerenderSub();
 };
-ACT.myfdel = (a) => { S.myfoods = (S.myfoods || []).filter(x => x.id !== a.dataset.id); save(); rerenderSub(); };
+ACT.myfdel = (a) => { S.myfoods = (S.myfoods || []).filter(x => x.id !== a.dataset.id); (S.del = S.del || {})["f:" + a.dataset.id] = Date.now(); save(); rerenderSub(); };
 /* หน้าบันทึกอาหาร: แถวอาหารของฉัน + ปุ่มเพิ่มจากฉลาก */
 const _logSub4 = SUBS.log;
 SUBS.log = (arg) => {

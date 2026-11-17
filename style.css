@@ -665,3 +665,6 @@ body:has(#tut) #instbar, body:has(#tutinv) #instbar { display: none; }
 .iffchart { width: 100%; height: auto; display: block; } .iffchart text { font-size: 9px; fill: var(--muted); } .iffchart .v { font-size: 9px; fill: var(--ink); font-weight: 600; } .iffchart .bok { fill: #8155C9; } .iffchart .bno { fill: #E5534B; opacity: .7; } .iffchart .tl { stroke: var(--green); stroke-width: 1.5; stroke-dasharray: 4 3; } .iffchart .tt { fill: var(--green); font-weight: 600; }
 .iffdot.skip { background: var(--soft); color: var(--muted); }
 .hint.warnh { background: var(--warn-soft); border-color: transparent; color: var(--warn-ink); }
+
+.reckey { font: 700 17px/1.5 ui-monospace, Menlo, monospace; letter-spacing: .3px; white-space: nowrap; text-align: center; padding: 14px 8px; border-radius: 16px; background: var(--soft); user-select: all; word-break: break-all; }
+.linst.lacct { margin-left: 8px; }
