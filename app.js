@@ -199,7 +199,7 @@ SUBS.log = (arg) => {
   const rows = LG.items.map((it, i) => {
     if (isF) {
       const k = Math.round(it.k1 * it.q); tot += k;
-      return `<div class="item"><div class="grow">${it.known ? `<b>${esc(it.n)}</b>${it.ai ? ' <span class="chip blue xs">AI ประเมิน</span>' : ""}${macroLine(it)}` : `<input type="text" data-in="lgn" data-i="${i}" value="${esc(it.n)}" placeholder="ชื่ออาหาร" aria-label="ชื่ออาหาร"/><div class="xs muted" style="margin-top:4px">ไม่รู้จักเมนูนี้ กรอกแคลอรี่เองหรือให้ Claude ประเมิน</div>`}
+      return `<div class="item"><div class="grow">${it.known ? `<b>${esc(it.n)}</b>${it.ai ? ' <span class="chip blue xs">AI ประเมิน</span>' : ""}${macroLine(it)}${aiNote(it)}` : `<input type="text" data-in="lgn" data-i="${i}" value="${esc(it.n)}" placeholder="ชื่ออาหาร" aria-label="ชื่ออาหาร"/><div class="xs muted" style="margin-top:4px">ไม่รู้จักเมนูนี้ กรอกแคลอรี่เองหรือให้ AI ประเมิน</div>`}
 <div class="row" style="margin-top:6px"><div class="stepper"><button data-act="lgq" data-i="${i}" data-d="-0.5" aria-label="ลดปริมาณ">${ic("minus", 16)}</button><span style="min-width:34px;text-align:center">${it.q}</span><button data-act="lgq" data-i="${i}" data-d="0.5" aria-label="เพิ่มปริมาณ">${ic("plus", 16)}</button></div>
 <span class="xs muted">× </span><input type="number" inputmode="numeric" style="width:80px;min-height:36px;padding:6px 8px" data-in="lgk" data-i="${i}" value="${it.k1}" aria-label="แคลอรี่ต่อหน่วย"/><span class="xs muted">kcal</span></div></div>
 <div style="text-align:right"><b>${fmtN(k)}</b><div class="xs muted">kcal</div><button class="iconbtn" data-act="lgrm" data-i="${i}" aria-label="ลบรายการ">${ic("trash", 18)}</button></div></div>`;
@@ -218,7 +218,7 @@ ${it.known ? (c.assumed ? '<div class="xs muted" style="margin-top:4px">ไม�
 <label class="f" for="lgtext">${isF ? "พิมพ์ว่ากินอะไร เช่น ข้าวมันไก่ 1 จาน กับชานมไข่มุก" : "พิมพ์ว่าทำอะไร เช่น วิดพื้น 3 เซ็ต 12 ครั้ง วิ่ง 20 นาที"}</label>
 <textarea id="lgtext" data-in="lgtext" placeholder="${isF ? "ข้าวมันไก่ 1 จาน, ชานมไข่มุก 1 แก้ว" : "วิดพื้น 3 เซ็ต เซ็ตละ 12 ครั้ง แพลงก์ 3 เซ็ต 45 วินาที"}">${esc(LG.text)}</textarea>
 ${isF ? `<label class="f" for="lgsearch" style="margin-top:10px">หรือค้นหาเมนู แตะเพื่อเพิ่ม</label><input id="lgsearch" type="text" data-in="lgsearch" placeholder="เช่น กะเพรา ชาเขียว ส้มโอ" autocomplete="off"/><div id="lgres" class="logchips" style="margin-top:8px"></div>` : ""}
-<div class="row wrap" style="margin-top:8px"><button class="btn" data-act="lgparse">${ic("sparkle", 18)}ตีความ</button>${isF ? `<button class="btn" data-act="camera">${ic("camera", 18)}ถ่ายรูป</button><button class="btn" data-act="gallery">${ic("book", 18)}เลือกรูป</button>` : ""}<button class="btn" data-act="lgadd">${ic("plus", 18)}เพิ่มเอง</button>${hasUnknown ? `<button class="btn" data-act="lgai">ให้ Claude ประเมิน</button>` : ""}</div>
+<div class="row wrap" style="margin-top:8px"><button class="btn" data-act="lgparse">${ic("sparkle", 18)}ตีความ</button>${isF ? `<button class="btn" data-act="camera">${ic("camera", 18)}ถ่ายรูป</button><button class="btn" data-act="gallery">${ic("book", 18)}เลือกรูป</button>` : ""}<button class="btn" data-act="lgadd">${ic("plus", 18)}เพิ่มเอง</button>${hasUnknown ? `<button class="btn" data-act="lgai">ให้ AI ประเมิน</button>` : ""}</div>
 ${LG.busy ? '<div class="hint pulse-ring">' + ic("sparkle", 18) + "<span>กำลังดูให้อยู่…</span></div>" : ""}
 <div class="card" style="margin-top:12px;padding:6px 14px">${rows || '<div class="muted sm" style="padding:14px 0">ยังไม่มีรายการ พิมพ์แล้วกดตีความ หรือกดเพิ่มเอง</div>'}</div>
 ${LG.items.length ? `<div class="row between" style="margin-top:12px"><span class="muted">${isF ? "รวมมื้อนี้" : "เผาผลาญประมาณ"}</span><b style="font-size:20px">${isF ? "+" : "-"}${fmtN(tot)} kcal</b></div>` : ""}
@@ -232,7 +232,7 @@ function lgSearch(q) {
   const box = $("#lgres"); if (!box) return; const n = normT(q || "").trim();
   if (!n) { box.innerHTML = ""; return; }
   const hit = FOODS.map((f, i) => { const keys = f[3].concat([f[0]]).map(normT); const j = keys.findIndex(k => k.indexOf(n) > -1); return { f, i, s: j < 0 ? -1 : (keys[j].indexOf(n) === 0 ? 0 : 1) }; }).filter(x => x.s >= 0).sort((a, b) => a.s - b.s).slice(0, 8);
-  box.innerHTML = hit.length ? hit.map(x => `<button class="chip" data-act="lgpick" data-i="${x.i}">${ic("plus", 14)}${esc(x.f[0])} · ${x.f[1]}</button>`).join("") : '<span class="xs muted">ไม่พบเมนูนี้ พิมพ์ในช่องด้านบนแล้วกดตีความ หรือให้ Claude ประเมินได้</span>';
+  box.innerHTML = hit.length ? hit.map(x => `<button class="chip" data-act="lgpick" data-i="${x.i}">${ic("plus", 14)}${esc(x.f[0])} · ${x.f[1]}</button>`).join("") : '<span class="xs muted">ไม่พบเมนูนี้ พิมพ์ในช่องด้านบนแล้วกดตีความ หรือให้ AI ประเมินได้</span>';
 }
 ACT.lgpick = (a) => { const f = FOODS[+a.dataset.i]; if (!f) return; LG.text = ($("#lgtext") || {}).value || LG.text; LG.items.push({ n: f[0], k1: f[1], q: 1, known: true }); rerenderSub(); };
 ACT.lgparse = () => { LG.text = $("#lgtext").value; LG.items = LG.text.trim() ? (LG.tab === "food" ? parseFood(LG.text) : parseWork(LG.text)) : []; if (!LG.items.length) toast("พิมพ์สิ่งที่ทำก่อนนะ"); rerenderSub(); };

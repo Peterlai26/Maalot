@@ -100,9 +100,10 @@ async function estimate(req, env) {
   if (!env.ANTHROPIC_API_KEY && !env.AI) return J(req, { error: "not_configured" }, 503);
   let b; try { const t = await req.text(); if (t.length > 2500000) throw 0; b = JSON.parse(t); } catch (_) { return J(req, { error: "bad json" }, 400); }
   const text = typeof b.text === "string" ? b.text.trim().slice(0, 300) : "", img = typeof b.image === "string" ? b.image : "";
+  const list = Array.isArray(b.list) ? b.list.slice(0, 8).filter((f) => f && typeof f.n === "string" && f.n.trim()).map((f) => ({ n: f.n.trim().slice(0, 40), u: typeof f.u === "string" ? f.u.slice(0, 12) : "", r: Array.isArray(f.r) ? f.r.slice(0, 3).filter((x) => x && typeof x.n === "string").map((x) => ({ n: x.n.slice(0, 40), k: Math.max(0, Math.min(5000, Math.round(+x.k || 0))) })) : [] })) : [];
   const foods = Array.isArray(b.foods) ? b.foods.slice(0, 12).filter((f) => f && typeof f.n === "string").map((f) => ({ n: f.n.slice(0, 40), k: Math.max(0, Math.min(5000, Math.round(+f.k || 0))) })) : [];
   const mime = ["image/jpeg", "image/png", "image/webp"].includes(b.mime) ? b.mime : "image/jpeg";
-  if (!text && !img && !foods.length) return J(req, { error: "empty" }, 400);
+  if (!text && !img && !foods.length && !list.length) return J(req, { error: "empty" }, 400);
   if (img && (img.length > 2000000 || !/^[A-Za-z0-9+/=]+$/.test(img))) return J(req, { error: "bad image" }, 400);
   const day = new Date().toISOString().slice(0, 10), ip = req.headers.get("CF-Connecting-IP") || "x", kIp = "rl:" + day + ":" + (await sha(ip)).slice(0, 16), kAll = "rlg:" + day;
   const [nIp, nAll] = await Promise.all([env.SUBS.get(kIp), env.SUBS.get(kAll)]);
@@ -113,7 +114,8 @@ async function estimate(req, env) {
   if (Math.random() < 0.2) await env.SUBS.put(kAll, String((+nAll || 0) + 5), { expirationTtl: 172800 });
   const label = b.label === true && !!img;
   let task;
-  if (label) task = 'นี่คือรูปฉลากโภชนาการ (ด้านหลังซองอาหาร) ให้อ่านค่าจากตาราง "ข้อมูลโภชนาการ" ตามที่เขียนไว้จริง ห้ามเดา ถ้าอ่านค่าไหนไม่ได้ให้ใส่ null ตอบเป็น JSON object เดียวเท่านั้น รูปแบบ {"name":"ชื่อสินค้าถ้าเห็น","servingsPerPack":จำนวนหน่วยบริโภคต่อซอง,"kcal":พลังงานต่อ 1 หน่วยบริโภค (กิโลแคลอรี),"protein":กรัม,"carb":กรัม,"fat":กรัม,"fiber":กรัม,"sugar":กรัม,"sodium":มิลลิกรัม} ค่าทั้งหมดเป็นต่อ 1 หน่วยบริโภค';
+  if (list.length) task = "คุณคือผู้ช่วยประเมินโภชนาการอาหาร (เน้นอาหารไทยและอาหารที่คนไทยกิน) ให้ข้อมูลของแต่ละรายการต่อไปนี้ ตามลำดับเดิม ห้ามข้ามรายการ:\n" + list.map((f, i) => `${i + 1}. ${f.n} (ต่อ ${f.u ? "1 " + f.u : "1 เสิร์ฟปกติ"})${f.r.length ? " [เมนูใกล้เคียงในฐานข้อมูลสำหรับเทียบขนาดเสิร์ฟ: " + f.r.map((x) => x.n + " = " + x.k + " kcal").join(", ") + "]" : ""}`).join("\n") + `\nกติกา:\n- ชื่ออาจพิมพ์ผิดหรือสะกดไม่ครบ ให้เดาว่าคืออาหารอะไร แล้วแก้เป็นชื่อที่ถูกต้องใน name (ไม่ต้องใส่จำนวนหรือหน่วย)\n- ค่าทั้งหมดเป็นของ 1 หน่วยที่ระบุ ไม่ต้องคูณจำนวน ถ้าไม่ระบุหน่วยให้ใช้ 1 เสิร์ฟปกติ\n- serving คือคำอธิบายหน่วยที่ใช้คิด เช่น "1 ซองกลาง 48 ก." "1 ชาม" "1 ชิ้น"\n- conf เป็น "สูง" ถ้ามั่นใจว่ารู้จักอาหารนี้และขนาดเสิร์ฟ เป็น "ต่ำ" ถ้าเดา\n- pack เป็น true ถ้าเป็นขนมหรือเครื่องดื่มบรรจุซองหรือขวดที่มีฉลากโภชนาการ\n- ขนาดอ้างอิงเพื่อให้ตัวเลขสมเหตุสมผล: มันฝรั่งทอดกรอบ 1 ซองกลาง 48 ก. = 257 kcal, ช็อกโกแลตแท่ง 45 ก. = 240 kcal, ผัดไทย 1 จาน = 650 kcal, ราเมง 1 ชาม = 500 kcal, ไก่ทอด 1 ชิ้น = 270 kcal, ชานมไข่มุก 1 แก้ว = 400 kcal, ข้าวสวย 1 จาน = 200 kcal\nตอบเป็น JSON array เท่านั้น ไม่มีข้อความอื่น รูปแบบ [{"name":"ชื่อ","serving":"1 ...","conf":"สูง","pack":false,"kcal":ตัวเลข,"protein":กรัม,"carb":กรัม,"fat":กรัม,"fiber":กรัม,"sugar":กรัม,"sodium":มิลลิกรัม}]`;
+  else if (label) task = 'นี่คือรูปฉลากโภชนาการ (ด้านหลังซองอาหาร) ให้อ่านค่าจากตาราง "ข้อมูลโภชนาการ" ตามที่เขียนไว้จริง ห้ามเดา ถ้าอ่านค่าไหนไม่ได้ให้ใส่ null ตอบเป็น JSON object เดียวเท่านั้น รูปแบบ {"name":"ชื่อสินค้าถ้าเห็น","servingsPerPack":จำนวนหน่วยบริโภคต่อซอง,"kcal":พลังงานต่อ 1 หน่วยบริโภค (กิโลแคลอรี),"protein":กรัม,"carb":กรัม,"fat":กรัม,"fiber":กรัม,"sugar":กรัม,"sodium":มิลลิกรัม} ค่าทั้งหมดเป็นต่อ 1 หน่วยบริโภค';
   else if (foods.length) task = "ให้ข้อมูลโภชนาการต่อ 1 เสิร์ฟของอาหารต่อไปนี้ ตามลำดับเดิมและใช้ชื่อเดิมทุกชื่อ (ค่า kcal ในวงเล็บเป็นค่าอ้างอิงที่ควรใกล้เคียง):\n" + foods.map((f, i) => `${i + 1}. ${f.n} (${f.k} kcal)`).join("\n") + "\n" + FMT;
   else if (img) task = "ดูรูปอาหารที่แนบมา แล้วแยกเป็นแต่ละรายการที่เห็น ประเมินโภชนาการตามปริมาณในรูป ถ้าไม่ใช่อาหารให้ตอบ []." + FMT;
   else task = "ผู้ใช้พิมพ์บอกว่ากินอะไรมา: \"" + text + "\"\nข้อความอาจพิมพ์ผิด สะกดไม่ครบ ใช้คำย่อ หรือเป็นอาหารจากต่างประเทศ ให้เดาว่าหมายถึงอาหารอะไร แก้ชื่อให้ถูกต้อง (ชื่อต่างประเทศให้ใช้ชื่อที่คนไทยเรียกทั่วไป) แยกเป็นรายการ ถ้าระบุจำนวนให้คิดตามจำนวนนั้น ถ้าไม่ระบุให้คิด 1 เสิร์ฟปกติ ถ้าไม่ใช่อาหารให้ตอบ []." + FMT;
@@ -139,10 +141,12 @@ async function estimate(req, env) {
   const hasN = (x) => ["protein", "carb", "fat"].some((k) => isFinite(+x[k]) && x[k] !== null && x[k] !== "");
   const clean = (x) => {
     const o = { name: x.name.slice(0, 40), kcal: Math.round(+x.kcal) };
+    if (list.length) { o.serving = typeof x.serving === "string" ? x.serving.slice(0, 30) : ""; o.conf = x.conf === "ต่ำ" ? "ต่ำ" : "สูง"; o.pack = x.pack === true; }
     if (hasN(x)) NUM_KEYS.forEach(([k, mx]) => { const v = +x[k]; o[k] = isFinite(v) && v >= 0 && v < mx ? Math.round(v * 10) / 10 : 0; });
     return o;
   };
   const items = arr.filter((x) => x && typeof x.name === "string" && isFinite(+x.kcal) && +x.kcal >= 0 && +x.kcal < 5000).slice(0, 12).map(clean);
+  if (list.length && items.length !== list.length) items.forEach((x) => { x.conf = "ต่ำ"; });
   /* ถ้าโมเดลลืมใส่โภชนาการ ขอซ้ำเฉพาะรายการที่ขาด */
   const lack = items.filter((x) => x.protein === undefined);
   if (lack.length && !foods.length) {
