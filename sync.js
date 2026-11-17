@@ -31,14 +31,14 @@ function syncMerge(a, b) {
     const m = {}; (lb || []).concat(la || []).forEach(x => { if (!x || !x.d) return; const o = m[x.d]; if (!o || (x.t || 0) > (o.t || 0)) m[x.d] = x; });
     return Object.keys(m).map(k => m[k]).filter(x => !(pre && del[pre + x.d] && del[pre + x.d] >= (x.t || 0))).sort((p, q) => p.d < q.d ? -1 : 1);
   };
-  out.weights = byDate(a.weights, b.weights, "wt:"); out.waist = byDate(a.waist, b.waist, "");
+  out.weights = byDate(a.weights, b.weights, "wt:"); out.body = byDate(a.body, b.body, ""); out.waist = byDate(a.waist, b.waist, "");
   const maxMap = (x, y) => { const o = Object.assign({}, y || {}); Object.keys(x || {}).forEach(k => { o[k] = typeof x[k] === "number" && typeof o[k] === "number" ? Math.max(x[k], o[k]) : (o[k] === undefined ? x[k] : o[k]); }); return o; };
   out.water = maxMap(a.water, b.water); out.coinLog = maxMap(a.coinLog, b.coinLog);
   out.sleep = Object.assign({}, older.sleep || {}, newer.sleep || {});
   out.nutr = Object.assign({}, older.nutr || {}, newer.nutr || {});
   const moods = {}; [b.moods, a.moods].forEach(m => Object.keys(m || {}).forEach(d => { const x = m[d]; if (x && (!moods[d] || (x.t || 0) >= (moods[d].t || 0))) moods[d] = x; })); Object.keys(moods).forEach(d => { if (del["md:" + d] && del["md:" + d] >= (moods[d].t || 0)) delete moods[d]; }); out.moods = moods;
   const days = {}; [b.iffDays, a.iffDays].forEach(m => Object.keys(m || {}).forEach(d => { const x = m[d], o = days[d]; days[d] = o ? Object.assign({}, x, { paid: !!(o.paid || x.paid) }) : x; })); out.iffDays = days;
-  ["claimed", "owned", "shop", "medals"].forEach(k => { const o = Object.assign({}, b[k] || {}); Object.keys(a[k] || {}).forEach(x => { if (a[k][x]) o[x] = o[x] && typeof o[x] === "number" && typeof a[k][x] === "number" ? Math.min(o[x], a[k][x]) : (o[x] || a[k][x]); }); out[k] = o; });
+  ["claimed", "owned", "shop", "medals", "wkClaim"].forEach(k => { const o = Object.assign({}, b[k] || {}); Object.keys(a[k] || {}).forEach(x => { if (a[k][x]) o[x] = o[x] && typeof o[x] === "number" && typeof a[k][x] === "number" ? Math.min(o[x], a[k][x]) : (o[x] || a[k][x]); }); out[k] = o; });
   const sa = a.streak || {}, sb = b.streak || {}, sl = (sa.last || "") >= (sb.last || "") ? sa : sb; out.streak = Object.assign({}, sl, { best: Math.max(sa.best || 0, sb.best || 0) });
   return out;
 }

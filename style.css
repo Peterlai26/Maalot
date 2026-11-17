@@ -728,3 +728,7 @@ button.item { background: none; border: 0; border-bottom: 1px solid var(--line);
 
 /* คาร์ดิโอ GPS (gps.js) */
 .gstats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 12px; } .gstats div { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .gstats b { font-size: 15px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; } .gstats span { font-size: 11px; color: var(--muted); }
+
+/* ฟื้นตัว (recover.js) */
+.rdot { width: 14px; height: 14px; border-radius: 50%; flex: 0 0 auto; display: inline-block; }
+.row.between { justify-content: space-between; }
