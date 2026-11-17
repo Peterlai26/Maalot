@@ -1,13 +1,13 @@
 /* ก้อนเกี๊ยว: ตัวละครแบบโครงกระดูก 2D มองด้านข้าง ใช้ IK ขยับท่าออกกำลังกาย
    วาดบน canvas  RIG.mount(canvas, {ex, mode:"loop"|"session", state:()=>({tm,expr,idle,cheer})}) */
 const RIG = (() => {
-  const PI = Math.PI, cl = (x, a, b) => Math.min(b, Math.max(a, x)), lerp = (a, b, t) => a + (b - a) * t, lerp2 = (p, q, t) => [lerp(p[0], q[0], t), lerp(p[1], q[1], t)];
+  let SKIN = "#FFF1D6"; const PI = Math.PI, cl = (x, a, b) => Math.min(b, Math.max(a, x)), lerp = (a, b, t) => a + (b - a) * t, lerp2 = (p, q, t) => [lerp(p[0], q[0], t), lerp(p[1], q[1], t)];
   const sm = (a, b, x) => { x = cl((x - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
   const hexv = c => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
   const mix = (a, b, t) => { const A = hexv(a), B = hexv(b); return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join(""); };
   const D = { H: .8, neck: -.2, T: .7, a1: .38, a2: .36, l1: .45, l2: .45, f: .32, shoe: .22, tw: [.7, .76], aw: [.24, .22], lw: [.3, .27], ol: .04 };
   D.L = D.a1 + D.a2; D.l = (D.l1 + D.l2) / 2; D.ah = D.shoe / 2;
-  const INK = "#2A1D45", SKIN = "#FFF1D6", CHEEK = "#F58AB0";
+  const INK = "#2A1D45", CHEEK = "#F58AB0";
 
   function ik(p0, p1, l1, l2, bend) {
     const dx = p1[0] - p0[0], dy = p1[1] - p0[1], d = Math.hypot(dx, dy) || 1e-6;
@@ -86,7 +86,7 @@ const RIG = (() => {
   }
   function autoExpr(ex, pose) { if (ex === "plank" || ex === "run" || ex === "walk") return "focus"; return pose.d > .82 ? "tired" : pose.d < .14 ? "smile" : "focus"; }
 
-  function look() { try { const L = normLook(S.look); return { shirt: /^#[0-9a-f]{6}$/i.test(L.oc) ? L.oc : "#8155C9" }; } catch (e) { return { shirt: "#8155C9" }; } }
+  function look() { try { const L = normLook(S.look); SKIN = /^#[0-9a-f]{6}$/i.test(L.skin) ? L.skin : "#FFF1D6"; return { shirt: /^#[0-9a-f]{6}$/i.test(L.oc) ? L.oc : "#8155C9" }; } catch (e) { return { shirt: "#8155C9" }; } }
   function scene(cv, ex, st, now) {
     const ctx = cv.getContext("2d"), dpr = cv._dpr, W = cv.width / dpr, H = cv.height / dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "#FFF1E3"; ctx.fillRect(0, 0, W, H);
