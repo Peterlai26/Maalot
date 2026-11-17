@@ -54,6 +54,14 @@ export function dueSlot(p, now) {
   for (const s of slotsOf(p)) if (min >= s && min < s + 35) return { key: day + "|" + s, hour: Math.floor(s / 60) };
   return null;
 }
+export function iffEvent(iff, min, day) {
+  if (!iff) return null; const win = (t) => min >= t && min < t + 35;
+  if (win(Math.max(0, iff.s - 30))) return { key: day + "|iopen", msg: "อีก 30 นาทีช่วงกินจะเปิด เตรียมมื้อแรกได้เลย" };
+  if (win(iff.e - 60)) return { key: day + "|iclose", msg: "อีก 1 ชั่วโมงช่วงกินจะปิด ถ้ายังไม่ได้กินหรือยังไม่ได้จด รีบเลยนะ" };
+  const mid = (iff.e + Math.round((iff.s + 1440 - iff.e) / 2)) % 1440; if (win(mid)) return { key: day + "|iwater", msg: "กำลังงดกินอยู่ ดื่มน้ำสักแก้วนะ" };
+  return null;
+}
+const cleanIff = (x) => { if (!x || typeof x !== "object") return null; const s = Math.round(+x.s), e = Math.round(+x.e); return s >= 0 && s < 1440 && e > s && e <= 1439 && e - s >= 420 && e - s <= 780 ? { s, e } : null; };
 const msgFor = (h) => { let m = MSG[0][1]; MSG.forEach((x) => { if (h >= x[0]) m = x[1]; }); return m; };
 
 async function sha(s) { return [...new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode(s)))].map((b) => b.toString(16).padStart(2, "0")).join(""); }
@@ -65,7 +73,7 @@ const J = (req, obj, status) => new Response(JSON.stringify(obj), { status: stat
 function cleanPrefs(p) {
   const every = Number(p && p.everyH), st = hm(p && p.start), en = hm(p && p.end), tz = Number(p && p.tzOff);
   if (![1, 2, 3, 4, 6, 8, 12].includes(every) || st === null || en === null || en < st || !(tz >= -840 && tz <= 840)) return null;
-  return { everyH: every, start: p.start, end: p.end, tzOff: Math.round(tz) };
+  return { everyH: every, start: p.start, end: p.end, tzOff: Math.round(tz), iff: cleanIff(p.iff) };
 }
 const okEndpoint = (e) => { try { const u = new URL(e); return u.protocol === "https:" && PUSH_HOSTS.some((r) => r.test(u.hostname)) && e.length < 1000; } catch (_) { return false; } };
 
@@ -178,7 +186,7 @@ export default {
       const k = b.sub.keys || {}, prefs = cleanPrefs(b.prefs);
       if (typeof k.p256dh !== "string" || typeof k.auth !== "string" || !prefs) return J(req, { error: "bad subscription" }, 400);
       const old = JSON.parse((await env.SUBS.get(key)) || "null") || {};
-      await env.SUBS.put(key, JSON.stringify({ sub: { endpoint: ep, keys: { p256dh: k.p256dh, auth: k.auth } }, ...prefs, lastMeal: old.lastMeal || 0, lastSlot: old.lastSlot || "" }), { expirationTtl: 60 * 86400 });
+      await env.SUBS.put(key, JSON.stringify({ sub: { endpoint: ep, keys: { p256dh: k.p256dh, auth: k.auth } }, ...prefs, lastMeal: old.lastMeal || 0, lastSlot: old.lastSlot || "", lastIff: old.lastIff || "" }), { expirationTtl: 60 * 86400 });
       return J(req, { ok: true });
     }
     if (url.pathname === "/unsubscribe") { await env.SUBS.delete(key); return J(req, { ok: true }); }
@@ -198,7 +206,18 @@ export default {
       const page = await env.SUBS.list({ prefix: "s:", cursor }); cursor = page.list_complete ? undefined : page.cursor;
       for (const k of page.keys) {
         const r = JSON.parse((await env.SUBS.get(k.name)) || "null"); if (!r) continue;
-        const due = dueSlot(r, now); if (!due || r.lastSlot === due.key) continue;
+        let changed = false;
+        if (r.iff) {
+          const local = new Date(now + r.tzOff * 60000), day = local.toISOString().slice(0, 10), min = local.getUTCHours() * 60 + local.getUTCMinutes(), ev = iffEvent(r.iff, min, day);
+          if (ev && r.lastIff !== ev.key) {
+            r.lastIff = ev.key; changed = true;
+            try { const res = await sendPush(env, r.sub, { title: "Maalot (มาลด)", body: ev.msg }); if (res.status === 404 || res.status === 410) { await env.SUBS.delete(k.name); continue; } } catch (_) { }
+            await env.SUBS.put(k.name, JSON.stringify(r), { expirationTtl: 60 * 86400 });
+          }
+        }
+        let due = dueSlot(r, now);
+        if (due && r.iff) { const local = new Date(now + r.tzOff * 60000), min = local.getUTCHours() * 60 + local.getUTCMinutes(); if (min < r.iff.s || min >= r.iff.e) due = null; }
+        if (!due || r.lastSlot === due.key) continue;
         r.lastSlot = due.key;
         if (now - (r.lastMeal || 0) >= 60 * 60000) {
           try {

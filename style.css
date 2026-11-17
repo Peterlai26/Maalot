@@ -655,3 +655,13 @@ body:has(#tut) #instbar, body:has(#tutinv) #instbar { display: none; }
 .dt { flex: 0 0 46px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; } .dn { flex: 1; min-width: 0; } .dn b { display: block; font-size: 15px; font-weight: 500; } .dn small { display: block; font-size: 12px; color: var(--muted); margin-top: 1px; } .dk { font-weight: 600; font-size: 15px; } .dk.w { color: var(--accent); }
 .dempty { text-align: center; padding: 32px 10px 8px; } .dempty-ic { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 10px; display: grid; place-items: center; background: var(--soft); color: var(--accent); }
 .dadd { display: flex; gap: 10px; margin-top: 14px; position: sticky; bottom: 12px; } .dadd .btn { flex: 1; box-shadow: 0 10px 20px -12px rgba(36, 25, 59, .6); }
+
+/* IF รุ่นใหม่ */
+.iffcard { display: flex; align-items: center; gap: 12px; margin-top: 12px; text-align: left; width: 100%; border: 1.5px solid var(--line); border-radius: 22px; padding: 12px 14px; background: var(--card); color: var(--ink); } .iffcard .grow { min-width: 0; flex: 1; } .iffcard b { display: block; font-size: 15px; } .iffcard > svg { transform: scaleX(-1); color: var(--muted); flex: 0 0 auto; }
+.iffcard.open { border-color: var(--green); background: var(--green-soft); } .ifc-ic { flex: 0 0 38px; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--soft); color: var(--accent); } .iffcard.open .ifc-ic { background: #fff; color: var(--green); }
+.iffbar2 { display: block; height: 6px; border-radius: 999px; background: var(--soft); margin-top: 8px; overflow: hidden; } .iffbar2 b { display: block; height: 100%; margin: 0; border-radius: 999px; background: linear-gradient(90deg, #8155C9, #F0679B); transition: width .6s; }
+.ifacts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; } .ifacts .btn { flex: 1 1 auto; font-size: 14px; white-space: nowrap; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; } .grid3 b { font-size: 17px; }
+.iffchart { width: 100%; height: auto; display: block; } .iffchart text { font-size: 9px; fill: var(--muted); } .iffchart .v { font-size: 9px; fill: var(--ink); font-weight: 600; } .iffchart .bok { fill: #8155C9; } .iffchart .bno { fill: #E5534B; opacity: .7; } .iffchart .tl { stroke: var(--green); stroke-width: 1.5; stroke-dasharray: 4 3; } .iffchart .tt { fill: var(--green); font-weight: 600; }
+.iffdot.skip { background: var(--soft); color: var(--muted); }
+.hint.warnh { background: var(--warn-soft); border-color: transparent; color: var(--warn-ink); }
