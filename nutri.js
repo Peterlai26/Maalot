@@ -17,22 +17,24 @@ function fuzzyFood(seg) {
   return best;
 }
 const _findFoodExact = findFood;
-const withNutr = it => { const n = it.p === undefined && S.nutr && S.nutr[it.n]; if (n) NK.forEach(([a]) => { it[a] = n[a] || 0; }); return it; };
+const fnObj = name => { const v = typeof FN !== "undefined" && FN[name]; return v ? { p: v[0], c: v[1], f: v[2], fb: v[3], sg: v[4], na: v[5] } : null; };
+const withNutr = it => { const n = it.p === undefined && (fnObj(it.n) || (S.nutr && S.nutr[it.n])); if (n) NK.forEach(([a]) => { it[a] = n[a] || 0; }); return it; };
 /* จับคู่ชื่อ: คืน {f, key, d} (d = จำนวนตัวอักษรที่เดา) ลองตรงตัวก่อน แล้วค่อยเดา */
 const foodList = () => (S.myfoods || []).map(m => [m.n, m.k, "m", [m.n], [], m]).concat(FOODS);
 function matchFood(seg) {
-  const n = normT(seg); let best = null, bl = 0;
-  foodList().forEach(f => f[3].concat([f[0]]).forEach(k => { const kk = normT(k); if (kk.length > bl && n.indexOf(kk) > -1) { best = { f, key: k, d: 0 }; bl = kk.length; } }));
-  if (best) return best;
-  const t = skel(seg); if (t.length < 3) return null; let bs = 1e9;
-  foodList().forEach(f => f[3].concat([f[0]]).forEach(k => {
+  const n = normT(seg); let ex = null, bl = 0;
+  foodList().forEach(f => f[3].concat([f[0]]).forEach(k => { const kk = normT(k); if (kk.length > bl && n.indexOf(kk) > -1) { ex = { f, key: k, d: 0 }; bl = kk.length; } }));
+  const t = skel(seg); let fz = null, bs = 1e9;
+  if (t.length >= 3) foodList().forEach(f => f[3].concat([f[0]]).forEach(k => {
     const kk = skel(k), L = kk.length; if (L < 3) return;
-    const allow = L < 5 ? 0 : L < 7 ? 1 : L < 11 ? 2 : 3, d = approxDist(kk, t);
-    if (d <= allow) { const sc = d * 100 - L; if (sc < bs) { bs = sc; best = { f, key: k, d }; } }
+    const allow = L < 6 ? 0 : L < 14 ? 1 : 2; if (t.indexOf(kk.slice(0, 2)) < 0) return;
+    const d = approxDist(kk, t);
+    if (d <= allow) { const sc = d * 100 - L; if (sc < bs) { bs = sc; fz = { f, key: k, d }; } }
   }));
-  return best;
+  if (ex && fz) { const se = skel(ex.key).length, sf = skel(fz.key).length - 3 * fz.d; return sf > se ? fz : ex; }
+  return ex || fz;
 }
-const FILLER = /\d+(\.\d+)?|ครึ่ง|จาน|ชิ้น|แก้ว|ถ้วย|ห่อ|ที่|ชุด|อัน|ลูก|ผล|กิน|ทาน|วันนี้|หน่อย|นิดหน่อย|เล็ก|ใหญ่|ธรรมดา|พิเศษ|ใส่|ไม่|หวาน|เพิ่ม|น้อย|มาก|แก้วเล็ก|ร้อน/g;
+const FILLER = /\d+(\.\d+)?|ครึ่ง|จาน|ชิ้น|แก้ว|ถ้วย|ห่อ|ที่|ชุด|อัน|ลูก|ผล|กิน|ทาน|วันนี้|หน่อย|นิดหน่อย|เล็ก|ใหญ่|ธรรมดา|พิเศษ|ใส่|ไม่|หวาน|เพิ่ม|น้อย|มาก|แก้วเล็ก|ร้อน|ไทย|สด|สุก|เย็น|ซอง|กระป๋อง|ขวด|ถุง|ที่|ห่อ|กล่อง|แท่ง|ก้อน|ไม้|ฟอง|คำ|ตัว|แผ่น|อัน|สกู๊ป|ม้วน|ถาด|ช้อน|ชุด/g;
 findFood = seg => (matchFood(seg) || {}).f || null;
 parseFood = function (text) {
   return text.split(SPLIT).map(s => s.trim()).filter(Boolean).flatMap(splitBySpace).map(seg => {
@@ -123,17 +125,35 @@ ACT.nutrifill = async () => {
   toast(n ? `เติมข้อมูลให้ ${n} รายการแล้ว` : "ตอนนี้เติมไม่ได้ ลองใหม่ภายหลังนะ"); rerenderSub();
 };
 /* ---------- ให้ AI ช่วยอัตโนมัติเมื่อไม่รู้จักชื่ออาหาร (พิมพ์ผิดมาก ไม่ครบ หรือเป็นอาหารต่างประเทศ) ---------- */
-async function autoAI() {
+const UNIT_RE = /(จาน|ชาม|ชิ้น|ลูก|ไม้|ฟอง|แก้ว|ถ้วย|ซอง|ขวด|ถุง|กล่อง|ที่|ถาด|แท่ง|ก้อน|คำ|กระป๋อง|สกู๊ป|ห่อ|ตัว|แผ่น|อัน|ผล|ช้อน|ม้วน)/;
+function bigrams(s) { const o = []; for (let i = 0; i < s.length - 1; i++) o.push(s.slice(i, i + 2)); return o; }
+function nearFoods(name, k) {
+  const a = bigrams(skel(name)); if (!a.length) return [];
+  return foodList().map(f => { const b = bigrams(skel(f[0])); if (!b.length) return null; const sa = new Set(a); let hit = 0; b.forEach(x => { if (sa.has(x)) hit++; }); return { n: f[0], k: f[1], s: 2 * hit / (a.length + b.length) }; }).filter(x => x && x.s >= 0.25).sort((x, y) => y.s - x.s).slice(0, k || 3).map(x => ({ n: x.n, k: x.k }));
+}
+function aiPrep(it) { const raw = (it.raw || it.n || "").trim(), u = (UNIT_RE.exec(raw) || [])[1] || ""; let name = raw.replace(/\d+(\.\d+)?|ครึ่ง|หนึ่ง|สอง|สาม|สี่|ห้า/g, " ").replace(UNIT_RE, " ").replace(/\s+/g, " ").trim(); return { n: name || raw, u, r: nearFoods(name || raw, 3) }; }
+async function aiList(items) {
+  const api = estApi(); if (!api) throw new Error("nosample");
+  let resp; try { resp = await fetch(api, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ list: items.map(aiPrep) }) }); } catch (e) { throw new Error("net"); }
+  const j = await resp.json().catch(() => ({})); if (!resp.ok) throw new Error(j.error === "limit" || j.error === "busy" ? j.error : j.error === "not_configured" ? "nosample" : "parse");
+  const arr = j.items || [], same = arr.length === items.length;
+  return arr.map((x, i) => { const o = { n: String(x.name), k1: Math.round(+x.kcal), q: same ? items[i].q || 1 : 1, known: true, ai: true, serv: x.serving || "", lowc: x.conf === "ต่ำ" || !same, pack: !!x.pack }; if (x.protein !== undefined) NK.forEach(([a, b]) => { o[a] = +x[b] || 0; }); return o; });
+}
+async function aiUnknown(quiet) {
   if (!LG || LG.tab !== "food" || LG.busy) return;
   const unk = LG.items.filter(x => !x.known && (x.raw || x.n || "").trim()), key = unk.map(x => x.raw || x.n).join(", ");
-  if (!unk.length || LG.aiKey === key) return; LG.aiKey = key; LG.busy = true; rerenderSub();
-  try { const res = await claudeEstimate(key); LG.items = LG.items.filter(x => x.known).concat(res); }
+  if (!unk.length) { if (!quiet) toast("พิมพ์ชื่ออาหารก่อนนะ"); return; }
+  if (quiet && LG.aiKey === key) return; LG.aiKey = key; LG.busy = true; rerenderSub();
+  try { const res = await aiList(unk.slice(0, 8)); LG.items = LG.items.filter(x => x.known).concat(res); }
   catch (e) {
-    if (!e || e.message !== "nosample") toast(estMsg(e, false));
+    if (!quiet || !e || e.message !== "nosample") toast(estMsg(e, false));
     if (LG) LG.items = LG.items.map(x => x.cand ? withNutr(Object.assign({}, x.cand, { known: true, fz: x.raw })) : x);
   }
   if (LG) { LG.busy = false; rerenderSub(); }
 }
+const autoAI = () => aiUnknown(true);
+ACT.lgai = () => aiUnknown(false);
+const aiNote = it => !it.ai ? "" : `${it.serv ? `<div class="xs muted">ต่อ ${esc(it.serv)} · ค่าประมาณจาก AI</div>` : ""}${it.lowc ? `<div class="xs warnline">AI ไม่แน่ใจเมนูนี้ ตรวจและแก้ตัวเลขได้</div>` : ""}${it.pack ? `<div class="xs warnline">ขนมหรือเครื่องดื่มบรรจุซอง: เทียบกับฉลากด้านหลังซอง หรือกด “ขนมซอง/จากฉลาก”</div>` : ""}`;
 const _logSub3 = SUBS.log;
 SUBS.log = (arg) => { const fresh = !!(arg.fresh || !LG), r = _logSub3(arg); if (fresh && LG && LG.items && LG.items.some(x => !x.known)) setTimeout(autoAI, 80); return r; };
 const _lgparse = ACT.lgparse; ACT.lgparse = (a, e) => { _lgparse(a, e); setTimeout(autoAI, 80); };

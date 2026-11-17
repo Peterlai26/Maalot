@@ -597,3 +597,5 @@ input.tin[type=time] { width: auto !important; min-height: 30px !important; heig
 #sub.dress .dnext.fab { display: flex; position: sticky; right: auto; left: auto; bottom: 16px; margin: 0 14px 0 auto; width: max-content; z-index: 30; }
 body:has(.dbar) #sub.dress .dnext.fab { bottom: 96px; }
 .dbar .dbtns:empty { display: none; }
+
+.warnline { color: var(--warn-ink); background: var(--warn-soft); border-radius: 8px; padding: 3px 8px; margin-top: 4px; display: inline-block; }
