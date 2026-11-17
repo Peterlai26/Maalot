@@ -531,3 +531,15 @@ h1, h2, h3 { font-family: var(--font-display); }
 .ltrybtn:active, .ltrychips button:active { transform: scale(.95); }
 .ltrychips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .ltrychips button { padding: 6px 12px; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, .25); background: transparent; color: #E7DEFF; font: 13px var(--font-dr); }
+
+/* ติดตั้งเป็นแอป */
+#instbar { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); max-width: 456px; margin: 0 auto; z-index: 55; display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 14px; border-radius: 24px; background: #24193B; color: #fff; box-shadow: 0 18px 36px -12px rgba(20, 10, 50, .6); transform: translateY(140%); opacity: 0; transition: transform .45s cubic-bezier(.2, .9, .3, 1.1), opacity .3s; }
+#instbar.on { transform: none; opacity: 1; }
+body:has(.nav:not([hidden])) #instbar { bottom: calc(86px + env(safe-area-inset-bottom)); }
+#instbar img { border-radius: 12px; flex: 0 0 44px; } #instbar .it { flex: 1; min-width: 0; line-height: 1.35; } #instbar b { display: block; font-size: 14.5px; font-weight: 600; } #instbar .it span { display: block; font-size: 12px; color: #C9BEE6; }
+#instbar .ibtn { flex: 0 0 auto; border: 0; border-radius: 999px; background: linear-gradient(135deg, #F0679B, #8155C9); color: #fff; font: 600 14px var(--font-body); padding: 0 16px; min-height: 40px; }
+#instbar .ix { flex: 0 0 auto; border: 0; background: transparent; color: #C9BEE6; width: 32px; height: 40px; display: grid; place-items: center; }
+.linst { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; padding: 8px 16px; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, .55); background: rgba(255, 255, 255, .14); color: #fff; font: 500 14px var(--font-dr); animation: lrise .7s .75s both; }
+.land[data-tod="day"] .linst { color: #3A2410; border-color: rgba(58, 36, 16, .4); background: rgba(255, 255, 255, .35); }
+.insteps { margin: 12px 0 0 20px; line-height: 1.7; padding: 0; } .insteps li { margin-bottom: 6px; }
+@media (prefers-reduced-motion: reduce) { #instbar { transition: none; } .linst { animation: none; } }

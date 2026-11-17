@@ -1,6 +1,6 @@
 /* Service worker: network-first so updates show up right after a deploy; cache is the offline fallback */
-const V = "maalot-v13";
-const CORE = ["./", "style.css", "data.js", "avatar.js", "face.js", "core.js", "app.js", "app2.js", "app3.js", "landing.js", "reminders.js", "medals.js", "share.js", "mood.js", "items.js", "roomitems.js", "dress.js", "manifest.webmanifest", "logo.svg", "icon-192.png", "icon-512.png"];
+const V = "maalot-v14";
+const CORE = ["./", "style.css", "data.js", "avatar.js", "face.js", "install.js", "core.js", "app.js", "app2.js", "app3.js", "landing.js", "reminders.js", "medals.js", "share.js", "mood.js", "items.js", "roomitems.js", "dress.js", "manifest.webmanifest", "logo.svg", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim()));
