@@ -312,5 +312,5 @@ ACT.pbdel = a => { const id = a.dataset.id, i = (S.progs || []).findIndex(x => x
 /* ---------- ทางเข้า ---------- */
 (function () {
   if (!TILES.some(t => t[4] === "fit")) TILES.splice(TILES.findIndex(t => t[4] === "log" && t[5] === "work") + 1, 0, ["บันทึก", "target", "โปรแกรมออกกำลัง", "แผน ตั้งเวลา นำออกกำลัง", "fit", "", "d-warn", "โปรแกรม แผน ออกกำลัง ที่บ้าน ยิม อุปกรณ์ เซสชัน"]);
-  const oLog = SUBS.log; SUBS.log = a => { const r = oLog(a); if (r && r.title === "ออกกำลังกาย" && r.html) r.html = `<button class="progcta" data-act="sub" data-n="fit"><span class="pc-ic">${ic("play", 22)}</span><span class="pc-t"><b>โปรแกรมออกกำลังกาย</b><small>นำออกกำลังทีละท่า มีน้องเกี๊ยวทำให้ดู</small></span><span class="pc-go">${ic("back", 20)}</span></button>` + r.html; return r; };
+  const oLog = SUBS.log; SUBS.log = a => { const r = oLog(a); if (r && r.title === "ออกกำลังกาย" && r.html) r.html = r.html.replace("<!--logcta-->", `<button class="progcta" data-act="sub" data-n="fit"><span class="pc-ic">${ic("play", 22)}</span><span class="pc-t"><b>โปรแกรมออกกำลังกาย</b><small>นำออกกำลังทีละท่า มีน้องเกี๊ยวทำให้ดู</small></span><span class="pc-go">${ic("back", 20)}</span></button>`); return r; };
 })();

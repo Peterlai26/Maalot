@@ -1,6 +1,6 @@
 /* Service worker: network-first so updates show up right after a deploy; cache is the offline fallback */
-const V = "maalot-v63";
-const CORE = ["./", "style.css", "data.js", "foods2.js", "avatar.js", "face.js", "install.js", "combos.js", "goals.js", "nutri.js", "myfoods.js", "settings2.js", "sync.js", "hub2.js", "today2.js", "tutorial.js", "iff2.js", "events.js", "core.js", "foodicons.js", "chipdrag.js", "app.js", "app2.js", "app3.js", "musclemap.js", "modes.js", "rig.js", "lib2.js", "exlib.js", "fit.js", "lifts.js", "gps.js", "recover.js", "log2.js", "landing.js", "reminders.js", "medals.js", "share.js", "mood.js", "items.js", "roomitems.js", "dress.js", "manifest.webmanifest", "logo.svg", "icon-192.png", "icon-512.png"];
+const V = "maalot-v69";
+const CORE = ["./", "style.css", "data.js", "foods2.js", "avatar.js", "face.js", "install.js", "combos.js", "goals.js", "nutri.js", "myfoods.js", "settings2.js", "sync.js", "hub2.js", "today2.js", "tutorial.js", "iff2.js", "events.js", "core.js", "foodicons.js", "chipdrag.js", "app.js", "app2.js", "app3.js", "musclemap.js", "modes.js", "logui.js", "rig.js", "lib2.js", "exlib.js", "fit.js", "lifts.js", "gps.js", "recover.js", "log2.js", "landing.js", "reminders.js", "medals.js", "share.js", "mood.js", "items.js", "roomitems.js", "dress.js", "manifest.webmanifest", "logo.svg", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim()));
