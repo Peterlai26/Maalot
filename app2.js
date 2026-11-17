@@ -230,7 +230,7 @@ ACT.wkshare = () => { SHARE.kind = "week"; openSub("share", {}); };
 ACT.bkin = () => { try { const d = JSON.parse($("#bk").value); if (!d || !d.v) throw 0; S = merge(d); save(); toast("นำเข้าแล้ว"); closeAllSubs(); } catch (e) { toast("ข้อมูลไม่ถูกต้อง"); } };
 ACT.resetask = () => openModal(`<h2>เริ่มใหม่ทั้งหมด?</h2><p class="muted" style="margin:8px 0 14px">ข้อมูลทั้งหมดจะถูกลบและกู้คืนไม่ได้</p><div class="row"><button class="btn" style="flex:1" data-act="modalclose">ยกเลิก</button><button class="btn danger" style="flex:1" data-act="resetgo">ลบทั้งหมด</button></div>`);
 ACT.modalclose = closeModal;
-ACT.resetgo = () => { closeModal(); S = blank(); save(); closeAllSubsSilent(); ONB = { step: 1, look: Object.assign({}, S.look), name: "", prof: Object.assign({}, S.prof) }; renderOnb(); };
+ACT.resetgo = () => { closeModal(); S = blank(); save(); closeAllSubsSilent(); ONB = { step: 1, look: Object.assign({}, S.look), name: "", prof: Object.assign({}, S.prof) }; startOnb(); };
 
 /* ---------- ธีมและอนิเมชันเพิ่ม ---------- */
 const PALS = [["peach", "ฝัน", "#6B3FC0"], ["mint", "มิ้นต์", "#4FA574"], ["sky", "ฟ้า", "#4D93D1"], ["sakura", "ซากุระ", "#E8628A"], ["lavender", "ลาเวนเดอร์", "#8D78D8"]];

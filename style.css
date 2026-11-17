@@ -808,3 +808,6 @@ svg.mmap { display: block; width: 100%; max-width: 250px; height: auto; margin: 
 @media (prefers-reduced-motion: reduce) { .pgrid > *, .pbig::after, .pb-go svg, .pb-th .rt, .pt-ic, .pt-ic i, .t-gps::after { animation: none; } .pt-ic i { height: 16px; } }
 
 .rt.sm { width: 46px; height: 46px; border-radius: 13px; }
+
+/* ช่องรหัสผ่านให้หน้าตาเหมือนช่องกรอกอื่น (เป็นหน้าแรกที่ผู้ใช้ใหม่ทุกคนเจอในด่านสมัครสมาชิก) */
+input[type=password], input[type=email] { width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 11px 14px; min-height: 44px; }

@@ -159,9 +159,10 @@ SUBS.account = () => {
 <label class="f" for="apw">รหัสผ่าน${reg ? " (อย่างน้อย 8 ตัว)" : ""}</label><input id="apw" type="password" autocomplete="${reg ? "new-password" : "current-password"}"/>
 ${reg ? `<label class="f" for="apw2">ยืนยันรหัสผ่าน</label><input id="apw2" type="password" autocomplete="new-password"/><p class="xs muted" style="margin-top:8px">ไม่มีการส่งอีเมลยืนยัน ถ้าลืมรหัสผ่านจะกู้ได้ด้วย “รหัสกู้คืน” ที่แอปให้หลังสมัคร เก็บไว้ให้ดี ถ้าไม่มีทั้งรหัสผ่านและรหัสกู้คืน จะเข้าบัญชีไม่ได้</p>` : ""}
 <button class="btn primary block" style="margin-top:14px" data-act="accgo" ${ACC.busy ? "disabled" : ""}>${ACC.busy ? "กำลังทำงาน…" : reg ? "สมัครสมาชิก" : "เข้าสู่ระบบ"}</button>${reg ? "" : `<button class="linkbtn" style="margin-top:8px" data-act="accmode" data-m="recover">ลืมรหัสผ่าน?</button>`}`;
-  return { title: reg ? "สมัครสมาชิก" : rec ? "ลืมรหัสผ่าน" : "เข้าสู่ระบบ", html: `${expired}<p class="muted sm" style="margin-bottom:12px">สมัครสมาชิกเพื่อใช้ข้อมูลเดียวกันได้ทุกเครื่อง และไม่หายเวลาเปลี่ยนมือถือ ไม่บังคับ ใช้แอปแบบไม่มีบัญชีได้ตามเดิม</p>${err}${form}` };
+  return { title: reg ? "สมัครสมาชิก" : rec ? "ลืมรหัสผ่าน" : "เข้าสู่ระบบ", html: `${expired}${ACC.gate ? `<div class="card" style="text-align:center;margin-bottom:12px"><b style="font-size:17px">สมัครสมาชิกก่อนเริ่มสร้างตัวละคร</b><p class="muted sm" style="margin-top:6px">น้องเกี๊ยวและข้อมูลที่จดไว้จะอยู่กับบัญชีของคุณ ไม่หายเวลาเปลี่ยนมือถือ และใช้ได้ทุกเครื่อง มีบัญชีอยู่แล้วเลือก “เข้าสู่ระบบ”</p></div>` : `<p class="muted sm" style="margin-bottom:12px">สมัครสมาชิกเพื่อใช้ข้อมูลเดียวกันได้ทุกเครื่อง และไม่หายเวลาเปลี่ยนมือถือ</p>`}${err}${form}` };
 };
-ACT.acctopen = () => { ACC = { mode: "login", busy: false, err: "", id: ACC.id }; openSub("account", {}); };
+/* gate = true เมื่อเปิดจากหน้าแรกก่อนสร้างตัวละคร: สมัครหรือเข้าสู่ระบบเสร็จแล้วไปขั้นสร้างตัวละครต่อทันที */
+ACT.acctopen = () => { const onb = !S.onboarded && !$("#onb").hidden; ACC = { mode: "login", busy: false, err: "", id: ACC.id, gate: onb }; openSub("account", {}); };
 ACT.accmode = (a) => { const e = $("#aid"); if (e) ACC.id = e.value; ACC.mode = a.dataset.m; ACC.err = ""; rerenderSub(); };
 function accBusy(b, err) {
   const g = id => { const e = $("#" + id); return e ? e.value : undefined; }, keep = { aid: g("aid"), apw: g("apw"), apw2: g("apw2"), arc: g("arc") };
@@ -184,8 +185,10 @@ ACT.accgo = async () => {
     else { rcNew = newRecovery(); r = await accReq("/auth/recover", { id, rk: await recKey(id, rcIn), k2: await authKey(id, pw), rk2: await recKey(id, rcNew) }); }
   } catch (e) { accBusy(false, "เครื่องนี้ไม่รองรับการเข้ารหัสที่ต้องใช้ ลองเปิดด้วย Chrome หรือ Safari รุ่นใหม่"); return; }
   if (!r.ok) { accBusy(false, accMsg(r.status)); return; }
+  const gate = !!ACC.gate;
   const prev = AUTH; AUTH = { token: r.j.token, exp: r.j.exp, id: r.j.id, linked: prev && prev.id === r.j.id ? !!prev.linked : false, base: prev && prev.id === r.j.id ? prev.base || 0 : 0 }; authSave(); ACC = { mode: "login", busy: false, err: "" };
-  const go = () => { closeModal(); if (subStack.length) closeSub(); syncLink().then(() => { if (m !== "login" && typeof settingsRefresh === "function") settingsRefresh(); }); };
+  /* ผ่านด่านแล้ว: ถ้าบัญชีนี้มีข้อมูลเดิม applyRemote จะพาเข้าหน้าแรกเอง ถ้าเป็นบัญชีใหม่ไปขั้นสร้างตัวละคร */
+  const go = () => { closeModal(); if (subStack.length) closeSub(); syncLink().then(() => { if (m !== "login" && typeof settingsRefresh === "function") settingsRefresh(); if (gate && !S.onboarded && typeof ONB !== "undefined" && ONB && !$("#onb").hidden) renderOnb(); }); };
   if (rcNew) showRecovery(rcNew, go); else go();
 };
 function showRecovery(code, next) {
