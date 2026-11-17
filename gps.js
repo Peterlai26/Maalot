@@ -111,7 +111,6 @@ ACT.cardiomansave = () => { const type = $("#cmt").value, km = Math.max(0, +$("#
 /* ---------- ทางเข้า ---------- */
 (function () {
   if (!TILES.some(t => t[4] === "cardio")) TILES.splice(TILES.findIndex(t => t[4] === "progress") + 1, 0, ["บันทึก", "run", "วิ่ง เดิน ปั่น (GPS)", "วัดระยะ เพซ เส้นทาง", "cardio", "", "d-warn", "วิ่ง เดิน ปั่นจักรยาน จีพีเอส gps ระยะ เพซ กิโล เส้นทาง"]);
-  const oFit = SUBS.fit; SUBS.fit = a => { const r = oFit(a); if (r && r.html) r.html = r.html.replace('<div class="sec">โปรแกรมของฉัน</div>', `<button class="btn block" style="margin-top:8px" data-act="sub" data-n="cardio">${ic("run", 18)}วิ่ง เดิน ปั่น วัดด้วย GPS</button><div class="sec">โปรแกรมของฉัน</div>`); return r; };
   const oLib = SUBS.lib; SUBS.lib = a => { const r = oLib(a), id = a && a.id; if (r && r.html && (id === "jog" || id === "brisk" || id === "cycle")) r.html = r.html.replace('<div class="sec">วิธีทำ</div>', `<button class="btn block" style="margin:10px 0" data-act="gpsgo" data-v="${id === "jog" ? "run" : id === "cycle" ? "bike" : "walk"}">${ic("run", 18)}วัดด้วย GPS ตอนออกไปทำ</button><div class="sec">วิธีทำ</div>`); return r; };
   ACT.gpsgo = a => { GP = gpNew(a.dataset.v); openSub("gps", {}); };
   const oBack = ACT.back; ACT.back = () => { const t = subStack[subStack.length - 1]; if (t && t.name === "gps" && GP && (GP.phase === "run" || GP.phase === "paused") && !confirmBack()) return; if (t && t.name === "gps" && GP && GP.phase === "ready") GP = null; oBack(); };

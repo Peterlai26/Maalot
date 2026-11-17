@@ -737,3 +737,74 @@ button.item { background: none; border: 0; border-bottom: 1px solid var(--line);
 .splash { --bg: #F9F5ED; --soft: #ECE7F6; --ink: #24193B; --muted: #6B6080; --accent: #6B3FC0; --card: #FFFFFF; color-scheme: light; }
 .ltod { display: none !important; }
 #sub.dress .dnext.top, #onb.dream .dnext.top, .dnext.top { bottom: auto; top: 10px; right: 10px; min-height: 34px; padding: 5px 11px 5px 13px; font-size: 13px; }
+
+/* ---------- ปุ่ม "โปรแกรมออกกำลังกาย": เด่น มีแสงวิ่งผ่าน หัวใจเต้น ลูกศรขยับชวนกด ---------- */
+.progcta { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 12px; padding: 13px 16px 13px 13px; border: 0; border-radius: 22px; color: var(--accent-ink); text-align: left; cursor: pointer; overflow: hidden; isolation: isolate;
+  background: var(--accent); background: linear-gradient(115deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 62%, #F0679B) 100%); box-shadow: 0 10px 22px -10px var(--accent); animation: pcglow 2.4s ease-in-out infinite; transition: transform .12s; }
+.progcta:active { transform: scale(.97); }
+.progcta::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .45) 50%, transparent 65%); transform: translateX(-120%); animation: pcshine 3.2s ease-in-out .6s infinite; }
+.pc-ic { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .28); position: relative; animation: pcbeat 1.5s ease-in-out infinite; }
+.pc-ic::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .7); animation: pcring 1.5s ease-out infinite; }
+.pc-t { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.pc-t b { font-size: 17px; font-weight: 700; letter-spacing: .1px; } .pc-t small { font-size: 12.5px; opacity: .9; margin-top: 2px; }
+.pc-go { flex: none; display: grid; place-items: center; }
+.pc-go svg { transform: rotate(180deg); animation: pcnudge 1.2s ease-in-out infinite; }
+@keyframes pcshine { 0%, 45% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
+@keyframes pcglow { 0%, 100% { box-shadow: 0 10px 22px -10px var(--accent); } 50% { box-shadow: 0 12px 30px -6px var(--accent); } }
+@keyframes pcbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+@keyframes pcring { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(1.6); opacity: 0; } }
+@keyframes pcnudge { 0%, 100% { transform: rotate(180deg) translateX(0); } 50% { transform: rotate(180deg) translateX(-5px); } }
+@media (prefers-reduced-motion: reduce) { .progcta, .progcta::after, .pc-ic, .pc-ic::before, .pc-go svg { animation: none; } }
+/* ---------- คลังท่า: ภาพเล็กทางซ้าย และแผนที่กล้ามเนื้อของน้องเกี๊ยว ---------- */
+.rt { flex: none; width: 64px; height: 64px; border-radius: 16px; background: #FFF1E3; display: block; }
+.rt.ph { display: grid; place-items: center; background: var(--soft); color: var(--accent); }
+.mmcard { padding: 12px 12px 10px; margin-bottom: 12px; }
+.mmhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 0 4px 2px; }
+svg.mmap { display: block; width: 100%; max-width: 250px; height: auto; margin: 0 auto; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }
+.mmseg { margin: 8px auto 0; max-width: 250px; }
+.mz { cursor: pointer; outline: none; }
+.mz .r { fill: var(--accent); fill-opacity: .2; stroke: transparent; stroke-width: 7px; paint-order: stroke; pointer-events: all; transform-box: fill-box; transform-origin: center; animation: mzidle 3.2s ease-in-out var(--d, 0s) infinite; transition: fill-opacity .2s; }
+.mz:focus-visible .r { fill-opacity: .45; }
+.mz.on .r { fill-opacity: .82; animation: mzflex 1.1s ease-in-out infinite; filter: drop-shadow(0 0 3px var(--accent)); }
+.mbob { animation: mmbob 2.6s ease-in-out infinite; }
+.mheart .r { fill: var(--accent); fill-opacity: .16; }
+.mheart .hi { fill: var(--accent); fill-opacity: .55; transform-box: fill-box; transform-origin: center; animation: mmbeat 1.3s ease-in-out infinite; pointer-events: none; }
+.mheart.on .hi { fill-opacity: 1; }
+.mtxt { font: 600 10px var(--font-body); fill: var(--muted); pointer-events: none; }
+.mmsel { padding: 4px 0 6px; } .mmsel .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.mmsel .chip.on { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+@keyframes mzidle { 0%, 100% { fill-opacity: .16; } 50% { fill-opacity: .34; } }
+@keyframes mzflex { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.09); } }
+@keyframes mmbob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes mmbeat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.22); } 30% { transform: scale(1); } 45% { transform: scale(1.14); } }
+@media (prefers-reduced-motion: reduce) { .mz .r, .mz.on .r, .mbob, .mheart .hi { animation: none; } .mz.on .r { fill-opacity: .82; } }
+.mview[hidden] { display: none; }
+
+/* ---------- หน้าโปรแกรม: ทางเข้าหลัก 3 ช่อง ---------- */
+.pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0 4px; }
+.pgrid > * { animation: ptin .5s cubic-bezier(.2, .9, .3, 1) both; } .pgrid > :nth-child(2) { animation-delay: .08s; } .pgrid > :nth-child(3) { animation-delay: .16s; }
+.pbig, .hubt { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 22px; text-align: left; color: var(--ink); cursor: pointer; transition: transform .12s; }
+.pbig:active, .hubt:active { transform: scale(.97); }
+.pbig { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 4px; padding: 14px 14px 12px; background: linear-gradient(135deg, var(--soft), var(--card) 75%); }
+.pbig::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, .5) 50%, transparent 60%); transform: translateX(-130%); animation: pcshine 4.2s ease-in-out 1s infinite; pointer-events: none; }
+.pb-top { display: flex; align-items: center; justify-content: space-between; font-size: 17px; }
+.pb-go { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); } .pb-go svg { transform: rotate(180deg); animation: pcnudge 1.3s ease-in-out infinite; }
+.pb-s { font-size: 12.5px; color: var(--muted); }
+.pb-th { display: flex; gap: 8px; margin-top: 8px; }
+.pb-th .rt { flex: 1; min-width: 0; width: auto; height: auto; aspect-ratio: 1; max-width: 76px; border-radius: 16px; animation: pfloat 2.6s ease-in-out calc(var(--i, 0) * .35s) infinite; }
+.hubt { display: flex; flex-direction: column; gap: 3px; padding: 14px; min-height: 132px; }
+.hubt b { font-size: 15px; line-height: 1.3; margin-top: 8px; font-weight: 600; } .pt-s { font-size: 12px; opacity: .8; }
+.t-stat { background: var(--blue-soft); color: var(--blue-ink); } .t-gps { background: var(--green-soft); color: var(--green); }
+.t-stat .pt-s, .t-gps .pt-s { color: inherit; } .t-stat b, .t-gps b { color: var(--ink); }
+.pt-ic { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: flex-end; justify-content: center; gap: 4px; padding-bottom: 11px; background: rgba(255, 255, 255, .55); }
+.t-gps .pt-ic { align-items: center; padding: 0; animation: pgbob 1.4s ease-in-out infinite; }
+.pt-ic i { width: 6px; border-radius: 3px; background: currentColor; height: 10px; animation: pbar 1.6s ease-in-out infinite; } .pt-ic i:nth-child(2) { animation-delay: .2s; } .pt-ic i:nth-child(3) { animation-delay: .4s; }
+.t-gps::after { content: ""; position: absolute; right: -10px; top: 24px; width: 70px; height: 70px; border-radius: 50%; border: 2px dashed currentColor; opacity: .25; animation: pspin 14s linear infinite; }
+@keyframes ptin { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes pfloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes pbar { 0%, 100% { height: 8px; } 50% { height: 22px; } }
+@keyframes pgbob { 0%, 100% { transform: translateX(-2px); } 50% { transform: translateX(3px); } }
+@keyframes pspin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .pgrid > *, .pbig::after, .pb-go svg, .pb-th .rt, .pt-ic, .pt-ic i, .t-gps::after { animation: none; } .pt-ic i { height: 16px; } }
+
+.rt.sm { width: 46px; height: 46px; border-radius: 13px; }
