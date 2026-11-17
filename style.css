@@ -543,3 +543,6 @@ body:has(.nav:not([hidden])) #instbar { bottom: calc(86px + env(safe-area-inset-
 .land[data-tod="day"] .linst { color: #3A2410; border-color: rgba(58, 36, 16, .4); background: rgba(255, 255, 255, .35); }
 .insteps { margin: 12px 0 0 20px; line-height: 1.7; padding: 0; } .insteps li { margin-bottom: 6px; }
 @media (prefers-reduced-motion: reduce) { #instbar { transition: none; } .linst { animation: none; } }
+
+.linkbtn { border: 0; background: none; color: var(--accent); font: inherit; font-size: 12px; font-weight: 500; padding: 4px 6px; margin-left: 4px; text-decoration: underline; }
+body:has(#sub:not([hidden])) #instbar, body:has(#modal:not([hidden])) #instbar { display: none; }
