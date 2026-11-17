@@ -17,14 +17,15 @@ function fuzzyFood(seg) {
   return best;
 }
 const _findFoodExact = findFood;
-const withNutr = it => { const n = S.nutr && S.nutr[it.n]; if (n) NK.forEach(([a]) => { it[a] = n[a] || 0; }); return it; };
+const withNutr = it => { const n = it.p === undefined && S.nutr && S.nutr[it.n]; if (n) NK.forEach(([a]) => { it[a] = n[a] || 0; }); return it; };
 /* จับคู่ชื่อ: คืน {f, key, d} (d = จำนวนตัวอักษรที่เดา) ลองตรงตัวก่อน แล้วค่อยเดา */
+const foodList = () => (S.myfoods || []).map(m => [m.n, m.k, "m", [m.n], [], m]).concat(FOODS);
 function matchFood(seg) {
   const n = normT(seg); let best = null, bl = 0;
-  FOODS.forEach(f => f[3].concat([f[0]]).forEach(k => { const kk = normT(k); if (kk.length > bl && n.indexOf(kk) > -1) { best = { f, key: k, d: 0 }; bl = kk.length; } }));
+  foodList().forEach(f => f[3].concat([f[0]]).forEach(k => { const kk = normT(k); if (kk.length > bl && n.indexOf(kk) > -1) { best = { f, key: k, d: 0 }; bl = kk.length; } }));
   if (best) return best;
   const t = skel(seg); if (t.length < 3) return null; let bs = 1e9;
-  FOODS.forEach(f => f[3].concat([f[0]]).forEach(k => {
+  foodList().forEach(f => f[3].concat([f[0]]).forEach(k => {
     const kk = skel(k), L = kk.length; if (L < 3) return;
     const allow = L < 5 ? 0 : L < 7 ? 1 : L < 11 ? 2 : 3, d = approxDist(kk, t);
     if (d <= allow) { const sc = d * 100 - L; if (sc < bs) { bs = sc; best = { f, key: k, d }; } }
@@ -38,7 +39,7 @@ parseFood = function (text) {
     const q = qtyOf(seg), r = matchFood(seg);
     if (r) {
       const core = skel(seg.replace(FILLER, "")).length || 1, cov = skel(r.key).length / core;
-      const it = { n: r.f[0], k1: r.f[1], q, raw: seg };
+      const it = { n: r.f[0], k1: r.f[1], q, raw: seg }; const my = r.f[5]; if (my) { it.my = my.id; if (my.p !== undefined) NK.forEach(([a]) => { it[a] = my[a] || 0; }); }
       if (cov >= 0.7) { it.known = true; if (r.d > 0) it.fz = seg; return withNutr(it); }
       /* ชื่อยาวกว่าที่รู้จักมาก เช่น "ซูชิแซลมอน" ไม่ใช่ "แซลมอนย่าง": ให้ AI ดู ถ้า AI ไม่ได้ค่อยใช้ตัวเลือกใกล้เคียง */
       return { n: seg.replace(/\d+(\.\d+)?|ครึ่ง/g, "").trim() || seg, k1: 0, q, known: false, raw: seg, cand: it };
