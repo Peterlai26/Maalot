@@ -38,7 +38,7 @@ const foodIconName = name => foodKind(name).icon;
 function mealChip(m) { const k = foodKind(m.n); return `<button class="chip mchip fc-${k.cat}" data-drag="meal" data-id="${esc(m.id)}" data-act="mealedit" aria-label="${esc(m.n)} ${fmtN(m.k)} กิโลแคลอรี่ แตะเพื่อแก้ ลากเพื่อลบ"><span class="ci" data-ic="${k.icon}">${ic(k.icon, 16)}</span><span class="cn">${esc(m.n)}</span><small>${fmtN(m.k)}</small></button>`; }
 function workChip(m) { return `<button class="chip mchip fc-work" data-drag="work" data-id="${esc(m.id)}" aria-label="${esc(m.n)} ลากเพื่อลบ"><span class="ci" data-ic="dumbbell">${ic("dumbbell", 16)}</span><span class="cn">${esc(m.n)}</span><small>-${fmtN(m.k)}</small></button>`; }
 function mealChips(info) {
-  const m = info.meals.length ? `<div class="sec hubsec">เมนูอาหาร <span class="hubn">${info.meals.length}</span><span class="xs muted dragtip">ลากเพื่อลบ</span></div><div class="logchips mchips">${info.meals.map(mealChip).join("")}</div>` : "";
+  const m = info.meals.length ? `<div class="sec hubsec">เมนูอาหาร <span class="hubn">${info.meals.length}</span><span class="xs muted dragtip">กดค้างแล้วลากไปปุ่ม + เพื่อลบ</span></div><div class="logchips mchips">${info.meals.map(mealChip).join("")}</div>` : "";
   const w = info.works.length ? `<div class="sec hubsec">ออกกำลังกาย <span class="hubn">${info.works.length}</span></div><div class="logchips mchips">${info.works.map(workChip).join("")}</div>` : "";
   return m + w;
 }
