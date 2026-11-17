@@ -1233,3 +1233,14 @@ input:not([type]), input[type="text"]:not(.bare), input[type="number"]:not(.bare
 @media (prefers-reduced-motion: reduce) { .hubact { animation: none !important; } }
 .hq-grid + .hgrid { margin-top: 14px; } .hfeat + .hq-grid { margin-top: 14px; } .hubact + .hgrid, .hubtop + .hgrid { margin-top: 14px; }
 .hq-grid + .hubsec, .hfeat + .hubsec { margin-top: 18px; } .hubact + .hubsec { margin-top: 12px; }
+/* ปุ่มกรองเด่น */
+.hubfb { width: auto; height: 48px; padding: 0 16px 0 12px; border-radius: 999px; border: 0; display: inline-flex; align-items: center; gap: 7px; overflow: hidden; isolation: isolate; color: #fff; font: 800 14px var(--font-display); background-image: linear-gradient(120deg, #6B3FC0, #8D6CF0 55%, #E8579A); background-size: 200% 200%; animation: mhflow 6s ease-in-out infinite, hfbpulse 2.6s ease-in-out infinite; box-shadow: 0 10px 20px -10px #6B3FC0; }
+.hubfb::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.45) 50%, transparent 65%); transform: translateX(-120%); animation: hfbshine 3.2s ease-in-out infinite; }
+.hubfb.on { background-image: linear-gradient(120deg, #E8579A, #F0884A); box-shadow: 0 10px 20px -10px #E8579A; }
+.hfb-ic svg { display: block; animation: hfbwig 3.2s ease-in-out infinite; } .hubfb:active { transform: scale(.94); }
+.hubfb i { position: absolute; top: 8px; right: 10px; width: 9px; height: 9px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px #E8579A; animation: gmping 1.8s ease-out infinite; }
+@keyframes hfbpulse { 0%, 100% { box-shadow: 0 10px 20px -10px #6B3FC0, 0 0 0 0 rgba(141, 108, 240, .45); } 55% { box-shadow: 0 10px 20px -10px #6B3FC0, 0 0 0 9px rgba(141, 108, 240, 0); } }
+@keyframes hfbshine { 0%, 55% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
+@keyframes hfbwig { 0%, 70%, 100% { transform: rotate(0); } 78% { transform: rotate(-14deg); } 86% { transform: rotate(12deg); } 94% { transform: rotate(-6deg); } }
+@media (prefers-reduced-motion: reduce) { .hubfb, .hubfb::after, .hfb-ic svg, .hubfb i { animation: none !important; } }
+.hubfb i { animation: hfbdot 1.6s ease-in-out infinite !important; } @keyframes hfbdot { 50% { opacity: .45; transform: scale(.8); } }
