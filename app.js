@@ -159,7 +159,7 @@ ${moodCardHTML()}<button class="card status" data-act="sub" data-n="today">${rin
 ${weekStrip(tk)}
 ${under}
 ${chips ? '<div class="logchips">' + chips + "</div>" : ""}
-${freqFoods(tk)}
+${comboHome()}${freqFoods(tk)}
 <div class="row wrap" style="margin-top:10px"><button class="chip" data-act="water1">${ic("droplet", 15)}น้ำ ${water}/8 แก้ว</button><button class="chip" data-act="sub" data-n="weight">${ic("scale", 15)}ชั่งน้ำหนัก</button>${h >= 20 || h < 5 ? `<button class="chip blue" data-act="sub" data-n="night">${ic("moon", 15)}หิวดึก</button>` : ""}</div>
 <div class="inputbar"><input id="homeIn" type="text" placeholder="วันนี้กินอะไรมาบ้างนะ…" aria-label="บอกว่ากินหรือทำอะไรมา"/><button class="round" data-act="camera" aria-label="ถ่ายรูปอาหาร">${ic("camera", 22)}</button><button class="round primary" data-act="homesend" aria-label="ส่ง">${ic("send", 22)}</button></div>`;
   animateRing(); const cc = $("#coinchip"); if (cc && COIN_PREV !== null && S.coins > COIN_PREV) cc.classList.add("bump"); COIN_PREV = S.coins;

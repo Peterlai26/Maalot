@@ -156,7 +156,7 @@ SUBS.letter = () => {
   body += wat ? `ดื่มน้ำครบ ${wat} วัน เก่งมาก\n` : "";
   body += moodWeekNote();
   if (ch !== null) body += ch > 0.05 ? `น้ำหนักเฉลี่ยลดลง ${f1(ch)} กก. เมื่อเทียบกับสัปดาห์ก่อน\n` : ch < -0.05 ? `น้ำหนักเฉลี่ยขึ้น ${f1(-ch)} กก. ซึ่งเป็นเรื่องปกติ ตัวเลขแกว่งได้เสมอ\n` : "น้ำหนักเฉลี่ยทรงตัวจากสัปดาห์ก่อน\n";
-  return { title: "จดหมายสัปดาห์นี้", html: `<div class="letter"><p style="white-space:pre-line">${esc(body)}</p><p style="text-align:right;margin-top:14px">รักนะ<br>${esc(S.name || "น้องก้อน")}</p></div>` };
+  return { title: "จดหมายสัปดาห์นี้", html: `<div class="letter"><p style="white-space:pre-line">${esc(body)}</p><p style="text-align:right;margin-top:14px">รักนะ<br>${esc(S.name || "น้องก้อน")}</p></div><button class="btn primary block" style="margin-top:14px" data-act="wkshare">${ic("send", 18)}แชร์การ์ดสรุปสัปดาห์</button>` };
 };
 
 /* ---------- คลังท่า ---------- */
@@ -226,6 +226,7 @@ document.addEventListener("change", e => {
     S = merge(d); save(); toast("นำเข้าแล้ว"); closeAllSubs();
   }).catch(() => toast("ไฟล์ไม่ถูกต้อง"));
 });
+ACT.wkshare = () => { SHARE.kind = "week"; openSub("share", {}); };
 ACT.bkin = () => { try { const d = JSON.parse($("#bk").value); if (!d || !d.v) throw 0; S = merge(d); save(); toast("นำเข้าแล้ว"); closeAllSubs(); } catch (e) { toast("ข้อมูลไม่ถูกต้อง"); } };
 ACT.resetask = () => openModal(`<h2>เริ่มใหม่ทั้งหมด?</h2><p class="muted" style="margin:8px 0 14px">ข้อมูลทั้งหมดจะถูกลบและกู้คืนไม่ได้</p><div class="row"><button class="btn" style="flex:1" data-act="modalclose">ยกเลิก</button><button class="btn danger" style="flex:1" data-act="resetgo">ลบทั้งหมด</button></div>`);
 ACT.modalclose = closeModal;
