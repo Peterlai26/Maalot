@@ -17,9 +17,10 @@ function dressItems(kind, tab) {
 function dressCur(kind, slot) { return kind === "wear" ? EDIT.look[slot] || SLOT_DEFAULT[slot] : (EDIT.room || {})[slot] || ROOM_DEFAULT[slot]; }
 
 function dressScene() { return scene({ look: EDIT.look, mood: "happy", rx: EDIT.rx, period: periodNow(), owned: S.owned, room: EDIT.room || ROOM_DEFAULT, l1: "", l2: "" }); }
+const SAVEBTN = (cls) => `<button class="btn primary dnext ${cls || ""}" data-act="dsave">บันทึก ${ic("check", 14)}</button>`;
 const NEXTBTN = (cls) => `<button class="btn primary dnext ${cls || ""}" data-act="onb1">ต่อไป ${ic("arrow", 14)}</button>`;
 function dressPreview(sc) {
-  return `<div class="dprevwrap"><div class="dwin"><div class="dprev stage">${sc.replace('viewBox="0 0 380 300"', 'viewBox="66 50 248 234"')}</div></div>${EDIT.onb ? NEXTBTN() : ""}</div>`;
+  return `<div class="dprevwrap"><div class="dwin"><div class="dprev stage">${sc.replace('viewBox="0 0 380 300"', 'viewBox="66 50 248 234"')}</div></div>${EDIT.onb ? NEXTBTN() : SAVEBTN()}</div>`;
 }
 function wearThumb(slot, id) {
   const L = normLook(EDIT.look); L[slot] = id;
@@ -49,7 +50,7 @@ function dressBar() {
       else { info = `<b>${esc(it.n)}</b> · ${esc(lockText(it))}`; if (it.price && !evClosed(it)) buy = `<button class="btn buy ${S.coins >= it.price ? "" : "poor"}" data-act="dbuy">${ic("coin", 15)}ซื้อ ${it.price}</button>`; }
     }
   }
-  return `<div class="dbar"><div class="dinfo sm">${info}</div><div class="dbtns">${buy}<button class="btn ${buy ? "" : "primary"}" data-act="dsave">บันทึก</button></div></div>`;
+  return buy || s ? `<div class="dbar"><div class="dinfo sm">${info}</div><div class="dbtns">${buy}</div></div>` : "";
 }
 function dressHTML() {
   const kind = EDIT.mode, tabs = kind === "wear" ? WTABS : ROOM_SLOTS, tab = EDIT.tab && tabs.some(t => t.id === EDIT.tab) ? EDIT.tab : tabs[0].id; EDIT.tab = tab;
@@ -65,7 +66,7 @@ function dressHTML() {
   const flt = EDIT.onb ? "" : `<div class="dfilter">${[["all", "ทั้งหมด"], ["locked", "ยังไม่มี"], ["owned", "มีแล้ว"]].map(f => `<button class="chip ${(EDIT.filter || "all") === f[0] ? "on" : ""}" data-act="dfilter" data-f="${f[0]}">${f[1]}</button>`).join("")}</div>`;
   const tabsHTML = `<div class="dtabs" role="tablist">${tabs.map(t => `<button class="dtab ${t.id === tab ? "on" : ""}" data-act="dtab" data-t="${t.id}" role="tab">${t.n}</button>`).join("")}</div>`;
   const sc = dressScene(), mini = `<span class="dmini">${sc.replace('viewBox="0 0 380 300"', 'viewBox="104 40 172 172"')}</span>`;
-  return `${seg}${dressPreview(sc)}<div class="dstick">${mini}${tabsHTML}</div><div class="dbody">${flt}${body}</div>${EDIT.onb ? NEXTBTN("fab") : dressBar()}`;
+  return `${seg}${dressPreview(sc)}<div class="dstick">${mini}${tabsHTML}</div><div class="dbody">${flt}${body}</div>${EDIT.onb ? NEXTBTN("fab") : SAVEBTN("fab") + dressBar()}`;
 }
 /* ใช้ในหน้าแรกของผู้ใช้ใหม่ (ขั้นที่ 1) */
 function lookEditor() { return dressHTML(); }
