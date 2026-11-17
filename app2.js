@@ -138,14 +138,35 @@ function makePlan() {
   const days = []; for (let i = 0; i < 7; i++) { let tries = 0, d; do { d = { b: pk(by("b"))[0], l: pk(FOODS.filter(f => f[2] === "m" && f[1] <= 550))[0], d: pk(FOODS.filter(f => f[2] === "m" && f[1] <= 550))[0] }; tries++; } while (tries < 12 && ["b", "l", "d"].reduce((s, k) => s + (FOODS.find(f => f[0] === d[k]) || [0, 0])[1], 0) > tgt); days.push(d); }
   S.mealplan = { made: todayKey(), days }; save();
 }
+let PLD = 0, PLP = { i: 0, k: "b", tag: "b" };
+const PLM = [["b", "sun", "เช้า", "b"], ["l", "bowl", "กลางวัน", "m"], ["d", "moon", "เย็น", "m"]], PLT = [["b", "มื้อเช้า"], ["m", "มื้อหลัก"], ["s", "ของว่าง"], ["f", "ผลไม้"], ["d", "เครื่องดื่ม"]];
+const plFood = n => FOODS.find(x => x[0] === n) || [n, 0, "", [], []];
+const plWd = i => new Date(((S.mealplan && S.mealplan.made) || todayKey()) + "T12:00:00").getTime() + i * 864e5;
+function plRand(k, tag) { const cap = k === "b" ? 450 : 550, pool = FOODS.filter(f => f[2] === (tag || (k === "b" ? "b" : "m")) && f[1] <= cap); return (pool[Math.floor(Math.random() * pool.length)] || FOODS[0])[0]; }
 SUBS.plan = () => {
-  if (!S.mealplan) makePlan(); const P = S.mealplan, f = n => FOODS.find(x => x[0] === n) || [n, 0, "", [], []], cnt = {}, MI = [["b", "sun", "เช้า"], ["l", "bowl", "กลางวัน"], ["d", "moon", "เย็น"]];
-  P.days.forEach(d => ["b", "l", "d"].forEach(k => f(d[k])[4].forEach(i => { cnt[i] = (cnt[i] || 0) + 1; })));
-  const rows = P.days.map((d, i) => { const k = ["b", "l", "d"].reduce((s0, x) => s0 + f(d[x])[1], 0); return `<div class="card plday" style="--i:${i}"><div class="row between"><span class="pl-dn"><i>${i + 1}</i>วันที่ ${i + 1}</span><span class="pl-k">${fmtN(k)} kcal</span></div><div class="pl-meals">${MI.map(m => `<div class="pl-m"><span class="pl-mi">${ic(m[1], 16)}</span><div class="grow"><small>${m[2]}</small><b>${esc(d[m[0]])}</b></div><span class="xs muted">${fmtN(f(d[m[0]])[1])}</span></div>`).join("")}</div></div>`; }).join("");
-  const items = Object.keys(cnt).sort();
-  return { title: "แผนมื้อสัปดาห์", html: `<button class="btn primary block go" data-act="plre">${ic("dice", 18)}สุ่มแผนใหม่</button><div class="sec">รายการซื้อของ ${items.length} อย่าง</div><div class="card"><div class="row wrap">${items.length ? items.map(i => `<span class="chip shop">${ic("check", 12)}${esc(i)}${cnt[i] > 1 ? " ×" + cnt[i] : ""}</span>`).join("") : emptyState("bag", "ยังไม่มีรายการ", "สุ่มแผนใหม่เพื่อดูของที่ต้องซื้อ")}</div></div><div class="sec">แผน 7 วัน</div>${rows}<p class="xs muted" style="margin-top:10px">เป็นไอเดียคร่าวๆ ปรับตามที่ชอบได้เสมอ</p>` };
+  if (!S.mealplan) makePlan(); const P = S.mealplan, cnt = {}; PLD = Math.min(PLD, P.days.length - 1);
+  P.days.forEach(d => ["b", "l", "d"].forEach(k => plFood(d[k])[4].forEach(i => { cnt[i] = (cnt[i] || 0) + 1; })));
+  const kc = d => ["b", "l", "d"].reduce((s0, x) => s0 + plFood(d[x])[1], 0), d = P.days[PLD], tgt = targetOn(todayKey()), k = kc(d), items = Object.keys(cnt).sort();
+  const strip = P.days.map((x, i) => `<button class="pld${i === PLD ? " on" : ""}" data-act="plday" data-i="${i}"><small>${new Date(plWd(i)).toLocaleDateString("th-TH", { weekday: "short" })}</small><b>${new Date(plWd(i)).getDate()}</b></button>`).join("");
+  const meals = PLM.map(m => { const f = plFood(d[m[0]]); return `<div class="plm"><button class="plm-b" data-act="plopen" data-k="${m[0]}"><span class="pl-mi">${ic(m[1], 18)}</span><div class="grow"><small>${m[2]}</small><b>${esc(d[m[0]])}</b></div><span class="xs muted">${fmtN(f[1])} kcal</span><span class="plm-ch">›</span></button><button class="plm-r" data-act="plrm" data-k="${m[0]}" aria-label="สุ่มมื้อ${m[2]}ใหม่">${ic("dice", 18)}</button></div>`; }).join("");
+  return { title: "แผนมื้อสัปดาห์", keepScroll: true, html: `<div class="plbar"><button class="btn primary go" data-act="plre">${ic("dice", 18)}สุ่มทั้งสัปดาห์</button><button class="btn" data-act="plrd">สุ่มวันนี้</button></div>
+<div class="plstrip">${strip}</div>
+<div class="card plcard"><div class="row between"><b>วันที่ ${PLD + 1}</b><span class="pl-k${k > tgt ? " over" : ""}">${fmtN(k)} / ${fmtN(tgt)} kcal</span></div><div class="gbar"><i class="${k > tgt ? "" : "ok"}" style="width:${Math.min(100, Math.round(k / Math.max(1, tgt) * 100))}%"></i></div><div class="plms">${meals}</div><p class="xs muted" style="margin-top:8px">แตะมื้อเพื่อเลือกเอง · กดลูกเต๋าเพื่อสุ่มเฉพาะมื้อนั้น</p></div>
+<details class="card plshop"><summary>${ic("bag", 16)}รายการซื้อของ ${items.length} อย่าง</summary><div class="row wrap" style="margin-top:10px">${items.map(i => `<span class="chip shop">${ic("check", 12)}${esc(i)}${cnt[i] > 1 ? " ×" + cnt[i] : ""}</span>`).join("")}</div></details>` };
 };
 ACT.plre = () => { makePlan(); rerenderSub(); };
+ACT.plday = a => { PLD = +a.dataset.i; rerenderSub(); };
+ACT.plrd = () => { const d = S.mealplan.days[PLD]; PLM.forEach(m => { d[m[0]] = plRand(m[0]); }); save(); rerenderSub(); };
+ACT.plrm = a => { S.mealplan.days[PLD][a.dataset.k] = plRand(a.dataset.k); save(); rerenderSub(); };
+ACT.plopen = a => { PLP = { i: PLD, k: a.dataset.k, tag: a.dataset.k === "b" ? "b" : "m" }; openSub("plpick", {}); };
+ACT.pltag = a => { PLP.tag = a.dataset.t; rerenderSub(); };
+ACT.plset = a => { S.mealplan.days[PLP.i][PLP.k] = a.dataset.n; save(); closeSub(); toast("เปลี่ยนเมนูแล้ว"); };
+ACT.plpr = () => { S.mealplan.days[PLP.i][PLP.k] = plRand(PLP.k, PLP.tag); save(); closeSub(); toast("สุ่มให้แล้ว"); };
+SUBS.plpick = () => {
+  const m = PLM.find(x => x[0] === PLP.k), cur = S.mealplan.days[PLP.i][PLP.k], list = FOODS.filter(f => f[2] === PLP.tag).sort((a, b) => a[1] - b[1]);
+  return { title: "เลือก" + m[2], keepScroll: true, html: `<div class="plpt">${PLT.map(t => `<button class="pill${PLP.tag === t[0] ? " on" : ""}" data-act="pltag" data-t="${t[0]}">${t[1]}</button>`).join("")}</div><input id="plq" type="text" placeholder="ค้นหาเมนู" autocomplete="off"/><button class="btn block" style="margin:4px 0 8px" data-act="plpr">${ic("dice", 16)}สุ่มจากหมวดนี้</button><div class="plpl">${list.map(f => `<button class="plpi${f[0] === cur ? " cur" : ""}" data-n="${esc(f[0])}" data-act="plset"><span class="grow">${esc(f[0])}</span><span class="xs muted">${fmtN(f[1])} kcal</span>${f[0] === cur ? ic("check", 14) : ""}</button>`).join("")}</div>` };
+};
+document.addEventListener("input", e => { if (e.target && e.target.id === "plq") { const q = e.target.value.trim(); document.querySelectorAll(".plpi").forEach(b => { b.hidden = !!q && b.dataset.n.indexOf(q) < 0; }); } });
 SUBS.letter = () => {
   const today = todayKey(), days = []; for (let i = 6; i >= 0; i--) days.push(addDays(today, -i));
   const inf = days.map(dayInfo), lg = inf.filter(i => i.logged), avg = lg.length ? lg.reduce((s, i) => s + i.eaten, 0) / lg.length : 0;
