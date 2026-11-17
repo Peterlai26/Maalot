@@ -3,6 +3,18 @@ const chev = () => `<span class="schev">${ic("back", 18)}</span>`;
 function srow(act, data, icon, tone, title, sub, extra) {
   return `<button class="srow" data-act="${act}" ${data || ""}><span class="sic ${tone || ""}">${ic(icon, 20)}</span><span class="grow"><b>${title}</b>${sub ? `<small>${sub}</small>` : ""}</span>${extra || ""}${chev()}</button>`;
 }
+/* ตัวอย่างหน้าตาของแต่ละธีม (พื้น การ์ด สีหลัก) เป็นการ์ดจำลองเล็กๆ ให้เห็นก่อนเลือก */
+const PCOL = {
+  peach: { n: "ฝัน", d: "ม่วงนุ่ม ค่าเริ่มต้น", L: ["#F9F5ED", "#ECE7F6", "#6B3FC0", "#24193B"], D: ["#170F27", "#34274F", "#B79CFF", "#F4EEFB"] },
+  mint: { n: "มิ้นต์", d: "เขียวสดชื่น", L: ["#F1FAF4", "#DDF1E4", "#4FA574", "#243A2E"], D: ["#10201A", "#264236", "#7CC795", "#E7F6EC"] },
+  sky: { n: "ฟ้า", d: "ฟ้าใส สบายตา", L: ["#F0F7FD", "#DCEBF8", "#4D93D1", "#22364A"], D: ["#0F1B27", "#28325F", "#7DB8E8", "#E6F1FB"] },
+  sakura: { n: "ซากุระ", d: "ชมพูหวาน", L: ["#FFF3F6", "#FFE0E8", "#E8628A", "#42262F"], D: ["#26121B", "#55303F", "#F28BAA", "#FBE9EF"] },
+  lavender: { n: "ลาเวนเดอร์", d: "ม่วงอ่อนละมุน", L: ["#F6F3FD", "#E8E1F8", "#8D78D8", "#2E2744"], D: ["#1A1526", "#34274F", "#B3A2EE", "#F0ECFA"] }
+};
+function palCard(q) {
+  const dark = document.documentElement.dataset.theme === "dark", c = PCOL[q[0]] || PCOL.peach, k = dark ? c.D : c.L, on = (S.pal || "peach") === q[0];
+  return `<button class="pcard ${on ? "on" : ""}" data-act="setpal" data-p="${q[0]}" aria-label="ธีม${c.n} ${c.d}" aria-pressed="${on}" style="--pb:${k[0]};--ps:${k[1]};--pa:${k[2]};--pi:${k[3]}"><span class="pmini"><i class="pm-top"></i><span class="pm-mid"><i class="pm-ring"></i><span><i class="pm-line"></i><i class="pm-line s"></i></span></span><i class="pm-btn"></i><i class="pm-nav"><b></b><b class="on"></b><b></b></i></span><span class="pname">${c.n}</span><span class="pdesc">${c.d}</span>${on ? `<span class="pchk">${ic("check", 14)}</span>` : ""}</button>`;
+}
 function setHead() {
   const w = estW(), rx = shapeRx(w), tgt = targetOn(todayKey());
   return `<div class="setprof"><div class="setav"><svg viewBox="-62 -204 124 130" role="img" aria-label="ตัวละคร">${figure(S.look, "happy", rx)}</svg></div><div class="grow"><b>${esc(S.name || "น้องก้อน")}</b><span>เป้าวันนี้ ${fmtN(tgt)} kcal</span><span class="setchips"><i>${ic("flame", 13)}${S.streak.n || 0} วัน</i><i>${ic("coin", 13)}${S.coins}</i></span></div><button class="btn sm" data-act="sub" data-n="wardrobe">แต่งตัว</button></div>`;
@@ -12,9 +24,9 @@ SUBS.settings = () => {
   const sexT = p.sex === "m" ? "ชาย" : "หญิง", bk = S.lastBackup ? "สำรองล่าสุด " + new Date(S.lastBackup).toLocaleDateString("th-TH", { day: "numeric", month: "short" }) : "ยังไม่เคยสำรอง";
   const modes = [["auto", "ตามเครื่อง", "phone"], ["light", "สว่าง", "sun"], ["dark", "มืด", "moon"]];
   return {
-    title: "ตั้งค่า", after: badge, html: `<div class="hint" hidden>${ic("cloud", 18)}<span id="syncb"></span></div>${setHead()}
+    title: "ตั้งค่า", after: () => { badge(); const sp = $(".spal"), on = $(".pcard.on"); if (sp && on) sp.scrollLeft += on.getBoundingClientRect().left - sp.getBoundingClientRect().left - (sp.clientWidth - on.clientWidth) / 2; }, html: `<div class="hint" hidden>${ic("cloud", 18)}<span id="syncb"></span></div>${setHead()}
 <div class="sgt">หน้าตาแอป</div>
-<div class="scard"><div class="spal">${PALS.map(q => `<button class="pal ${(S.pal || "peach") === q[0] ? "on" : ""}" data-act="setpal" data-p="${q[0]}" aria-label="ธีม${q[1]}" aria-pressed="${(S.pal || "peach") === q[0]}"><i style="background:${q[2]}"></i><span>${q[1]}</span></button>`).join("")}</div>
+<div class="scard"><div class="spal" role="group" aria-label="เลือกสีธีม">${PALS.map(palCard).join("")}</div>
 <div class="smode">${modes.map(m => `<button class="${md === m[0] ? "on" : ""}" data-act="setmode" data-m="${m[0]}" aria-pressed="${md === m[0]}">${ic(m[2], 16)}${m[1]}</button>`).join("")}</div></div>
 <div class="sgt">ของฉัน</div>
 <div class="scard rows">${srow("sub", 'data-n="setprof"', "user", "", "ข้อมูลส่วนตัว", `ส่วนสูง ${p.h} ซม. · อายุ ${p.age} · ${sexT}`)}${srow("sub", 'data-n="setrem"', "timer", "amber", "เตือนให้บันทึก", c.on ? `เปิดอยู่ ทุก ${c.everyH} ชั่วโมง` : "ปิดอยู่")}${srow("sub", 'data-n="myfoods"', "bowl", "pink", "อาหารของฉัน", `${(S.myfoods || []).length} รายการ`)}${srow("sub", 'data-n="combos"', "heart", "pink", "มื้อประจำ", `${(S.combos || []).length} ชุด`)}</div>
