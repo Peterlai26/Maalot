@@ -560,3 +560,4 @@ body:has(#sub:not([hidden])) #instbar, body:has(#modal:not([hidden])) #instbar {
 
 .tin { border: 0; background: var(--soft); color: var(--ink); border-radius: 999px; padding: 2px 8px; font: inherit; font-size: 12px; min-height: 26px; width: auto !important; margin-right: 6px; }
 input.tin[type=time] { width: auto !important; min-height: 30px !important; height: 30px; padding: 0 10px !important; font-size: 13px !important; border-radius: 999px !important; border: 0 !important; background: var(--soft) !important; display: inline-block; margin: 0 6px 2px 0; }
+#modal .panel { max-height: 92vh; overflow-y: auto; }
