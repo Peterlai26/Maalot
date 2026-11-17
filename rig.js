@@ -85,6 +85,10 @@ const RIG = (() => {
       return { hip, th, hb: lerp(-.5, .6, d), d: .3, ph: ph2(tm, P) ? "โค้งหลัง" : "แอ่นหลัง", ox: .1, feet: [{ a: [-.5, D.ah], fa: PI }, { a: [-.52, D.ah], fa: PI }], hands: S => [[S[0] + .03, hr0], [S[0], hr0]] }; } },
     cobra: { period: 4, pose(tm, P) { const d = sm(.08, .92, raw(tm, P)), hip = [-.2, lyY], th = lerp(1.5, .8, d), a = [hip[0] - Hs * .98, D.ah + .02];
       return { hip, th, hb: -th * .85, d: .3, ph: ph2(tm, P) ? "ยก" : "ลง", ox: .2, feet: [{ a: [a[0] - .03, a[1]], fa: PI }, { a, fa: PI }], hands: S => [[.5, hr0], [.44, hr0]] }; } },
+    cycle: { period: 1.2, pose(tm, P) { const f = tm / P * 2 * PI, cr = [.2, .4], R = .24, ped = a => [cr[0] + R * Math.cos(a), cr[1] + R * Math.sin(a)];
+      return { hip: [-.12, .96], th: .95, hb: -.45, d: .5, ph: "ปั่น", ox: .3, bike: { cr, f }, feet: [{ a: ped(f + PI), fa: 0 }, { a: ped(f), fa: 0 }], hands: S => [[.98, 1.08], [.95, 1.06]] }; } },
+    shadow: { period: 1, pose(tm, P) { const f = tm / P * 2 * PI, a = Math.max(0, Math.sin(f)), b = Math.max(0, -Math.sin(f)), bob = .02 * Math.abs(Math.sin(f * 2));
+      return { hip: [0, Hs * .93 + D.ah - bob], th: .12, hb: 0, d: .5, ph: "ชก", ox: 0, feet: [{ a: [-.2, D.ah], fa: 0 }, { a: [.25, D.ah], fa: 0 }], hands: S => { const g = [S[0] + .22 * D.L, S[1] - .05], x = [S[0] + .95 * D.L, S[1]]; return [lerp2(g, x, b), lerp2(g, x, a)]; } }; } },
     wallsit: { period: 4, pose(tm, P) { const hip = [-.48 * D.l1, D.ah + 1.04 * D.l2 + .008 * Math.sin(tm * 11)];
       return { hip, th: .02, hb: 0, d: .6, ph: "คงท่า", ox: -.1, wall: hip[0] - D.tw[0] / 2 - .02, feet: [{ a: [.02, D.ah], fa: 0 }, { a: [0, D.ah], fa: 0 }], hands: S => [[S[0] + D.L * .9 + .05, S[1] - .08], [S[0] + D.L * .9, S[1] - .08]] }; } }
   });
@@ -131,7 +135,7 @@ const RIG = (() => {
     face(ctx, R, expr, blink, tm); ctx.restore();
     leg(1, false); arm(1, false);
   }
-  function autoExpr(ex, pose) { if (/^(plank|run|walk|wallsit|catcow|cobra|armcircle|rope|climber|highknee|buttkick)$/.test(ex)) return ex === "catcow" || ex === "cobra" ? "smile" : "focus"; return pose.d > .82 ? "tired" : pose.d < .14 ? "smile" : "focus"; }
+  function autoExpr(ex, pose) { if (/^(plank|run|walk|wallsit|catcow|cobra|armcircle|rope|climber|highknee|buttkick|cycle|shadow)$/.test(ex)) return ex === "catcow" || ex === "cobra" ? "smile" : "focus"; return pose.d > .82 ? "tired" : pose.d < .14 ? "smile" : "focus"; }
 
   function look() { try { const L = normLook(S.look); SKIN = /^#[0-9a-f]{6}$/i.test(L.skin) ? L.skin : "#FFF1D6"; return { shirt: /^#[0-9a-f]{6}$/i.test(L.oc) ? L.oc : "#8155C9" }; } catch (e) { return { shirt: "#8155C9" }; } }
   function scene(cv, ex, st, now) {
@@ -150,6 +154,10 @@ const RIG = (() => {
     if (pose.run) { ctx.strokeStyle = "rgba(36,25,59,.18)"; ctx.lineWidth = 3; ctx.lineCap = "round"; const off = (tm * sc * (ex === "run" ? 3.2 : 1.2)) % (sc * .9); for (let x = W * .06 - off; x < W * .94; x += sc * .9) { if (x < W * .06) continue; ctx.beginPath(); ctx.moveTo(x, gy + 16); ctx.lineTo(x + sc * .35, gy + 16); ctx.stroke(); } }
     if (pose.wall != null) { const wx = P([pose.wall, 0])[0]; ctx.fillStyle = "#E8D9F5"; ctx.fillRect(0, 0, wx, gy + 2); ctx.fillStyle = "#CDB6EA"; ctx.fillRect(wx - 4, 0, 4, gy + 2); }
     if (pose.rope != null) { const c = P([0, Hs * .95 + D.ah]), rr = (Hs * .95 + D.ah) * sc; ctx.save(); ctx.strokeStyle = "#F0679B"; ctx.lineWidth = 3; ctx.setLineDash([rr * .5, rr * .35]); ctx.lineDashOffset = -pose.rope * rr * .3; ctx.beginPath(); ctx.arc(c[0], c[1], rr, 0, 2 * PI); ctx.stroke(); ctx.restore(); }
+    if (pose.bike) { const bk = pose.bike, W1 = P([-.85, .52]), W2 = P([.95, .52]), C = P(bk.cr), Sd = P([-.2, .8]), St = P([.88, 1.0]), Hb = P([.86, .74]), rr = .52 * sc; ctx.save(); ctx.lineCap = "round"; ctx.strokeStyle = "#2A1D45"; ctx.lineWidth = Math.max(2, .05 * sc);
+      [W1, W2].forEach(w => { ctx.beginPath(); ctx.arc(w[0], w[1], rr, 0, 2 * PI); ctx.stroke(); }); ctx.lineWidth = Math.max(1, .02 * sc); ctx.setLineDash([rr * .25, rr * .2]); ctx.lineDashOffset = -bk.f * rr * .6; [W1, W2].forEach(w => { ctx.beginPath(); ctx.arc(w[0], w[1], rr * .75, 0, 2 * PI); ctx.stroke(); }); ctx.setLineDash([]);
+      ctx.strokeStyle = "#F0679B"; ctx.lineWidth = Math.max(3, .06 * sc); ctx.beginPath(); ctx.moveTo(W1[0], W1[1]); ctx.lineTo(C[0], C[1]); ctx.lineTo(Sd[0], Sd[1]); ctx.lineTo(W1[0], W1[1]); ctx.moveTo(Sd[0], Sd[1]); ctx.lineTo(St[0], St[1]); ctx.lineTo(C[0], C[1]); ctx.moveTo(St[0], St[1]); ctx.lineTo(Hb[0], Hb[1]); ctx.lineTo(W2[0], W2[1]); ctx.stroke();
+      ctx.strokeStyle = "#2A1D45"; ctx.lineWidth = Math.max(4, .07 * sc); ctx.beginPath(); ctx.moveTo(Sd[0] - .12 * sc, Sd[1]); ctx.lineTo(Sd[0] + .12 * sc, Sd[1]); ctx.stroke(); ctx.restore(); }
     const blink = (now % 3600) < 130;
     drawChar(ctx, sk, P, sc, st.expr && st.expr !== "auto" ? st.expr : autoExpr(ex, pose), blink, tm, cols);
     return pose;
