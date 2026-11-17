@@ -70,5 +70,13 @@ function recipeOf(f) {
   for (const r of RTPL) if (r[0].test(n)) return { t: r[1], s: r[2].map(x => x.replace("{i}", ing.slice(0, 3).join(" ")), ) };
   return null;
 }
-let FRO = {};
-ACT.frrec = a => { FRO[a.dataset.t] = !FRO[a.dataset.t]; rerenderSub(); };
+ACT.fropen = a => openSub("recipe", { t: a.dataset.t });
+SUBS.recipe = arg => {
+  const f = FOODS.find(x => x[0] === (arg && arg.t));
+  if (!f) return { title: "วิธีทำ", html: emptyState("search", "ไม่พบเมนูนี้", "") };
+  const rc = recipeOf(f), fk = typeof foodKind === "function" ? foodKind(f[0]) : { cat: "meal", icon: "bowl" };
+  return { title: f[0], html: `<div class="rchero"><span class="rch-ic fc-${fk.cat}">${ic(fk.icon, 30)}</span><div><b>${esc(f[0])}</b><span>${fmtN(f[1])} kcal${rc ? " · ประมาณ " + rc.t + " นาที" : ""}</span></div></div>
+<div class="sec">วัตถุดิบ</div><div class="rcchips">${(f[4] || []).map((t, i) => `<span style="--i:${i}">${esc(t)}</span>`).join("") || '<span class="muted xs">ไม่ต้องเตรียมอะไรมาก</span>'}</div>
+${rc ? `<div class="sec">วิธีทำ</div><ol class="frs">${rc.s.map((t, k) => `<li style="--i:${k}"><b>${k + 1}</b><span>${esc(t)}</span></li>`).join("")}</ol>` : `<div class="card sm muted" style="margin-top:10px">เมนูนี้กินได้เลย ไม่ต้องปรุงเพิ่ม</div>`}
+<button class="btn primary block go" style="margin-top:16px" data-act="logfood" data-t="${esc(f[0])}">${ic("plus", 18)}บันทึกเป็นมื้อนี้</button>` };
+};
