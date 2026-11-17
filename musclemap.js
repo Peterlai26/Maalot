@@ -34,7 +34,7 @@ const MMAP = (() => {
   let view = "f";
   /* นิ้วชี้ชวนจิ้ม: โชว์จนกว่าจะแตะส่วนไหนสักครั้ง แล้วจำไว้ (เป็นความสะดวกต่อเครื่อง ไม่ซิงก์) */
   const hintOn = () => { try { return localStorage.getItem("maalot_mm_seen") !== "1" && !sel.size; } catch (e) { return !sel.size; } };
-  const finger = () => `<g class="mfing" aria-hidden="true" transform="translate(84 125)"><circle class="mf-rip" r="6"/><circle class="mf-rip r2" r="6"/><g class="mf-hand"><path d="M-3.4 2 C-3.4 -2 4.4 -2 4.4 2 L4.4 22 L-3.4 22 Z"/><rect x="-10" y="17" width="23" height="23" rx="8"/><ellipse cx="-10" cy="27" rx="3.6" ry="7" transform="rotate(-24 -10 27)"/><path class="mf-ln" d="M1 24 V31 M6 24 V31 M10.5 25 V31"/></g></g>`;
+  const finger = () => `<g class="mfing" aria-hidden="true" transform="translate(84 125)"><circle class="mf-rip" r="6"/><circle class="mf-rip r2" r="6"/><g class="mf-hand"><g transform="rotate(-30)"><rect class="mf-cuff" x="-8" y="37" width="19" height="11" rx="4"/><rect x="-11" y="15" width="24" height="26" rx="9"/><rect x="-3.6" y="-1" width="8.4" height="25" rx="4.2"/><rect x="-1" y="20" width="14" height="6.4" rx="3.2"/><rect x="-1" y="26.4" width="14" height="6.4" rx="3.2"/><rect x="-1" y="32.8" width="13" height="6.4" rx="3.2"/><ellipse cx="-11.5" cy="22.5" rx="4" ry="8.6" transform="rotate(-14 -11.5 22.5)"/></g></g></g>`;
 
   /* ---------- ตัวน้องเกี๊ยว (โครงร่างเดียวกันทั้งหน้าและหลัง) ---------- */
   const INK = "#2A1D45";
