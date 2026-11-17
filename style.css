@@ -599,3 +599,22 @@ body:has(.dbar) #sub.dress .dnext.fab { bottom: 96px; }
 .dbar .dbtns:empty { display: none; }
 
 .warnline { color: var(--warn-ink); background: var(--warn-soft); border-radius: 8px; padding: 3px 8px; margin-top: 4px; display: inline-block; }
+/* ทุกโหมด */
+.hubsearch { display: flex; align-items: center; gap: 6px; background: var(--card); border: 1.5px solid var(--line); border-radius: 999px; padding: 0 16px; } .hubsearch input { border: 0 !important; background: transparent !important; padding-left: 4px; box-shadow: none; } .hubsearch:focus-within { border-color: var(--accent); }
+.hq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.hq { position: relative; text-align: left; border: 0; border-radius: 24px; padding: 14px; color: #fff; min-height: 112px; display: flex; flex-direction: column; gap: 2px; overflow: hidden; box-shadow: 0 14px 24px -16px rgba(60, 30, 100, .55); transition: transform .12s; } .hq:active { transform: scale(.97); }
+.hq b { font-size: 16px; font-weight: 700; margin-top: 8px; } .hq-s { font-size: 12.5px; opacity: .92; }
+.hq-ic { width: 38px; height: 38px; border-radius: 12px; background: rgba(255, 255, 255, .25); display: grid; place-items: center; }
+.hq::after { content: ""; position: absolute; right: -22px; top: -22px; width: 92px; height: 92px; border-radius: 50%; background: rgba(255, 255, 255, .14); }
+.q-food { background: linear-gradient(135deg, #FFB93D, #F58F2B); } .q-work { background: linear-gradient(135deg, #8155C9, #4C5DDA); } .q-water { background: linear-gradient(135deg, #4DB6E8, #4C7BDA); } .q-weigh { background: linear-gradient(135deg, #F0679B, #C94B8E); }
+.hq-bar { display: block; height: 6px; border-radius: 999px; background: rgba(255, 255, 255, .3); margin-top: 8px; overflow: hidden; } .hq-bar b { display: block; height: 100%; margin: 0; background: #fff; border-radius: 999px; transition: width .6s; }
+.hubchips { display: flex; gap: 6px; overflow-x: auto; margin: 16px -16px 0; padding: 2px 16px 6px; scrollbar-width: none; } .hubchips::-webkit-scrollbar { display: none; }
+.hchip { flex: 0 0 auto; padding: 7px 14px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); font-size: 14px; white-space: nowrap; } .hchip.on { background: var(--ink); color: var(--bg); border-color: transparent; font-weight: 600; }
+.hubsec { display: flex; align-items: center; gap: 8px; margin-top: 18px; } .hubn { font-size: 11px; background: var(--soft); color: var(--muted); border-radius: 999px; padding: 1px 8px; font-weight: 500; }
+.hgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.htile { text-align: left; border: 1.5px solid var(--line); background: var(--card); border-radius: 22px; padding: 12px; display: flex; flex-direction: column; gap: 2px; color: var(--ink); min-height: 104px; transition: transform .12s; } .htile:active { transform: scale(.97); } .htile[disabled] { opacity: .5; }
+.htile b { font-size: 14.5px; font-weight: 600; margin-top: 6px; } .htile .s { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.hic { width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; }
+.htile.amber .hic { background: #FFEFC2; color: #B66A0B; } .htile.green .hic { background: var(--green-soft); color: var(--green); } .htile.blue .hic { background: #E4E8FB; color: #3A48BD; } .htile.rose .hic { background: #FFE0EA; color: #D6336C; } .htile.violet .hic { background: var(--soft); color: var(--accent); }
+:root[data-theme="dark"] .htile.amber .hic { background: #4D4220; color: #F3D77F; } :root[data-theme="dark"] .htile.blue .hic { background: #28325F; color: #B5C0FF; } :root[data-theme="dark"] .htile.rose .hic { background: #55303F; color: #F7B1C0; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .htile.amber .hic { background: #4D4220; color: #F3D77F; } :root:not([data-theme="light"]) .htile.blue .hic { background: #28325F; color: #B5C0FF; } :root:not([data-theme="light"]) .htile.rose .hic { background: #55303F; color: #F7B1C0; } }
