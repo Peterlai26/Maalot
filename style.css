@@ -546,3 +546,12 @@ body:has(.nav:not([hidden])) #instbar { bottom: calc(86px + env(safe-area-inset-
 
 .linkbtn { border: 0; background: none; color: var(--accent); font: inherit; font-size: 12px; font-weight: 500; padding: 4px 6px; margin-left: 4px; text-decoration: underline; }
 body:has(#sub:not([hidden])) #instbar, body:has(#modal:not([hidden])) #instbar { display: none; }
+
+/* กิจกรรมเทศกาล + เป้าหมายสัปดาห์ */
+.evcard, .goalcard { display: flex; align-items: center; gap: 12px; margin-top: 12px; } .goalcard.col { flex-direction: column; align-items: stretch; gap: 10px; }
+.evcard { background: linear-gradient(135deg, #FFF1B8, #FFD1E0); border-color: transparent; color: #3A2410; } .evcard .xs { color: #6B4A2A; }
+.evic { flex: 0 0 38px; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .7); color: var(--accent); }
+.gl { display: flex; align-items: center; gap: 10px; } .glic { flex: 0 0 34px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--soft); color: var(--accent); }
+.gbar { height: 8px; border-radius: 999px; background: var(--soft); margin-top: 6px; overflow: hidden; } .gbar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #8155C9, #F0679B); transition: width .6s; } .gbar i.ok { background: var(--green); }
+.dcell .dev { position: absolute; left: 10px; bottom: 36px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: #FFD66B; color: #7A4A00; font-style: normal; box-shadow: 0 1px 4px rgba(0, 0, 0, .25); }
+.evcard .btn, .goalcard > .btn { white-space: nowrap; flex: 0 0 auto; }

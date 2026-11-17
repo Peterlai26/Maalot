@@ -27,10 +27,10 @@ function wearThumb(slot, id) {
 }
 function dressCell(kind, tab, it) {
   const cur = dressCur(kind, tab), on = cur === it.id, owned = itemOwnedC(it.code), sel = EDIT.sel && EDIT.sel.slot === tab && EDIT.sel.id === it.id;
-  const badge = on ? `<span class="dbadge ok">${ic("check", 11)}ใส่อยู่</span>` : !owned ? (it.price ? `<span class="dbadge tag">${ic("coin", 11)}${it.price}</span>` : `<span class="dbadge lk">${it.medal ? ic("sparkle", 13) : ic("lock", 13)}</span>`) : "";
+  const badge = on ? `<span class="dbadge ok">${ic("check", 11)}ใส่อยู่</span>` : !owned ? (it.price && !evClosed(it) ? `<span class="dbadge tag">${ic("coin", 11)}${it.price}</span>` : `<span class="dbadge lk">${it.medal ? ic("sparkle", 13) : ic("lock", 13)}</span>`) : "";
   if (kind === "wear" && SWATCH_SLOTS[tab]) return `<button class="dcell dcolor ${on ? "on" : ""} ${sel ? "sel" : ""} ${owned ? "" : "locked"}" data-act="dpick" data-slot="${tab}" data-id="${esc(it.id)}"><span class="dthumb" style="background:${it.id}"></span><span class="dname">${esc(it.n)}</span>${badge}</button>`;
   const thumb = kind === "wear" ? wearThumb(tab, it.id) : roomThumb(tab, it.id, periodNow() === "night");
-  return `<button class="dcell ${on ? "on" : ""} ${sel ? "sel" : ""} ${owned ? "" : "locked"}" data-act="dpick" data-slot="${tab}" data-id="${esc(it.id)}"><span class="dthumb">${thumb}</span><span class="dname">${esc(it.n)}</span>${badge}</button>`;
+  return `<button class="dcell ${on ? "on" : ""} ${sel ? "sel" : ""} ${owned ? "" : "locked"}" data-act="dpick" data-slot="${tab}" data-id="${esc(it.id)}"><span class="dthumb">${thumb}</span><span class="dname">${esc(it.n)}</span>${badge}${it.ev ? `<i class="dev" title="ของกิจกรรม">${ic("sparkle", 11)}</i>` : ""}</button>`;
 }
 function dressSelf() {
   const L = EDIT.look, chip = (v, n) => `<button class="btn sm ${L.g === v ? "sel" : ""}" data-act="dgender" data-v="${v}">${n}</button>`;
@@ -46,7 +46,7 @@ function dressBar() {
     if (it) {
       const owned = itemOwnedC(it.code);
       if (owned) info = `ใส่ <b>${esc(it.n)}</b> อยู่`;
-      else { info = `<b>${esc(it.n)}</b> · ${esc(lockText(it))}`; if (it.price) buy = `<button class="btn buy ${S.coins >= it.price ? "" : "poor"}" data-act="dbuy">${ic("coin", 15)}ซื้อ ${it.price}</button>`; }
+      else { info = `<b>${esc(it.n)}</b> · ${esc(lockText(it))}`; if (it.price && !evClosed(it)) buy = `<button class="btn buy ${S.coins >= it.price ? "" : "poor"}" data-act="dbuy">${ic("coin", 15)}ซื้อ ${it.price}</button>`; }
     }
   }
   return `<div class="dbar"><div class="dinfo sm">${info}</div><div class="dbtns">${buy}<button class="btn ${buy ? "" : "primary"}" data-act="dsave">บันทึก</button></div></div>`;
@@ -105,6 +105,7 @@ ACT.dgender = (a) => { const v = a.dataset.v; EDIT.look.g = v; EDIT.look.hs = v 
 ACT.dskin = (a) => { EDIT.look.skin = a.dataset.id; dressRerender(); };
 ACT.dbuy = () => {
   const s = EDIT.sel; if (!s) return; const it = (EDIT.mode === "wear" ? WINDEX : RINDEX)[s.slot + "|" + s.id]; if (!it || itemOwnedC(it.code) || !it.price) return;
+  if (evClosed(it)) { toast("ของชิ้นนี้ซื้อได้เฉพาะช่วงกิจกรรมเท่านั้น"); return; }
   if (S.coins < it.price) { toast("เหรียญยังไม่พอ ทำภารกิจเพิ่มได้นะ"); return; }
   S.coins -= it.price; S.owned[it.code] = true; save(); toast("ซื้อ " + it.n + " แล้ว"); if (typeof popCoins === "function") confetti(); dressRerender();
   const chip = document.querySelector("#sub .subhead .chip"); if (chip) chip.innerHTML = ic("coin", 14) + S.coins;
