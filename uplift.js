@@ -25,3 +25,32 @@
   /* หน้าฟื้นตัว: ข้อความยาวเป็นข้อๆ ให้กลายเป็นรายการเคล็ดลับที่อ่านง่าย */
   fix("recover", h => h.replace(/<div class="card sm">(•[\s\S]*?)<\/div>/g, (m, t) => `<div class="card tips">${t.split("<br>").map(x => x.replace(/^\s*•\s*/, "").trim()).filter(Boolean).map((x, i) => `<div class="tip" style="--i:${i}"><span>${ic("check", 14)}</span><p>${x}</p></div>`).join("")}</div>`));
 })();
+
+(function () {
+  const setPage = (n, fn) => { if (typeof ORIG !== "undefined" && ORIG[n]) ORIG[n] = fn; else SUBS[n] = fn; };
+  const wrapHero = (n, cfg) => { const o = SUBS[n]; if (!o) return; SUBS[n] = a => { const r = o(a), c = typeof cfg === "function" ? cfg(a, r) : cfg; if (c && r && typeof r.html === "string" && !r.html.includes("mhero")) r.html = modeHero(c) + r.html; return r; }; };
+  wrapHero("gps", { icon: "run", title: "คาร์ดิโอ GPS", sub: "วัดระยะ เวลา และเส้นทางสดๆ", tone: "green" });
+  wrapHero("setbk", { icon: "cloud", title: "สำรองและนำเข้าข้อมูล", sub: "เก็บข้อมูลของคุณไม่ให้หาย", tone: "blue" });
+  wrapHero("pbuild", { icon: "list", title: "สร้างโปรแกรม", sub: "เลือกท่า เซ็ต ครั้ง ตามใจคุณ", tone: "violet" });
+  wrapHero("cardio", (a, r) => a && a.id ? { icon: "run", title: r.title, sub: "สรุปการเคลื่อนไหวครั้งนี้", tone: "green" } : null);
+  /* ภารกิจ: การ์ดมีไอคอน แถบเดินหน้า เรืองแสงตอนพร้อมรับ และสรุปด้านบน */
+  setPage("missions", () => {
+    const L = MISSIONS.map(m => ({ m, p: Math.min(m.goal, missionProg(m.id)), got: !!S.claimed[m.id] })), ready = L.filter(x => !x.got && x.p >= x.m.goal).length, gotN = L.filter(x => x.got).length, C = 2 * Math.PI * 34;
+    const head = `<div class="card gov"><div class="gov-ring"><svg viewBox="0 0 80 80" aria-hidden="true"><circle class="rb" cx="40" cy="40" r="34"/><circle class="rf" cx="40" cy="40" r="34" style="stroke-dasharray:${C.toFixed(1)};stroke-dashoffset:${(C * (1 - gotN / L.length)).toFixed(1)}"/></svg><b>${gotN}/${L.length}</b></div><div class="gov-t"><b>${ready ? "มี " + ready + " ภารกิจรอรับรางวัล!" : gotN === L.length ? "ทำครบทุกภารกิจแล้ว" : "ทำต่อเลย ใกล้แล้ว"}</b><span class="xs muted">เหรียญได้จากความสม่ำเสมอ ไม่ได้ขึ้นกับน้ำหนัก</span></div></div>`;
+    return { title: "ภารกิจ", html: head + `<div class="mgrid">${L.map(({ m, p, got }, i) => { const done = p >= m.goal; return `<div class="card mcard${got ? " got" : done ? " ready" : ""}" style="--i:${i}"><div class="mc-h"><span class="mc-ic">${ic(m.item ? "sparkle" : "target", 20)}</span><div class="grow"><b>${m.n}</b><span class="xs muted">${p}/${m.goal}${m.item ? " · รางวัล: " + m.itemName : ""}</span></div><span class="gcoin">${ic("coin", 14)}${m.coins}</span></div><div class="gbar"><i class="${got || done ? "ok" : ""}" style="width:${Math.round(p / m.goal * 100)}%"></i></div><div class="mc-f">${got ? `<span class="chip green">${ic("check", 14)}รับแล้ว</span>` : `<button class="btn sm ${done ? "primary go" : ""}" ${done ? "" : "disabled"} data-act="claim" data-id="${m.id}">${done ? "รับรางวัล" : "ยังไม่ครบ"}</button>`}</div></div>`; }).join("")}</div>` };
+  });
+  /* กราฟย้อนหลัง: แถบสรุปด้านบน เส้นวาดเข้ามา แท่งโตขึ้น */
+  if (typeof renderCharts === "function") {
+    const orc = renderCharts;
+    renderCharts = function () {
+      orc(); const v = document.getElementById("v-charts"); if (!v) return;
+      try {
+        const R = CH.range, today = todayKey(), from = addDays(today, -R + 1), ws = S.weights.filter(x => x.d >= from), nd = Math.min(R, 30), days = []; for (let i = nd - 1; i >= 0; i--) days.push(addDays(today, -i));
+        const lg = days.map(k => dayInfo(k)).filter(i => i.logged), avg = lg.length ? Math.round(lg.reduce((a, i) => a + i.eaten, 0) / lg.length) : null, chg = ws.length > 1 ? ws[ws.length - 1].w - ws[0].w : null;
+        const hero = `<div class="fdhero chh"><span class="fd-bg" aria-hidden="true"><i></i><i></i></span><div class="chh-t">${ic("chart", 18)}สรุป ${R} วันล่าสุด</div><div class="fd-s"><span><b>${chg === null ? "-" : (chg > 0 ? "+" : "") + f1(chg)}</b>กก. เปลี่ยน</span><span><b>${avg === null ? "-" : fmtN(avg)}</b>kcal ต่อวัน</span><span><b>${lg.length}</b>วันที่จด</span></div></div>`;
+        const top = v.querySelector(".top"); if (top) top.insertAdjacentHTML("afterend", hero); else v.insertAdjacentHTML("afterbegin", hero);
+      } catch (e) { }
+      v.querySelectorAll("svg path[stroke-width]").forEach(p => { try { const L = p.getTotalLength(); if (!L || L < 20) return; p.style.strokeDasharray = L; p.style.strokeDashoffset = L; p.getBoundingClientRect(); p.style.transition = "stroke-dashoffset 1.3s cubic-bezier(.2,.9,.3,1)"; p.style.strokeDashoffset = 0; } catch (e) { } });
+    };
+  }
+})();
