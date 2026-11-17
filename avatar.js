@@ -80,13 +80,12 @@ ${D("rug")}<ellipse cx="190" cy="270" rx="46" ry="7" fill="${night ? "#3B3355" :
 ${fx}${bubble}</svg>`;
 }
 
-/* ย้ายตัวละครเดิมเป็นก้อนเกี๊ยว (ครั้งเดียว): ผิวและทรงผมที่ยังเป็นค่าเริ่มต้นเก่า */
+/* ย้ายตัวละครเดิมเป็นก้อนเกี๊ยว (ครั้งเดียว ทุกคน): ผิวครีมและจุกเกี๊ยว ส่วนชุด หมวก ใบหน้า ของถือ ยังอยู่ครบ
+   ทรงผมเดิมยังเลือกกลับได้ในห้องแต่งตัว */
 function migDumpling() {
   try {
-    if (!S || !S.look || S.dumpMig) return;
-    const L = S.look;
-    if (L.skin === "#FBD9BE") L.skin = "#FFF1D6";
-    if ((!L.hs || L.hs === "bob") && (!L.hc || L.hc === "#6B4A3A")) { L.hs = "pleat"; }
-    S.dumpMig = 1; if (typeof save === "function") save();
+    if (!S || !S.look || S.dumpMig2) return;
+    const L = S.look; L.skin = "#FFF1D6"; L.hs = "pleat";
+    S.dumpMig = 1; S.dumpMig2 = 1; S.dumpToast = 1; if (typeof save === "function") save();
   } catch (e) { }
 }

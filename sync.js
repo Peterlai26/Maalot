@@ -72,7 +72,7 @@ async function syncApi(method, path, body, noAuth) {
 function setSyncSt(st) { SYNC_ST = st; const el = $("#syncacct"); if (el) el.innerHTML = acctStatusText(); }
 function applyRemote(obj) {
   const keep = {}; SYNC_SKIP.forEach(k => { if (S[k] !== undefined) keep[k] = S[k]; });
-  S = merge(Object.assign({}, obj, keep)); persistLocal(); applyTheme();
+  S = merge(Object.assign({}, obj, keep)); if (typeof migDumpling === "function") migDumpling(); persistLocal(); applyTheme();
   if (S.onboarded && $("#app").hidden) { $("#onb").hidden = true; $("#onb").innerHTML = ""; $("#app").hidden = false; $(".nav").hidden = false; closeAllSubsSilent && closeAllSubsSilent(); show("home"); }
   else if (!subStack.length) refresh();
 }
