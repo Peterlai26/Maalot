@@ -46,13 +46,18 @@ function wkOnPos(p) {
   }
   WK.last = cur;
 }
+let WKL = null;
+async function wkLock() { try { if ("wakeLock" in navigator && WK.on && document.visibilityState === "visible" && !WKL) { WKL = await navigator.wakeLock.request("screen"); WKL.addEventListener("release", () => { WKL = null; }); } } catch (e) { WKL = null; } }
+function wkUnlock() { try { if (WKL) WKL.release(); } catch (e) { } WKL = null; }
+document.addEventListener("visibilitychange", () => { if (WK.on && document.visibilityState === "visible") wkLock(); });
 function wkStart() {
   if (!navigator.geolocation) { toast("เครื่องนี้ไม่รองรับ GPS ในเบราว์เซอร์ ใช้เพิ่มก้าวเองแทนได้"); return; }
   WK.on = true; WK.last = null; WK.err = "รอสัญญาณ GPS";
   try { WK.wid = navigator.geolocation.watchPosition(wkOnPos, e => { WK.err = e.code === 1 ? "ไม่ได้รับอนุญาตใช้ตำแหน่ง เปิดสิทธิ์ตำแหน่งให้เบราว์เซอร์แล้วลองใหม่" : "สัญญาณ GPS อ่อน ลองออกที่โล่ง"; if (e.code === 1) wkStop(); }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 20000 }); } catch (e) { WK.err = "เปิด GPS ไม่สำเร็จ"; WK.on = false; }
+  wkLock();
   clearInterval(WK.tick); WK.tick = setInterval(() => { const t = subStack[subStack.length - 1]; if (t && t.name === "walk" && !$("#sub").hidden) rerenderSub(); }, 2500); rerenderSub();
 }
-function wkStop() { try { if (WK.wid != null) navigator.geolocation.clearWatch(WK.wid); } catch (e) { } WK.wid = null; WK.on = false; WK.last = null; clearInterval(WK.tick); WK.tick = null; save(); }
+function wkStop() { try { if (WK.wid != null) navigator.geolocation.clearWatch(WK.wid); } catch (e) { } WK.wid = null; WK.on = false; WK.last = null; wkUnlock(); clearInterval(WK.tick); WK.tick = null; save(); }
 SUBS.walk = () => {
   const t = todayKey(), goal = S.walkGoal || 8000, st = wkSteps(t), l = (S.walkLog || {})[t] || { m: 0, secs: 0 }, km = l.m / 1000, wt = (S.weights && S.weights.length ? S.weights[S.weights.length - 1].w : (S.prof && S.prof.w0)) || 60, kc = Math.round(.5 * wt * km + (l.extra || 0) * .04);
   const days = [6, 5, 4, 3, 2, 1, 0].map(k => { const d = addDays(t, -k), s = wkSteps(d); return { d, s }; }), mx = Math.max(goal, ...days.map(x => x.s));
@@ -60,7 +65,7 @@ SUBS.walk = () => {
   return { title: "เดินวันนี้", keepScroll: true, html: `<div class="card wkc">${hbRing(st / goal, fmtN(st), true)}<div class="wkt"><b>${fmtN(st)} / ${fmtN(goal)} ก้าว</b><span class="xs muted">${st >= goal ? "ถึงเป้าแล้ว!" : "อีก " + fmtN(goal - st) + " ก้าวถึงเป้า"}</span></div></div>
 <div class="wkstat"><span><b>${km.toFixed(2)}</b>กม.</span><span><b>${fmtN(kc)}</b>kcal</span><span><b>${Math.round(l.secs / 60)}</b>นาที</span></div>
 <button class="btn ${WK.on ? "" : "primary"} block go wkbtn${WK.on ? " live" : ""}" data-act="wkgo">${ic(WK.on ? "pause" : "run", 18)}${WK.on ? "หยุดนับ" : "เริ่มนับก้าวด้วย GPS"}</button>
-<p class="xs muted wkn">${WK.on ? esc(WK.err || "กำลังนับ ขณะนี้ต้องเปิดหน้าจอแอปค้างไว้") : "ต้องเปิดหน้าจอแอปค้างไว้ระหว่างเดิน ตำแหน่งอยู่ในเครื่องคุณเท่านั้น ก้าวคำนวณจากระยะทางและส่วนสูง (ค่าประมาณ)"}</p>
+<p class="xs muted wkn">${WK.on ? esc(WK.err || ("wakeLock" in navigator ? "กำลังนับ จอจะไม่ดับระหว่างเดิน อย่าสลับไปแอปอื่นหรือล็อกจอเอง" : "กำลังนับ เบราว์เซอร์นี้กันจอดับไม่ได้ ตั้งเวลาหน้าจอให้นานขึ้นและเปิดแอปค้างไว้")) : "ระหว่างนับ แอปจะกันจอดับให้ แต่ต้องเปิดแอปค้างไว้ ตำแหน่งอยู่ในเครื่องคุณเท่านั้น ก้าวคำนวณจากระยะทางและส่วนสูง (ค่าประมาณ)"}</p>
 <div class="sec">เป้าก้าวต่อวัน</div><div class="pills">${[5000, 8000, 10000].map(g => `<button class="pill${goal === g ? " on" : ""}" data-act="wkgoal" data-v="${g}">${fmtN(g)}</button>`).join("")}</div>
 <div class="sec">เพิ่มก้าวเอง</div><div class="hbadd"><input id="wkin" type="number" inputmode="numeric" placeholder="เช่น 1500" /><button class="btn" data-act="wkadd">${ic("plus", 16)}เพิ่ม</button></div>
 <div class="sec">7 วันล่าสุด</div><div class="card wkbars">${days.map(x => `<div class="wkb${x.d === t ? " today" : ""}"><i style="height:${Math.max(4, Math.round(x.s / mx * 100))}%" class="${x.s >= goal ? "ok" : ""}"></i><small>${wd(x.d)}</small></div>`).join("")}</div>` };
