@@ -97,7 +97,7 @@ SUBS.fitq = () => {
   else if (st === 4) body = `<h2>มีส่วนไหนที่ต้องระวังไหม</h2><p class="muted sm" style="margin:4px 0 10px">จะเว้นท่าที่อาจกวนส่วนนั้น</p><div class="fgrid">${LIMS.map(l => chip(q.lim.includes(l[0]), "fqlim", `data-v="${l[0]}"`, l[1])).join("")}</div><div style="margin-top:12px">${chip(!!q.care, "fqcare", "", "ตั้งครรภ์ มีโรคหัวใจ/ความดัน เพิ่งผ่าตัด หรือกำลังเจ็บอยู่", "จะจำกัดเป็นท่าเบา")}</div>${q.care ? `<div class="hint warnh" style="margin-top:10px">${ic("heart", 18)}<span>ควรปรึกษาแพทย์ก่อนเริ่มออกกำลังกาย แอปนี้ไม่ใช่คำแนะนำทางการแพทย์ ถ้าเวียนหัว เจ็บหน้าอก หรือหายใจไม่ออกให้หยุดทันที</span></div>` : ""}`;
   else { const F = fqFit(), plan = genPlan(F, 0), a = analyze(F, plan); body = `<h2>แผนที่ได้</h2>${anaHtml(F, plan, a, true)}`; FQ._plan = plan; }
   const last = st === T - 1;
-  return { title: "ตั้งค่าโปรแกรม", html: `${prog}${body}<div class="row" style="margin-top:16px;gap:8px">${st ? `<button class="btn" data-act="fqback">ย้อนกลับ</button>` : ""}<button class="btn primary" style="flex:1" data-act="${last ? "fqsave" : "fqnext"}" ${st === 0 && !q.loc.length ? "disabled" : ""}>${last ? "ใช้แผนนี้" : "ต่อไป"}</button></div>${st === 0 ? `<button class="linkbtn" style="display:block;margin:12px auto 0;font-size:14px" data-act="sub" data-n="log" data-arg="work">ข้ามไปพิมพ์บันทึกเองก่อน</button>` : ""}`, keepScroll: false };
+  return { title: "ตั้งค่าโปรแกรม", html: `${prog}${body}<div class="row" style="margin-top:16px;gap:8px">${st ? `<button class="btn" data-act="fqback">ย้อนกลับ</button>` : ""}<button class="btn primary" style="flex:1" data-act="${last ? "fqsave" : "fqnext"}" ${st === 0 && !q.loc.length ? "disabled" : ""}>${last ? "ใช้แผนนี้" : "ต่อไป"}</button></div>`, keepScroll: false };
 };
 const fqFit = () => ({ loc: FQ.loc.slice(), eq: FQ.eq.slice(), goal: FQ.goal, lvl: +FQ.lvl, days: +FQ.days, mins: +FQ.mins, lim: FQ.lim.slice(), care: FQ.care ? 1 : 0 });
 const tog = (a, v) => { const i = a.indexOf(v); if (i < 0) a.push(v); else a.splice(i, 1); };
@@ -108,7 +108,7 @@ ACT.fqcare = () => { FQ.care = FQ.care ? 0 : 1; rerenderSub(); };
 ACT.fqone = a => { const k = a.dataset.k, v = a.dataset.v; FQ[k] = k === "goal" ? v : +v; rerenderSub(); };
 ACT.fqnext = () => { FQ.step++; rerenderSub(); };
 ACT.fqback = () => { FQ.step = Math.max(0, FQ.step - 1); rerenderSub(); };
-ACT.fqsave = () => { S.fit = fqFit(); S.plan = FQ._plan || genPlan(S.fit, 0); FQ = null; save(); toast("สร้างแผนให้แล้ว"); confetti(); closeSub(); if (subStack.length && subStack[subStack.length - 1].name === "fit") rerenderSub(); else openSub("fit", {}); };
+ACT.fqsave = () => { S.fit = fqFit(); S.plan = FQ._plan || genPlan(S.fit, 0); FQ = null; save(); toast("สร้างแผนให้แล้ว แก้คำตอบได้ที่ปุ่ม “ปรับคำตอบ”"); confetti(); closeSub(); if (subStack.length && subStack[subStack.length - 1].name === "fit") rerenderSub(); else openSub("fit", {}); };
 
 function anaHtml(F, plan, a, brief) {
   const bar = (m) => { const t = MGT[m], v = a.sets[m], w = Math.min(100, Math.round(v / t[1] * 100)), st = v < t[0] * .8 ? "low" : v > t[1] ? "high" : "ok"; return `<div class="fana"><span>${m}</span><i><b class="${st}" style="width:${w}%"></b></i><em>${Math.round(v)} เซ็ต</em></div>`; };
@@ -122,7 +122,7 @@ ${a.sug.length ? `<div class="sec">ถ้าเพิ่มอุปกรณ์
 SUBS.fitan = () => { const F = S.fit, plan = S.plan; if (!F || !plan) return { title: "วิเคราะห์แผน", html: `<p class="muted">ยังไม่มีแผน</p><button class="btn primary block" data-act="fqstart">ตอบคำถามสร้างแผน</button>` }; return { title: "วิเคราะห์แผน", html: anaHtml(F, plan, analyze(F, plan)) }; };
 ACT.fqstart = () => { FQ = null; openSub("fitq", {}); };
 /* กดช่องออกกำลังกายบนหน้าแรก: เข้าโปรแกรมก่อน (ยังไม่มีแผนจะเริ่มที่คำถามข้อ 1) ส่วนพิมพ์บันทึกเองมีปุ่มอยู่ในหน้านั้น */
-ACT.workhome = () => { closeSheet(); if (S.fit && S.plan) openSub("fit", {}); else { FQ = null; openSub("fitq", {}); } };
+ACT.workhome = () => { closeSheet(); FQ = null; openSub("fit", {}); };
 
 /* ---------- หน้าหลักโปรแกรมออกกำลัง ---------- */
 const sessionsOf = (from, to) => (S.sessions || []).filter(s => s.d >= from && s.d <= to);
@@ -131,18 +131,27 @@ function nextDay(plan) {
   let c = ds.find(([d]) => d.dow === t && !doneToday); if (c) return { d: c[0], i: c[1], today: true };
   c = ds.find(([d]) => d.dow > t) || ds[0]; return { d: c[0], i: c[1], today: false };
 }
+/* ทางเข้าหลักของหน้าโปรแกรม: ท่าทั้งหมด (มีภาพน้องเกี๊ยวขยับให้ดู) สถิติและแผนที่กล้ามเนื้อ และวัดด้วย GPS */
+function hubTiles() {
+  const pool = LIB.filter(e => e.rig && typeof RIG !== "undefined" && RIG.has(e.rig)), day = Math.floor(Date.now() / 864e5), pick = [];
+  for (let i = 0; pick.length < 4 && pool.length && i < 40; i++) { const e = pool[(day * 7 + i * 29) % pool.length]; if (!pick.some(x => x.rig === e.rig)) pick.push(e); }
+  const th = pick.map((e, i) => `<canvas class="rigthumb rt" data-ex="${e.rig}"${e.noDumb ? ' data-nd="1"' : ""} style="--i:${i}" aria-hidden="true"></canvas>`).join("");
+  return `<div class="pgrid"><button class="pbig" data-act="sub" data-n="lib"><span class="pb-top"><b>ท่าทั้งหมด ${LIB.length} ท่า</b><span class="pb-go">${ic("back", 18)}</span></span><span class="pb-s">ดูท่าตัวอย่างทุกท่า หรือจิ้มกล้ามเนื้อของน้องเกี๊ยวเพื่อหาท่า</span><span class="pb-th">${th}</span></button>
+<button class="ptile t-stat" data-act="sub" data-n="progress"><span class="pt-ic"><i></i><i></i><i></i></span><b>สถิติและ<br>แผนที่กล้ามเนื้อ</b><span class="pt-s">ดูว่าสัปดาห์นี้ฝึกส่วนไหน</span></button>
+<button class="ptile t-gps" data-act="sub" data-n="cardio"><span class="pt-ic">${ic("run", 22)}</span><b>วิ่ง เดิน ปั่น<br>วัดด้วย GPS</b><span class="pt-s">เก็บระยะทางและเส้นทาง</span></button></div>`;
+}
 SUBS.fit = () => {
+  if (!S.fit || !S.plan) return SUBS.fitq(); /* ต้องตอบคำถามก่อน ข้ามไม่ได้ */
   const F = S.fit, plan = S.plan, mon = addDays(todayKey(), -FIT.dow()), done = new Set(sessionsOf(mon, addDays(mon, 6)).map(s => s.d));
   const week = `<div class="fweek">${DOWN.map((n, i) => { const k = addDays(mon, i), pl = plan && plan.days.some(d => d.dow === i), dn = done.has(k); return `<span class="${dn ? "dn" : pl ? "pl" : ""} ${k === todayKey() ? "now" : ""}"><em>${n}</em>${dn ? ic("check", 14) : pl ? "•" : ""}</span>`; }).join("")}</div>`;
   let top;
-  if (!F || !plan) top = `<div class="card" style="text-align:center"><div class="sm" style="margin-bottom:10px">ตอบคำถามสั้นๆ ว่าออกกำลังที่ไหน มีอุปกรณ์อะไร เป้าหมายอะไร แล้วน้องจะสร้างแผนและวิเคราะห์ให้</div><button class="btn primary block" data-act="fqstart">${ic("sparkle", 18)}เริ่มตั้งค่า (ประมาณ 1 นาที)</button></div>`;
-  else { const n = nextDay(plan);
+  { const n = nextDay(plan);
     top = `<div class="card"><div class="muted xs">${n.today ? "วันนี้" : "ครั้งถัดไป " + DOWF[n.d.dow]}</div><div style="font-size:19px;font-weight:600;margin:2px 0">${esc(n.d.name)}</div><div class="sm muted">${n.d.items.filter(x => !x.warm && !x.cool).length} ท่า · ประมาณ ${dayMins(n.d)} นาที · ${dayKcal(n.d)} kcal</div><div class="row" style="margin-top:12px;gap:8px"><button class="btn primary" style="flex:1" data-act="sesstart" data-src="plan:${n.i}">${ic("play", 18)}เริ่มเลย</button><button class="btn" data-act="sub" data-n="fitday" data-arg="plan:${n.i}">ดูรายการ</button></div></div>${week}
 <div class="row" style="gap:8px;margin-top:10px"><button class="btn" style="flex:1" data-act="sub" data-n="fitan">วิเคราะห์แผน</button><button class="btn" style="flex:1" data-act="fqstart">ปรับคำตอบ</button></div>
-<p class="xs muted" style="margin-top:8px">${F.loc.map(l => (LOCS.find(x => x[0] === l) || [, l])[1]).join(" · ")} · ${F.eq.length ? F.eq.length + " อุปกรณ์" : "ไม่มีอุปกรณ์"} · ${F.days} วัน/สัปดาห์ · ${F.mins} นาที</p>`; }
+<p class="xs muted" style="margin-top:8px">${F.loc.map(l => (LOCS.find(x => x[0] === l) || [, l])[1]).join(" · ")} · ${F.eq.length ? F.eq.length + " อุปกรณ์" : "ไม่มีอุปกรณ์"} · ${F.days} วัน/สัปดาห์ · ${F.mins} นาที<br>อยากเปลี่ยนที่ออกกำลัง อุปกรณ์ หรือเป้าหมาย กดปุ่ม “ปรับคำตอบ” ได้ตลอด</p>`; }
   const progs = (S.progs || []).map(p => `<button class="item" style="width:100%;text-align:left" data-act="sub" data-n="fitday" data-arg="prog:${p.id}"><div class="grow"><b>${esc(p.name)}</b><div class="xs muted">${p.items.length} ท่า · ประมาณ ${dayMins(p)} นาที</div></div>${ic("play", 18)}</button>`).join("");
   const pre = PRESETS.map(p => { const need = presetNeed(p), ok = !F || need.every(k => F.eq.includes(k)); return `<button class="item" style="width:100%;text-align:left" data-act="sub" data-n="fitday" data-arg="pre:${p.id}"><div class="grow"><b>${p.n}</b><div class="xs muted">${p.d}${need.length ? " · ต้องมี" + need.map(k => EQN[k].split(" ")[0]).join(" ") : " · ไม่ใช้อุปกรณ์"}</div></div>${F && ok ? `<span class="fok">ทำได้</span>` : ""}</button>`; }).join("");
-  return { title: "โปรแกรมออกกำลังกาย", html: `${top}<div class="sec">โปรแกรมของฉัน</div>${progs || `<p class="xs muted">ยังไม่มี สร้างเองได้จากปุ่มด้านล่าง</p>`}<button class="btn block" style="margin-top:8px" data-act="sub" data-n="log" data-arg="work">พิมพ์บันทึกเอง (บอกท่า เซ็ต ครั้ง)</button><button class="btn block" style="margin-top:8px" data-act="pbnew">${ic("plus", 18)}สร้างโปรแกรมเอง</button><div class="sec">โปรแกรมสำเร็จรูป</div>${pre}<div class="sec">คลังท่า</div><button class="btn block" data-act="sub" data-n="lib">ดูท่าทั้งหมด ${LIB.length} ท่า</button>` };
+  return { title: "โปรแกรมออกกำลังกาย", after: el => { if (typeof RIG !== "undefined") RIG.thumbs(el); }, html: `${top}${hubTiles()}<div class="sec">โปรแกรมของฉัน</div>${progs || `<p class="xs muted">ยังไม่มี สร้างเองได้จากปุ่มด้านล่าง</p>`}<button class="btn block" style="margin-top:8px" data-act="sub" data-n="log" data-arg="work">พิมพ์บันทึกเอง (บอกท่า เซ็ต ครั้ง)</button><button class="btn block" style="margin-top:8px" data-act="pbnew">${ic("plus", 18)}สร้างโปรแกรมเอง</button><div class="sec">โปรแกรมสำเร็จรูป</div>${pre}<div class="sec">คลังท่า</div><button class="btn block" data-act="sub" data-n="lib">ดูท่าทั้งหมด ${LIB.length} ท่า</button>` };
 };
 
 /* ---------- โปรแกรมสำเร็จรูป ---------- */

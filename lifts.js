@@ -90,5 +90,4 @@ ACT.liftsave = () => {
 /* ---------- ทางเข้า ---------- */
 (function () {
   if (!TILES.some(t => t[4] === "progress")) TILES.splice(TILES.findIndex(t => t[4] === "fit") + 1, 0, ["ดูความคืบหน้า", "chart", "สถิติและกล้ามเนื้อ", "น้ำหนักที่ยก สถิติ แผนที่กล้ามเนื้อ", "progress", "", "d-blue", "สถิติ น้ำหนักที่ยก 1rm กล้ามเนื้อ แผนที่ กราฟ ออกกำลัง"]);
-  const oFit = SUBS.fit; SUBS.fit = a => { const r = oFit(a); if (r && r.html) r.html = r.html.replace('<div class="sec">โปรแกรมของฉัน</div>', `<button class="btn block" style="margin-top:12px" data-act="sub" data-n="progress">${ic("chart", 18)}สถิติและแผนที่กล้ามเนื้อ</button><div class="sec">โปรแกรมของฉัน</div>`); return r; };
 })();
