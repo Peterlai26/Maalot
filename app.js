@@ -134,6 +134,12 @@ function freqFoods(tk) {
   const top = Object.keys(cnt).filter(n => cnt[n] >= 2 && !today.has(n)).sort((x, y) => cnt[y] - cnt[x]).slice(0, 4);
   return top.length ? `<div class="sec" style="margin-bottom:6px">กินบ่อย แตะเพื่อจดอีกครั้ง</div><div class="logchips" style="margin-top:0">${top.map(n => `<button class="chip" data-act="logfood" data-t="${esc(n)}">${ic("plus", 14)}${esc(n)}</button>`).join("")}</div>` : "";
 }
+/* หน้าแรก: การ์ดใหญ่ 2 ใบ (แทนวงแหวนความคืบหน้าเดิม) */
+function homeQuick(line, remTxt, info, tgt) {
+  const total = tgt + info.wk, pct = Math.min(100, Math.round(info.eaten / Math.max(1, total) * 100));
+  const foodSub = info.logged ? `กินแล้ว ${fmtN(info.eaten)} · ${remTxt}` : line;
+  return `<div class="hq-grid home"><button class="hq q-food" data-act="sub" data-n="log" data-arg="food"><span class="hq-ic">${ic("bowl", 22)}</span><b>กินอะไรมา</b><span class="hq-s">${foodSub}</span><i class="hq-bar"><b style="width:${pct}%"></b></i></button><button class="hq q-work" data-act="sub" data-n="log" data-arg="work"><span class="hq-ic">${ic("dumbbell", 22)}</span><b>ออกกำลังกาย</b><span class="hq-s">${info.works.length ? `วันนี้ ${info.works.length} ครั้ง · -${fmtN(info.wk)} kcal` : "ยังไม่ได้ขยับวันนี้"}</span></button></div>`;
+}
 function renderHome() {
   const now = new Date(), h = now.getHours(), per = periodOf(h), tk = todayKey();
   const info = dayInfo(tk), tgt = targetOn(tk), rem = tgt + info.wk - info.eaten;
@@ -155,12 +161,12 @@ function renderHome() {
   const under = bmiOf(w) < 18.5 ? `<div class="hint">${ic("heart", 18)}<span>น้ำหนักอยู่ในเกณฑ์ต่ำแล้ว แอปจึงตั้งเป้าให้คงที่ ไม่แนะนำให้ลดต่อ</span></div>` : "";
   $("#v-home").innerHTML = `<div class="top"><div><div class="muted sm">${THDAYL[now.getDay()]} ${now.getDate()} ${THMON[now.getMonth()]}</div><h1>${g}</h1></div><div class="chips"><span class="chip warn">${ic("flame", 15)}${S.streak.n || 1} วัน</span><span class="chip soft" id="coinchip">${ic("coin", 15)}${S.coins}</span></div></div>
 <div class="stagewrap"><div class="stage" id="stage" data-act="poke" role="button" aria-label="แตะเพื่อทักตัวละคร">${scene({ look: S.look, mood, rx, period: sper, owned: S.owned, room: roomOf(), l1: sp[0], l2: sp[1] })}${particles(sper)}</div><button class="todbtn" data-act="daynight" aria-label="สลับกลางวัน กลางคืน" aria-pressed="${isDark}"><span class="todknob">${ic("sun", 16).replace('class="ic"', 'class="ic sun"')}${ic("moon", 16).replace('class="ic"', 'class="ic moon"')}</span></button></div>
-${moodCardHTML()}<button class="card status" data-act="sub" data-n="today">${ring(pct)}<div style="flex:1;min-width:0"><div class="big">${line}</div><div class="muted sm">${remTxt}</div><div class="muted xs" style="margin-top:2px">กินแล้ว ${fmtN(info.eaten)}${info.wk ? " · ออกกำลัง +" + fmtN(info.wk) : ""} kcal</div></div>${ic("list", 20)}</button>
+${moodCardHTML()}${homeQuick(line, remTxt, info, tgt)}
 ${weekStrip(tk)}
 ${under}
 ${chips ? '<div class="logchips">' + chips + "</div>" : ""}
 ${eventHome()}${goalsHome()}${comboHome()}${freqFoods(tk)}
-<div class="row wrap" style="margin-top:10px"><button class="chip" data-act="sub" data-n="nutri">${ic("chart", 15)}โภชนาการ</button><button class="chip" data-act="water1">${ic("droplet", 15)}น้ำ ${water}/8 แก้ว</button><button class="chip" data-act="sub" data-n="weight">${ic("scale", 15)}ชั่งน้ำหนัก</button>${h >= 20 || h < 5 ? `<button class="chip blue" data-act="sub" data-n="night">${ic("moon", 15)}หิวดึก</button>` : ""}</div>
+<div class="row wrap" style="margin-top:10px"><button class="chip" data-act="sub" data-n="today">${ic("list", 15)}รายการวันนี้</button><button class="chip" data-act="sub" data-n="nutri">${ic("chart", 15)}โภชนาการ</button><button class="chip" data-act="water1">${ic("droplet", 15)}น้ำ ${water}/8 แก้ว</button><button class="chip" data-act="sub" data-n="weight">${ic("scale", 15)}ชั่งน้ำหนัก</button>${h >= 20 || h < 5 ? `<button class="chip blue" data-act="sub" data-n="night">${ic("moon", 15)}หิวดึก</button>` : ""}</div>
 <div class="inputbar"><input id="homeIn" type="text" placeholder="วันนี้กินอะไรมาบ้างนะ…" aria-label="บอกว่ากินหรือทำอะไรมา"/><button class="round" data-act="camera" aria-label="ถ่ายรูปอาหาร">${ic("camera", 22)}</button><button class="round primary" data-act="homesend" aria-label="ส่ง">${ic("send", 22)}</button></div>`;
   animateRing(); const cc = $("#coinchip"); if (cc && COIN_PREV !== null && S.coins > COIN_PREV) cc.classList.add("bump"); COIN_PREV = S.coins;
 }
