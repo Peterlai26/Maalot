@@ -51,7 +51,7 @@ function renderOnb() {
   const el = $("#onb"); el.hidden = false; $("#app").hidden = true; $(".nav").hidden = true;
   if (ONB.step === 1) {
     EDIT = EDIT && EDIT.host === renderOnb ? Object.assign(EDIT, { look: ONB.look }) : { look: ONB.look, rx: 46, name: ONB.name, host: renderOnb, mode: "wear", tab: "self", onb: true, sel: null };
-    el.innerHTML = `<div class="inner"><p class="muted sm">ขั้นที่ 1 จาก 3</p><h1>สร้างตัวแทนของคุณ</h1><p class="muted sm" style="margin:4px 0 12px">เลือกหน้าตาที่ชอบ เปลี่ยนใหม่ได้ทุกเมื่อ</p>${lookEditor()}<button class="btn primary block" style="margin-top:16px" data-act="onb1">ต่อไป · ใส่ส่วนสูงและน้ำหนัก</button></div>`;
+    el.innerHTML = `<div class="inner"><p class="muted sm">ขั้นที่ 1 จาก 3</p><h1>สร้างตัวแทนของคุณ</h1><p class="muted sm" style="margin:4px 0 12px">เลือกหน้าตาที่ชอบ เปลี่ยนใหม่ได้ทุกเมื่อ แล้วกดต่อไปที่มุมขวาล่างของภาพ</p>${lookEditor()}</div>`;
   } else if (ONB.step === 2) {
     const p = ONB.prof, sx = p.sex;
     el.innerHTML = `<div class="inner"><p class="muted sm">ขั้นที่ 2 จาก 3</p><h1>ตัวละครจะมีรูปร่างเหมือนคุณ</h1><p class="muted sm" style="margin:4px 0 8px">กรอกตัวเลขจริง เก็บไว้ในบัญชีของคุณเท่านั้น</p>
