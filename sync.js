@@ -138,13 +138,7 @@ function acctStatusText() {
   return `<span class="xs muted">${m[AUTH.expired ? "expired" : SYNC_ST] || ""}</span>`;
 }
 function acctRowSub() { if (!AUTH) return "ยังไม่ได้เข้าสู่ระบบ ข้อมูลอยู่ในเครื่องนี้"; if (AUTH.expired) return "เซสชันหมดอายุ แตะเพื่อเข้าสู่ระบบใหม่"; return esc(AUTH.id) + " · " + acctStatusText().replace(/<[^>]+>/g, ""); }
-SUBS.account = () => {
-  if (loggedIn()) {
-    return { title: "บัญชีและซิงก์", html: `<div class="scard"><div class="row between"><div><div class="xs muted">เข้าสู่ระบบเป็น</div><b style="font-size:17px">${esc(AUTH.id)}</b></div><span id="syncacct">${acctStatusText()}</span></div>
-<div class="row" style="margin-top:12px"><button class="btn primary" style="flex:1" data-act="syncnow">ซิงก์ตอนนี้</button><button class="btn" style="flex:1" data-act="logout">ออกจากระบบ</button></div></div>
-<p class="xs muted" style="margin:10px 4px">ข้อมูลที่ซิงก์ (อาหาร ออกกำลังกาย น้ำหนัก อารมณ์ ของที่ซื้อ ฯลฯ) ถูกเก็บบนเซิร์ฟเวอร์ของแอปที่ Cloudflare โดยไม่ได้เข้ารหัสแบบ end-to-end ส่วนรหัสผ่านไม่เคยถูกส่งหรือเก็บเป็นตัวจริง ซิงก์เมื่อข้อมูลเปลี่ยนและตอนเปิดแอป ค่าที่ตั้งเฉพาะเครื่อง (ธีมสี โหมดสว่าง/มืด การเตือน) ไม่ซิงก์</p>
-<div class="sgt">จัดการบัญชี</div><div class="scard rows"><button class="srow" data-act="pwchange"><span class="sic">${ic("lock", 20)}</span><span class="grow"><b>เปลี่ยนรหัสผ่าน</b><small>เครื่องอื่นจะต้องเข้าสู่ระบบใหม่</small></span></button><button class="srow" data-act="srvdelask"><span class="sic danger">${ic("trash", 20)}</span><span class="grow"><b>ลบบัญชีและข้อมูลบนเซิร์ฟเวอร์</b><small>ข้อมูลในเครื่องนี้ยังอยู่</small></span></button></div>` };
-  }
+function accParts() {
   const m = ACC.mode, reg = m === "register", rec = m === "recover";
   const tabs = `<div class="seg" style="margin-bottom:14px"><button class="${m === "login" ? "on" : ""}" data-act="accmode" data-m="login">เข้าสู่ระบบ</button><button class="${reg ? "on" : ""}" data-act="accmode" data-m="register">สมัครสมาชิก</button></div>`;
   const expired = AUTH && AUTH.expired ? `<div class="hint">${ic("lock", 18)}<span>เซสชันหมดอายุ เข้าสู่ระบบอีกครั้งเพื่อซิงก์ต่อ (ข้อมูลในเครื่องยังอยู่)</span></div>` : "";
@@ -159,13 +153,40 @@ SUBS.account = () => {
 <label class="f" for="apw">รหัสผ่าน${reg ? " (อย่างน้อย 8 ตัว)" : ""}</label><input id="apw" type="password" autocomplete="${reg ? "new-password" : "current-password"}"/>
 ${reg ? `<label class="f" for="apw2">ยืนยันรหัสผ่าน</label><input id="apw2" type="password" autocomplete="new-password"/><p class="xs muted" style="margin-top:8px">ไม่มีการส่งอีเมลยืนยัน ถ้าลืมรหัสผ่านจะกู้ได้ด้วย “รหัสกู้คืน” ที่แอปให้หลังสมัคร เก็บไว้ให้ดี ถ้าไม่มีทั้งรหัสผ่านและรหัสกู้คืน จะเข้าบัญชีไม่ได้</p>` : ""}
 <button class="btn primary block" style="margin-top:14px" data-act="accgo" ${ACC.busy ? "disabled" : ""}>${ACC.busy ? "กำลังทำงาน…" : reg ? "สมัครสมาชิก" : "เข้าสู่ระบบ"}</button>${reg ? "" : `<button class="linkbtn" style="margin-top:8px" data-act="accmode" data-m="recover">ลืมรหัสผ่าน?</button>`}`;
-  return { title: reg ? "สมัครสมาชิก" : rec ? "ลืมรหัสผ่าน" : "เข้าสู่ระบบ", html: `${expired}<p class="muted sm" style="margin-bottom:12px">สมัครสมาชิกเพื่อใช้ข้อมูลเดียวกันได้ทุกเครื่อง และไม่หายเวลาเปลี่ยนมือถือ ไม่บังคับ ใช้แอปแบบไม่มีบัญชีได้ตามเดิม</p>${err}${form}` };
+  return { m, reg, rec, err, expired, form };
+}
+/* ---------- ป๊อปอัพสมัครสมาชิก (ด่านก่อนสร้างตัวละคร) ---------- */
+function gateHtml() {
+  const P = accParts();
+  const head = P.rec ? ["ลืมรหัสผ่านใช่ไหม", "ใช้รหัสกู้คืนตั้งรหัสใหม่ ข้อมูลของคุณยังอยู่"] : P.reg ? ["สมัครสมาชิกก่อนสร้างน้องเกี๊ยว", "ข้อมูลที่จดไว้จะอยู่กับบัญชี ไม่หายเวลาเปลี่ยนมือถือ ใช้ได้ทุกเครื่อง"] : ["ยินดีต้อนรับกลับมา", "เข้าสู่ระบบเพื่อดึงน้องเกี๊ยวและข้อมูลของคุณกลับมา"];
+  const form = P.reg ? P.form.replace(/(id="apw"[^>]*>)/, '$1<i class="pwbar" aria-hidden="true"><b></b></i>') : P.form;
+  return `<div class="gate"><button class="gx" data-act="modalclose" aria-label="ปิด">${ic("x", 18)}</button>
+<h2>${head[0]}</h2><p class="muted sm gsub">${head[1]}</p>${P.err}${form}</div>`;
+}
+function openGate() { openModal(gateHtml()); const p = document.querySelector("#modal .panel"); if (p) p.classList.add("gatep"); }
+/* วาดฟอร์มบัญชีใหม่: ถ้าเป็นป๊อปอัพให้เปลี่ยนเนื้อในกรอบเดิม (ไม่เล่นอนิเมชันเข้าซ้ำ) ไม่งั้นวาดหน้าย่อยใหม่ */
+function accDraw() { const p = document.querySelector("#modal .panel.gatep"); if (ACC.pop && p && !document.querySelector("#modal").hidden) p.innerHTML = gateHtml(); else rerenderSub(); }
+document.addEventListener("input", e => {
+  if (e.target.id !== "apw") return; const b = document.querySelector(".pwbar b"); if (!b) return; const v = e.target.value;
+  const sc = Math.min(4, (v.length >= 8 ? 1 : 0) + (v.length >= 12 ? 1 : 0) + (/[a-z]/.test(v) && /[A-Z0-9]/.test(v) ? 1 : 0) + (/[^A-Za-z0-9]/.test(v) ? 1 : 0));
+  b.style.width = (v ? Math.max(12, sc * 25) : 0) + "%"; b.dataset.l = v.length < 8 ? "0" : sc <= 1 ? "1" : sc === 2 ? "2" : "3";
+});
+SUBS.account = () => {
+  if (loggedIn()) {
+    return { title: "บัญชีและซิงก์", html: `<div class="scard"><div class="row between"><div><div class="xs muted">เข้าสู่ระบบเป็น</div><b style="font-size:17px">${esc(AUTH.id)}</b></div><span id="syncacct">${acctStatusText()}</span></div>
+<div class="row" style="margin-top:12px"><button class="btn primary" style="flex:1" data-act="syncnow">ซิงก์ตอนนี้</button><button class="btn" style="flex:1" data-act="logout">ออกจากระบบ</button></div></div>
+<p class="xs muted" style="margin:10px 4px">ข้อมูลที่ซิงก์ (อาหาร ออกกำลังกาย น้ำหนัก อารมณ์ ของที่ซื้อ ฯลฯ) ถูกเก็บบนเซิร์ฟเวอร์ของแอปที่ Cloudflare โดยไม่ได้เข้ารหัสแบบ end-to-end ส่วนรหัสผ่านไม่เคยถูกส่งหรือเก็บเป็นตัวจริง ซิงก์เมื่อข้อมูลเปลี่ยนและตอนเปิดแอป ค่าที่ตั้งเฉพาะเครื่อง (ธีมสี โหมดสว่าง/มืด การเตือน) ไม่ซิงก์</p>
+<div class="sgt">จัดการบัญชี</div><div class="scard rows"><button class="srow" data-act="pwchange"><span class="sic">${ic("lock", 20)}</span><span class="grow"><b>เปลี่ยนรหัสผ่าน</b><small>เครื่องอื่นจะต้องเข้าสู่ระบบใหม่</small></span></button><button class="srow" data-act="srvdelask"><span class="sic danger">${ic("trash", 20)}</span><span class="grow"><b>ลบบัญชีและข้อมูลบนเซิร์ฟเวอร์</b><small>ข้อมูลในเครื่องนี้ยังอยู่</small></span></button></div>` };
+  }
+  const P = accParts(), reg = P.reg, rec = P.rec, err = P.err, expired = P.expired, form = P.form;
+  return { title: reg ? "สมัครสมาชิก" : rec ? "ลืมรหัสผ่าน" : "เข้าสู่ระบบ", html: `${expired}${ACC.gate ? `<div class="card" style="text-align:center;margin-bottom:12px"><b style="font-size:17px">สมัครสมาชิกก่อนเริ่มสร้างตัวละคร</b><p class="muted sm" style="margin-top:6px">น้องเกี๊ยวและข้อมูลที่จดไว้จะอยู่กับบัญชีของคุณ ไม่หายเวลาเปลี่ยนมือถือ และใช้ได้ทุกเครื่อง มีบัญชีอยู่แล้วเลือก “เข้าสู่ระบบ”</p></div>` : `<p class="muted sm" style="margin-bottom:12px">สมัครสมาชิกเพื่อใช้ข้อมูลเดียวกันได้ทุกเครื่อง และไม่หายเวลาเปลี่ยนมือถือ</p>`}${err}${form}` };
 };
-ACT.acctopen = () => { ACC = { mode: "login", busy: false, err: "", id: ACC.id }; openSub("account", {}); };
-ACT.accmode = (a) => { const e = $("#aid"); if (e) ACC.id = e.value; ACC.mode = a.dataset.m; ACC.err = ""; rerenderSub(); };
+/* gate = true เมื่อเปิดจากหน้าแรกก่อนสร้างตัวละคร: สมัครหรือเข้าสู่ระบบเสร็จแล้วไปขั้นสร้างตัวละครต่อทันที */
+ACT.acctopen = () => { const onb = !S.onboarded && !$("#onb").hidden; ACC = { mode: "login", busy: false, err: "", id: ACC.id, gate: onb, pop: onb }; if (onb) openGate(); else openSub("account", {}); };
+ACT.accmode = (a) => { const e = $("#aid"); if (e) ACC.id = e.value; ACC.mode = a.dataset.m; ACC.err = ""; accDraw(); };
 function accBusy(b, err) {
   const g = id => { const e = $("#" + id); return e ? e.value : undefined; }, keep = { aid: g("aid"), apw: g("apw"), apw2: g("apw2"), arc: g("arc") };
-  ACC.busy = b; ACC.err = err || ""; if (keep.aid !== undefined) ACC.id = keep.aid; rerenderSub();
+  ACC.busy = b; ACC.err = err || ""; if (keep.aid !== undefined) ACC.id = keep.aid; accDraw();
   Object.keys(keep).forEach(k => { const e = $("#" + k); if (e && keep[k] !== undefined) e.value = keep[k]; });
 }
 const accMsg = s => s === 409 ? "ไอดีนี้มีคนใช้แล้ว ลองไอดีอื่น" : s === 401 ? "ไอดีหรือรหัสผ่านไม่ถูกต้อง" : s === 429 ? "ลองผิดหลายครั้ง รอสักครู่ (ประมาณ 15 นาที) แล้วลองใหม่" : s === 0 ? "เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่" : "ทำไม่สำเร็จ ลองอีกครั้งนะ";
@@ -184,8 +205,10 @@ ACT.accgo = async () => {
     else { rcNew = newRecovery(); r = await accReq("/auth/recover", { id, rk: await recKey(id, rcIn), k2: await authKey(id, pw), rk2: await recKey(id, rcNew) }); }
   } catch (e) { accBusy(false, "เครื่องนี้ไม่รองรับการเข้ารหัสที่ต้องใช้ ลองเปิดด้วย Chrome หรือ Safari รุ่นใหม่"); return; }
   if (!r.ok) { accBusy(false, accMsg(r.status)); return; }
+  const gate = !!ACC.gate;
   const prev = AUTH; AUTH = { token: r.j.token, exp: r.j.exp, id: r.j.id, linked: prev && prev.id === r.j.id ? !!prev.linked : false, base: prev && prev.id === r.j.id ? prev.base || 0 : 0 }; authSave(); ACC = { mode: "login", busy: false, err: "" };
-  const go = () => { closeModal(); if (subStack.length) closeSub(); syncLink().then(() => { if (m !== "login" && typeof settingsRefresh === "function") settingsRefresh(); }); };
+  /* ผ่านด่านแล้ว: ถ้าบัญชีนี้มีข้อมูลเดิม applyRemote จะพาเข้าหน้าแรกเอง ถ้าเป็นบัญชีใหม่ไปขั้นสร้างตัวละคร */
+  const go = () => { closeModal(); if (subStack.length) closeSub(); syncLink().then(() => { if (m !== "login" && typeof settingsRefresh === "function") settingsRefresh(); if (gate && !S.onboarded && typeof ONB !== "undefined" && ONB && !$("#onb").hidden) { renderOnb(); if (typeof confetti === "function") confetti(); } }); };
   if (rcNew) showRecovery(rcNew, go); else go();
 };
 function showRecovery(code, next) {

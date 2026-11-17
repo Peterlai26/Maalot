@@ -26,7 +26,7 @@ function renderLanding() {
 <h1 class="lhead">มื้อนี้กินอะไรมา<br>บอกน้องก้อนได้เลย</h1>
 <p class="lsub">พิมพ์เป็นประโยคธรรมดา น้องจดและประมาณแคลอรี่ให้<br>ไม่ต้องนับเอง ไม่มีใครตัดสิน</p>
 <button class="lcta" data-act="landgo">เริ่มจดมื้อแรก ${ic("arrow", 18)}</button>
-<p class="lfine">ฟรี ไม่ต้องสมัคร เริ่มได้ในสองนาที</p>${isApp() ? "" : `<button class="linst" data-act="pwa">${ic("phone", 16)}ติดตั้งเป็นแอปบนมือถือ</button>`}<button class="linst lacct" data-act="acctopen">${ic("user", 16)}มีบัญชีแล้ว? เข้าสู่ระบบ</button>${LHILLS}</section>
+<p class="lfine">สมัครสมาชิกฟรี ใช้เวลาไม่ถึงนาที แล้วสร้างตัวละครได้เลย</p>${isApp() ? "" : `<button class="linst" data-act="pwa">${ic("phone", 16)}ติดตั้งเป็นแอปบนมือถือ</button>`}<button class="linst lacct" data-act="acctopen">${ic("user", 16)}มีบัญชีแล้ว? เข้าสู่ระบบ</button>${LHILLS}</section>
 <section class="lroom"><div class="lring"><div class="lroom-in">${room}</div></div></section>
 
 <section class="lpaper"><h2>พิมพ์เหมือนเล่าให้เพื่อนฟัง</h2><p class="lp">ไม่ต้องค้นเมนูทีละอย่าง แอปแยกรายการและประมาณพลังงานให้</p>
@@ -38,7 +38,7 @@ function renderLanding() {
 <div class="ltrychips">${LTRY.map(t => `<button type="button" data-act="landtry" data-t="${t}">${t}</button>`).join("")}</div></form></div>
 <ul class="lfeat">${LFEAT.map(f => `<li><span class="lchip">${ic(f[0], 20)}</span><div><b>${f[1]}</b><span>${f[2]}</span></div></li>`).join("")}</ul></section>
 <section class="lblue"><h2>แต่งตัวให้น้อง ตกแต่งห้องให้ถูกใจ</h2><div class="lcast">${cast}</div><p>หมวก ทรงผม เสื้อ ของที่ถือ สัตว์เลี้ยง และของตกแต่งห้องกว่า 150 ชิ้น ได้มาจากเหรียญที่เก็บจากการจดบันทึก</p></section>
-<section class="lend"><h2>สร้างตัวละครของคุณได้เลย</h2><p class="lp">สร้างตัวละคร ใส่ส่วนสูงและน้ำหนัก แล้วจดมื้อแรก ใช้เวลาไม่ถึง 2 นาที</p>
+<section class="lend"><h2>สร้างตัวละครของคุณได้เลย</h2><p class="lp">สมัครสมาชิก สร้างตัวละคร ใส่ส่วนสูงและน้ำหนัก แล้วจดมื้อแรก ใช้เวลาไม่ถึง 3 นาที</p>
 <button class="lcta dark" data-act="landgo">เริ่มจดมื้อแรก ${ic("arrow", 18)}</button>
 <p class="ldisc">สำหรับผู้ใหญ่ 18 ปีขึ้นไป ใช้เป็นข้อมูลทั่วไป ไม่ใช่คำแนะนำทางการแพทย์ ถ้ามีโรคประจำตัว ตั้งครรภ์ หรือกังวลเรื่องการกิน ควรปรึกษาแพทย์</p></section>
 </div>`;
@@ -46,7 +46,13 @@ function renderLanding() {
   if (typeof acctRenderBtn === "function") acctRenderBtn();
   setTimeout(() => { const w = $(".lroom"); if (w) { w.classList.add("wave"); setTimeout(() => w.classList.remove("wave"), 3200); } }, 650);
 }
-ACT.landgo = () => renderOnb();
+/* ด่านสมัครสมาชิก: ต้องมีบัญชี (สมัครหรือเข้าสู่ระบบ) ก่อนถึงขั้นสร้างตัวละครและแต่งตัว ข้ามไม่ได้ */
+function startOnb() {
+  if (typeof loggedIn === "function" && loggedIn()) { renderOnb(); return; }
+  ACC = { mode: "register", busy: false, err: "", gate: true, pop: true, id: ACC.id };
+  openGate();
+}
+ACT.landgo = () => startOnb();
 ACT.landtod = () => { return;
   /* ปิดการสลับกลางคืนไว้ */
   const root = $(".land"); if (!root) return; const t = root.dataset.tod === "day" ? "night" : "day";

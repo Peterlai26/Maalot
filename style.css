@@ -808,3 +808,24 @@ svg.mmap { display: block; width: 100%; max-width: 250px; height: auto; margin: 
 @media (prefers-reduced-motion: reduce) { .pgrid > *, .pbig::after, .pb-go svg, .pb-th .rt, .pt-ic, .pt-ic i, .t-gps::after { animation: none; } .pt-ic i { height: 16px; } }
 
 .rt.sm { width: 46px; height: 46px; border-radius: 13px; }
+
+/* ช่องรหัสผ่านให้หน้าตาเหมือนช่องกรอกอื่น (เป็นหน้าแรกที่ผู้ใช้ใหม่ทุกคนเจอในด่านสมัครสมาชิก) */
+input[type=password], input[type=email] { width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 11px 14px; min-height: 44px; }
+
+/* ---------- ป๊อปอัพสมัครสมาชิก: เด้งขึ้นกลางจอ น้องเกี๊ยวลอยและกะพริบ ดาวระยิบ แถบความแข็งแรงรหัสผ่าน ---------- */
+#modal:has(.gatep) { animation: gfade .25s ease-out both; backdrop-filter: blur(3px); }
+#modal .panel.gatep { position: relative; padding: 20px 18px 18px; transform-origin: 50% 80%; animation: gatein .6s cubic-bezier(.2, 1.35, .4, 1) both; box-shadow: 0 30px 60px -20px rgba(36, 25, 59, .55); }
+.gate > :not(.gx) { animation: ptin .45s cubic-bezier(.2, .9, .3, 1) both; }
+.gate > :nth-child(3) { animation-delay: .05s; } .gate > :nth-child(4) { animation-delay: .1s; } .gate > :nth-child(5) { animation-delay: .15s; } .gate > :nth-child(n+6) { animation-delay: .2s; }
+.gate h2 { text-align: center; font-size: 20px; padding: 0 34px; margin-top: 2px; } .gsub { text-align: center; margin: 4px 0 10px; }
+.gx { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border: 0; border-radius: 50%; display: grid; place-items: center; background: var(--soft); color: var(--muted); cursor: pointer; z-index: 2; }
+.gate .btn.primary { position: relative; overflow: hidden; isolation: isolate; }
+.gate .btn.primary::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .35) 50%, transparent 65%); transform: translateX(-120%); animation: pcshine 3s ease-in-out .8s infinite; }
+.gate input:focus { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
+.pwbar { display: block; height: 5px; margin: 7px 2px 0; border-radius: 3px; background: var(--soft); overflow: hidden; }
+.pwbar b { display: block; height: 100%; width: 0; border-radius: 3px; background: var(--danger-ink); transition: width .3s, background .3s; }
+.pwbar b[data-l="1"] { background: #E8A33D; } .pwbar b[data-l="2"] { background: #8CBF5A; } .pwbar b[data-l="3"] { background: var(--green); }
+@keyframes gfade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes gatein { 0% { opacity: 0; transform: translateY(60px) scale(.82) rotate(-2.5deg); } 100% { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { #modal:has(.gatep), #modal .panel.gatep, .gate > *, .gate .btn.primary::after { animation: none; } }
+
