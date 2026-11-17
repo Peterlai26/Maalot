@@ -157,14 +157,14 @@ function renderHome() {
   else line = "วันนี้เกินมานิดหน่อย พรุ่งนี้ค่อยๆ ปรับได้";
   const remTxt = info.logged ? (rem >= 0 ? "เหลือ " + fmtN(rem) + " kcal" : "เกิน " + fmtN(-rem) + " kcal") : "เป้า " + fmtN(tgt) + " kcal";
   const water = S.water[tk] || 0;
-  const chips = info.meals.map(m => `<span class="chip">${ic("bowl", 15)}${esc(m.n)}</span>`).concat(info.works.map(m => `<span class="chip green">${ic("check", 15)}${esc(m.n)}</span>`)).join("");
+  const chips = mealChips(info);
   const under = bmiOf(w) < 18.5 ? `<div class="hint">${ic("heart", 18)}<span>น้ำหนักอยู่ในเกณฑ์ต่ำแล้ว แอปจึงตั้งเป้าให้คงที่ ไม่แนะนำให้ลดต่อ</span></div>` : "";
   $("#v-home").innerHTML = `<div class="top"><div><div class="muted sm">${THDAYL[now.getDay()]} ${now.getDate()} ${THMON[now.getMonth()]}</div><h1>${g}</h1></div><div class="chips"><span class="chip warn">${ic("flame", 15)}${S.streak.n || 1} วัน</span><span class="chip soft" id="coinchip">${ic("coin", 15)}${S.coins}</span></div></div>
 <div class="stagewrap"><div class="stage" id="stage" data-act="poke" role="button" aria-label="แตะเพื่อทักตัวละคร">${scene({ look: S.look, mood, rx, period: sper, owned: S.owned, room: roomOf(), l1: sp[0], l2: sp[1] })}${particles(sper)}</div><button class="todbtn" data-act="daynight" aria-label="สลับกลางวัน กลางคืน" aria-pressed="${isDark}"><span class="todknob">${ic("sun", 16).replace('class="ic"', 'class="ic sun"')}${ic("moon", 16).replace('class="ic"', 'class="ic moon"')}</span></button></div>
 ${moodCardHTML()}${homeQuick(line, remTxt, info, tgt)}
 ${weekStrip(tk)}
 ${under}
-${chips ? '<div class="logchips">' + chips + "</div>" : ""}
+${chips}
 ${eventHome()}${goalsHome()}${comboHome()}${freqFoods(tk)}
 <div class="row wrap" style="margin-top:10px"><button class="chip" data-act="sub" data-n="today">${ic("list", 15)}รายการวันนี้</button><button class="chip" data-act="sub" data-n="nutri">${ic("chart", 15)}โภชนาการ</button><button class="chip" data-act="water1">${ic("droplet", 15)}น้ำ ${water}/8 แก้ว</button><button class="chip" data-act="sub" data-n="weight">${ic("scale", 15)}ชั่งน้ำหนัก</button>${h >= 20 || h < 5 ? `<button class="chip blue" data-act="sub" data-n="night">${ic("moon", 15)}หิวดึก</button>` : ""}</div>
 <div class="inputbar"><input id="homeIn" type="text" placeholder="วันนี้กินอะไรมาบ้างนะ…" aria-label="บอกว่ากินหรือทำอะไรมา"/><button class="round" data-act="camera" aria-label="ถ่ายรูปอาหาร">${ic("camera", 22)}</button><button class="round primary" data-act="homesend" aria-label="ส่ง">${ic("send", 22)}</button></div>`;
