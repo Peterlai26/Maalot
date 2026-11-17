@@ -829,3 +829,7 @@ input[type=password], input[type=email] { width: 100%; background: var(--card); 
 @keyframes gatein { 0% { opacity: 0; transform: translateY(60px) scale(.82) rotate(-2.5deg); } 100% { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { #modal:has(.gatep), #modal .panel.gatep, .gate > *, .gate .btn.primary::after { animation: none; } }
 
+
+/* ปิดไฮไลต์สี่เหลี่ยมสีน้ำเงินของเบราว์เซอร์มือถือตอนแตะ (ไม่ตามขอบมนของการ์ด) ใช้ท่าย่อเล็กน้อยบอกว่ากดโดนแทน */
+* { -webkit-tap-highlight-color: transparent; }
+.hq, .tile { transition: transform .12s; } .hq:active, .tile:active { transform: scale(.97); }
