@@ -201,19 +201,47 @@ function logHero(isF) {
   const t = isF ? "บันทึกอาหาร" : "บันทึกออกกำลังกาย", sub = isF ? `วันนี้กินแล้ว ${fmtN(i.eaten)} / ${fmtN(tgt)} kcal` : (i.works.length ? `วันนี้ขยับแล้ว ${i.works.length} ครั้ง · เผาผลาญ ${fmtN(i.wk)} kcal` : "วันนี้ยังไม่ได้ขยับ เริ่มจากสั้นๆ ก็นับ");
   return `<div class="mhero lghero ${isF ? "amber" : "blue"}"><span class="mh-bg" aria-hidden="true"><i></i><i></i><i></i></span><span class="mh-ic">${ic(isF ? "bowl" : "dumbbell", 28)}</span><div class="mh-t"><b>${t}</b><span>${sub}</span>${isF ? `<i class="mh-bar"><b style="width:${pct}%"></b></i>` : ""}</div></div>`;
 }
-/* ทางลัดจดอาหาร/ออกกำลังกาย: ตัวช่วยทั้งหมดรวมอยู่ในหน้าต่างที่เด้งขึ้นจากปุ่มด้านขวา (ถ่ายรูป เลือกรูป ขนมซอง เพิ่มเอง ค้นหาเมนู ตัวอย่าง มื้อประจำ) */
-const LOGX = { chips: "" };
-function aidHTML() {
-  const isF = LG.tab === "food", tile = (i, t, sub, act, n) => `<button class="aidt" style="--i:${n}" data-act="${act}"><span class="aidi">${ic(i, 22)}</span><b>${t}</b><span>${sub}</span></button>`;
-  const tiles = isF ? [["camera", "ถ่ายรูป", "ให้ AI ดูให้", "camera"], ["book", "เลือกรูป", "จากอัลบั้ม", "gallery"]].concat(typeof ACT.myfadd === "function" ? [["bowl", "ขนมซอง", "จากฉลากโภชนาการ", "myfadd"]] : [], [["plus", "เพิ่มเอง", "กรอกชื่อและแคลอรี่", "lgadd"]]) : [["plus", "เพิ่มเอง", "กรอกท่าและเวลา", "lgadd"]];
-  const ex = (isF ? ["ข้าวมันไก่ 1 จาน", "กาแฟเย็น", "ส้มตำ ไก่ย่าง ข้าวเหนียว", "ชานมไข่มุก"] : ["วิดพื้น 3 เซ็ต 12 ครั้ง", "วิ่ง 20 นาที", "สควอต 3 เซ็ต 15 ครั้ง", "เดิน 30 นาที"]).map((t, i) => `<button type="button" class="lgx" style="--i:${i}" data-act="lgex" data-t="${t}">${ic("sparkle", 12)}${t}</button>`).join("");
-  return `<div class="aid"><div class="aidh"><h2>ทางลัด${isF ? "จดอาหาร" : "จดออกกำลังกาย"}</h2><button class="gx2" data-act="sheetclose" aria-label="ปิด">${ic("x", 18)}</button></div>
-<div class="aidgrid">${tiles.map((t, n) => tile(t[0], t[1], t[2], t[3], n)).join("")}</div>
-${isF ? `<div class="aids">ค้นหาเมนู แตะเพื่อเพิ่ม</div><input id="lgsearch" type="text" data-in="lgsearch" placeholder="เช่น กะเพรา ชาเขียว ส้มโอ" autocomplete="off"/><div id="lgres" class="logchips" style="margin-top:8px"></div>` : ""}
-<div class="aids">ตัวอย่างให้แตะ</div><div class="lgex">${ex}</div>${isF ? `<div class="aidx">${LOGX.chips}</div>` : ""}</div>`;
+/* ทางลัดจดอาหาร/ออกกำลังกาย: กดปุ่มด้านขวาแล้วตัวเลือกกระจายเป็นวงโค้งล้อมรอบปุ่ม แตะเลือกหรือกดค้างแล้วลากไปปล่อยบนตัวเลือกก็ได้
+   ตัวเลือกที่ต้องมีหน้าจอเพิ่ม (ค้นหา ตัวอย่าง ของฉัน) เปิดเป็นหน้าต่างเล็กด้านล่าง */
+const LOGX = { chips: "" }, LGM = { down: false, drag: false, x0: 0, y0: 0, suppress: false };
+function lgMenuHTML(isF, hasMine) {
+  const it = isF ? [["camera", "camera", "ถ่ายรูป"], ["gallery", "book", "เลือกรูป"]].concat(typeof ACT.myfadd === "function" ? [["label", "bowl", "ขนมซอง"]] : [], [["add", "plus", "เพิ่มเอง"], ["search", "search", "ค้นหา"]], hasMine ? [["mine", "heart", "ของฉัน"]] : []) : [["add", "plus", "เพิ่มเอง"], ["ex", "sparkle", "ตัวอย่าง"]];
+  /* ทุกตัวเลือกอยู่เหนือแถบปุ่มและไม่ล้นขอบขวา: 4 ตัวขึ้นไปจัดสลับวงนอก/วงในเพื่อไม่ให้ชนกัน */
+  const n = it.length, ang = n === 1 ? [110] : n === 2 ? [122, 86] : n === 3 ? [130, 100, 70] : it.map((_, i) => 150 - 80 * i / (n - 1)), rad = i => n < 4 ? 112 : (i % 2 ? 112 : 152);
+  return `<div class="lgmenu" role="menu" aria-label="ทางลัด">${it.map((t, i) => { const a = ang[i] * Math.PI / 180; return `<button type="button" class="lgm" role="menuitem" style="--i:${i};--x:${(Math.cos(a) * rad(i)).toFixed(1)}px;--y:${(-Math.sin(a) * rad(i)).toFixed(1)}px" data-act="lgmenu" data-k="${t[0]}">${ic(t[1], 20)}<em>${t[2]}</em></button>`; }).join("")}</div>`;
 }
-ACT.lgaid = () => { if (LG) openSheet(aidHTML()); };
-document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("#sheet .aid [data-act]"); if (b && b.dataset.act !== "sheetclose") setTimeout(closeSheet, 60); });
+function aidHTML(sec) {
+  const isF = LG.tab === "food", ex = (isF ? ["ข้าวมันไก่ 1 จาน", "กาแฟเย็น", "ส้มตำ ไก่ย่าง ข้าวเหนียว", "ชานมไข่มุก"] : ["วิดพื้น 3 เซ็ต 12 ครั้ง", "วิ่ง 20 นาที", "สควอต 3 เซ็ต 15 ครั้ง", "เดิน 30 นาที"]).map((t, i) => `<button type="button" class="lgx" style="--i:${i}" data-act="lgex" data-t="${t}">${ic("sparkle", 12)}${t}</button>`).join("");
+  const body = sec === "search" ? `<input id="lgsearch" type="text" data-in="lgsearch" placeholder="เช่น กะเพรา ชาเขียว ส้มโอ" autocomplete="off"/><div id="lgres" class="logchips" style="margin-top:10px"></div><div class="aids">หรือแตะตัวอย่าง</div><div class="lgex">${ex}</div>` : sec === "mine" ? `<div class="aidx">${LOGX.chips}</div>` : `<div class="lgex">${ex}</div>`;
+  return `<div class="aid"><div class="aidh"><h2>${sec === "search" ? "ค้นหาเมนูและตัวอย่าง" : sec === "mine" ? "ของที่เคยบันทึกไว้" : "ตัวอย่างให้แตะ"}</h2><button class="gx2" data-act="sheetclose" aria-label="ปิด">${ic("x", 18)}</button></div>${body}</div>`;
+}
+function lgMenuOpen(open) {
+  const m = document.querySelector(".lgmenu"), b = document.querySelector(".lgaid"); if (!m) return;
+  m.classList.toggle("open", open); if (b) { b.classList.toggle("on", open); b.setAttribute("aria-expanded", open); }
+  m.querySelectorAll(".lgm").forEach(i => i.classList.remove("hl"));
+}
+ACT.lgaid = () => { if (LGM.suppress) { LGM.suppress = false; return; } const m = document.querySelector(".lgmenu"); lgMenuOpen(!(m && m.classList.contains("open"))); };
+ACT.lgmenu = a => {
+  const k = a.dataset.k, sheet = sec => { openSheet(aidHTML(sec)); if (sec === "search") setTimeout(() => { const i = $("#lgsearch"); if (i) i.focus(); }, 280); };
+  lgMenuOpen(false);
+  ({ camera: () => ACT.camera(a), gallery: () => ACT.gallery(a), label: () => ACT.myfadd(a), add: () => ACT.lgadd(a), search: () => sheet("search"), ex: () => sheet("ex"), mine: () => sheet("mine") })[k]();
+};
+/* กดค้างที่ปุ่มแล้วลาก: ตัวเลือกที่นิ้วอยู่ใกล้จะขยายเด่น ปล่อยนิ้วเพื่อเลือก ปล่อยที่ว่างเพื่อยกเลิก */
+document.addEventListener("pointerdown", e => { const b = e.target.closest && e.target.closest(".lgaid"); if (!b) return; LGM.down = true; LGM.drag = false; LGM.x0 = e.clientX; LGM.y0 = e.clientY; try { b.setPointerCapture(e.pointerId); } catch (_) { } });
+document.addEventListener("pointermove", e => {
+  if (!LGM.down) return;
+  if (!LGM.drag && Math.hypot(e.clientX - LGM.x0, e.clientY - LGM.y0) > 14) { LGM.drag = true; lgMenuOpen(true); } if (!LGM.drag) return;
+  let best = null, bd = 42; document.querySelectorAll(".lgmenu .lgm").forEach(i => { const r = i.getBoundingClientRect(), d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)); i.classList.remove("hl"); if (d < bd) { bd = d; best = i; } });
+  if (best) best.classList.add("hl");
+});
+function lgPointerEnd(cancel) {
+  if (!LGM.down) return; LGM.down = false; if (!LGM.drag) return;
+  LGM.suppress = true; setTimeout(() => { LGM.suppress = false; }, 350);
+  const hl = document.querySelector(".lgmenu .lgm.hl"); if (hl && !cancel) ACT.lgmenu(hl); else lgMenuOpen(false);
+}
+document.addEventListener("pointerup", () => lgPointerEnd(false)); document.addEventListener("pointercancel", () => lgPointerEnd(true));
+document.addEventListener("click", e => { const m = document.querySelector(".lgmenu.open"); if (m && !e.target.closest(".lgaidwrap")) lgMenuOpen(false); if (e.target.closest && e.target.closest("#sheet .aid [data-act]") && e.target.closest("[data-act]").dataset.act !== "sheetclose") setTimeout(closeSheet, 60); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") lgMenuOpen(false); });
 ACT.lgex = a => { const t = $("#lgtext"); if (!t) return; t.value = a.dataset.t; ACT.lgparse(); };
 function quickHTML() {
   return `<h2 style="margin-bottom:12px">เพิ่มอะไรดี</h2>${ifStrip()}<div class="grid2">
@@ -257,7 +285,7 @@ ${it.known ? (c.assumed ? '<div class="xs muted" style="margin-top:4px">ไม�
     html: `${logHero(isF)}<!--logcta--><div class="seg" role="tablist"><button class="${isF ? "on" : ""}" data-act="lgtab" data-t="food">กิน</button><button class="${!isF ? "on" : ""}" data-act="lgtab" data-t="work">ออกกำลัง</button></div>
 <div class="composer ${isF ? "food" : "work"}"><label class="f" for="lgtext">${isF ? "พิมพ์ว่ากินอะไร เช่น ข้าวมันไก่ 1 จาน กับชานมไข่มุก" : "พิมพ์ว่าทำอะไร เช่น วิดพื้น 3 เซ็ต 12 ครั้ง วิ่ง 20 นาที"}</label>
 <textarea id="lgtext" data-in="lgtext" placeholder="${isF ? "ข้าวมันไก่ 1 จาน, ชานมไข่มุก 1 แก้ว" : "วิดพื้น 3 เซ็ต เซ็ตละ 12 ครั้ง แพลงก์ 3 เซ็ต 45 วินาที"}">${esc(LG.text)}</textarea>
-<div class="row lgbar"><button class="btn primary go" data-act="lgparse">${ic("sparkle", 18)}ตีความ</button><button class="btn lgaid" data-act="lgaid" aria-haspopup="dialog">${ic("plus", 18)}ทางลัด</button></div>
+<div class="row lgbar"><button class="btn primary go" data-act="lgparse">${ic("sparkle", 18)}ตีความ</button><div class="lgaidwrap"><button class="btn lgaid" data-act="lgaid" aria-haspopup="menu" aria-expanded="false">${ic("plus", 18)}ทางลัด</button><!--lgmenu--></div></div>
 ${hasUnknown ? `<button class="btn block" style="margin-top:8px" data-act="lgai">${ic("sparkle", 16)}ให้ AI ประเมินรายการที่ไม่รู้จัก</button>` : ""}
 ${LG.busy ? '<div class="hint pulse-ring">' + ic("sparkle", 18) + "<span>กำลังดูให้อยู่…</span></div>" : ""}</div>
 <div class="card" style="margin-top:12px;padding:6px 14px">${rows || `<div class="lgempty"><span class="lge-ic">${ic(isF ? "bowl" : "dumbbell", 30)}</span><b>${isF ? "ยังไม่มีรายการอาหาร" : "ยังไม่มีรายการออกกำลังกาย"}</b><span>${isF ? "พิมพ์ด้านบน แตะตัวอย่าง หรือถ่ายรูปได้เลย" : "บอกท่า เซ็ต ครั้ง หรือเวลา แล้วกดตีความ"}</span></div>`}</div>

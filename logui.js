@@ -6,6 +6,7 @@
     const r = o(arg); if (!r || typeof r.html !== "string") return r;
     const m = r.html.match(/(<div class="composer [^"]*">)([\s\S]*?)(<label class="f" for="lgtext")/);
     LOGX.chips = m ? m[2] : ""; if (m) r.html = r.html.replace(m[0], m[1] + m[3]);
+    r.html = r.html.replace("<!--lgmenu-->", lgMenuHTML(LG && LG.tab === "food", !!LOGX.chips.trim()));
     return r;
   };
 })();
