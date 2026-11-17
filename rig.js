@@ -135,6 +135,131 @@ const RIG = (() => {
     face(ctx, R, expr, blink, tm); ctx.restore();
     leg(1, false); arm(1, false);
   }
+  /* ---------- มุมมองด้านหน้า ----------
+     ท่าทั้งหมดคำนวณเป็นภาพด้านข้าง (x ไปข้างหน้า, y ขึ้นบน) ด้านหน้าจึงต่อยอดจากจุดข้อต่อเดิมเป็นสามมิติ:
+     เติมระยะซ้ายขวาให้แต่ละข้อตามท่า แล้วฉายแบบเฉียงจากด้านหน้าเยื้องขึ้นบน (ส่วนที่ยื่นมาข้างหน้าจะต่ำลงบนจอและสั้นลงเอง) */
+  const VIEW = { v: "side" }; try { if (localStorage.getItem("maalot_rigview") === "front") VIEW.v = "front"; } catch (e) { }
+  const YAWX = { pushup: 52, plank: 52, climber: 52, catcow: 52, cobra: 48, superman: 48, fold: 40, stretch: 40, bridge: 42, legraise: 48, situp: 42, crunch: 42, burpee: 30, row: 30, deadlift: 25, cycle: 25, shadow: 18 };
+  const camOf = ex => { const a = (YAWX[ex] || 0) * PI / 180; return { fk: FKX[ex] || FK, c: Math.cos(a), s: Math.sin(a), a }; };
+  const FK = .42, FKX = { pushup: .75, plank: .75, climber: .7, catcow: .7, cobra: .6, superman: .6, fold: .55, stretch: .55, bridge: .55, legraise: .6, situp: .5, crunch: .5, burpee: .55, row: .5, deadlift: .5 };
+  /* ระยะซ้ายขวา: l = ขา [สะโพก, เข่า, ข้อเท้า], a = แขน [ไหล่, ศอก, มือ], mode "lat" = หมุนระนาบแขนให้แกว่งออกข้างลำตัว */
+  const lat = (ex, pose) => {
+    const d = pose.d || 0; let l = [.11, .14, .16], a = [.27, .31, .31], mode = "sag";
+    switch (ex) {
+      case "squat": case "jumpsquat": l = [.11, .14 + .13 * d, .17 + .04 * d]; a = [.27, .2, .08]; break;
+      case "lunge": l = [.11, .13, .13]; break;
+      case "jack": l = [.11, .14 + .28 * d, .17 + .5 * d]; mode = "lat"; break;
+      case "pushup": l = [.1, .11, .11]; a = [.27, .36 + .1 * d, .34]; break;
+      case "plank": l = [.1, .11, .11]; a = [.27, .29, .29]; break;
+      case "situp": case "crunch": l = [.11, .17, .17]; a = [.27, .3, .17]; break;
+      case "legraise": l = [.07, .08, .08]; a = [.27, .34, .36]; break;
+      case "bridge": l = [.12, .19, .2]; a = [.27, .33, .36]; break;
+      case "superman": l = [.08, .09, .09]; a = [.2, .17, .14]; break;
+      case "press": a = [.27, .5, .45 + .2 * d]; break;
+      case "curl": a = [.27, .32, .31]; break;
+      case "row": a = [.27, .3, .28]; break;
+      case "deadlift": l = [.11, .14, .15]; a = [.27, .22, .2]; break;
+      case "armcircle": a = [.27, .5, .7]; break;
+      case "rope": l = [.09, .1, .1]; a = [.27, .36, .4]; break;
+      case "fold": case "stretch": l = [.1, .11, .11]; a = [.27, .2, .16]; break;
+      case "catcow": case "cobra": l = [.11, .12, .12]; a = [.27, .28, .28]; break;
+      case "shadow": l = [.12, .17, .2]; a = [.27, .24, .13]; break;
+      case "climber": l = [.1, .12, .12]; a = [.27, .3, .3]; break;
+      case "burpee": l = [.12, .15, .16]; break;
+      case "wallsit": l = [.12, .16, .16]; break;
+      case "cheer": a = [.27, .62, .95]; break;
+      case "run": case "buttkick": l = [.1, .12, .12]; break;
+    }
+    return { l, a, mode };
+  };
+  function faceF(ctx, R, expr, blink, tm) {
+    ctx.lineCap = "round"; const ex = .36 * R, ey = -.02 * R;
+    if (expr !== "tired") { ctx.globalAlpha = .75; ctx.fillStyle = CHEEK; for (const q of [-1, 1]) { ctx.beginPath(); ctx.ellipse(q * .62 * R, .22 * R, .16 * R, .1 * R, 0, 0, 2 * PI); ctx.fill(); } ctx.globalAlpha = 1; }
+    ctx.fillStyle = INK; ctx.strokeStyle = INK;
+    for (const q of [-1, 1]) {
+      if (expr === "cheer") { ctx.lineWidth = R * .07; ctx.beginPath(); ctx.arc(q * ex, ey + .08 * R, .11 * R, 1.15 * PI, 1.85 * PI); ctx.stroke(); }
+      else { const ry = blink ? .02 * R : (expr === "tired" ? .08 * R : .13 * R); ctx.beginPath(); ctx.ellipse(q * ex, ey, .09 * R, Math.max(ry, .012 * R), 0, 0, 2 * PI); ctx.fill(); if (!blink && expr !== "tired") { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(q * ex + .025 * R, ey - .04 * R, .03 * R, 0, 2 * PI); ctx.fill(); ctx.fillStyle = INK; } }
+      if (expr === "focus" || expr === "tired") { ctx.lineWidth = R * .06; ctx.beginPath(); ctx.moveTo(q * .18 * R, (expr === "focus" ? -.3 : -.2) * R); ctx.lineTo(q * .56 * R, (expr === "focus" ? -.2 : -.28) * R); ctx.stroke(); }
+    }
+    ctx.strokeStyle = INK; ctx.lineWidth = R * .06;
+    if (expr === "focus") { ctx.beginPath(); ctx.moveTo(-.13 * R, .38 * R); ctx.lineTo(.13 * R, .38 * R); ctx.stroke(); }
+    else if (expr === "tired") { ctx.fillStyle = INK; ctx.beginPath(); ctx.ellipse(0, .36 * R, .09 * R, .12 * R, 0, 0, 2 * PI); ctx.fill(); ctx.fillStyle = "#4FB3F2"; const sx = .8 * R, sy = -.5 * R + Math.sin(tm * 5) * .03 * R; ctx.beginPath(); ctx.moveTo(sx, sy - .16 * R); ctx.quadraticCurveTo(sx + .14 * R, sy + .06 * R, sx, sy + .1 * R); ctx.quadraticCurveTo(sx - .14 * R, sy + .06 * R, sx, sy - .16 * R); ctx.fill(); }
+    else if (expr === "cheer") { ctx.fillStyle = INK; ctx.beginPath(); ctx.arc(0, .2 * R, .2 * R, 0, PI); ctx.closePath(); ctx.fill(); ctx.fillStyle = "#F0679B"; ctx.beginPath(); ctx.ellipse(0, .34 * R, .1 * R, .055 * R, 0, 0, PI); ctx.fill(); }
+    else { ctx.beginPath(); ctx.arc(0, .18 * R, .17 * R, .15 * PI, .85 * PI); ctx.stroke(); }
+  }
+  function headF(ctx, x, y, R, pitch, yaw, expr, blink, tm) {
+    ctx.save(); ctx.translate(x, y); const olw = D.ol * R / D.H;
+    circ(ctx, 0, 0, R, SKIN, olw);
+    if (pitch > 1.15 && pitch < 2.3) { /* ก้มหน้า: เห็นด้านบนศีรษะ มีจุกเกี๊ยวอยู่กลางหัว */
+      const bx = Math.sin(yaw) * .18 * R; circ(ctx, bx, -.04 * R, .36 * R, SKIN, olw * .8); ctx.strokeStyle = INK; ctx.lineWidth = R * .04; ctx.lineCap = "round"; ctx.globalAlpha = .55;
+      for (let k = 0; k < 6; k++) { const t = k / 6 * 2 * PI, cy = -.04 * R; ctx.beginPath(); ctx.moveTo(bx + Math.cos(t) * .1 * R, cy + Math.sin(t) * .1 * R); ctx.lineTo(bx + Math.cos(t) * .3 * R, cy + Math.sin(t) * .3 * R); ctx.stroke(); } ctx.globalAlpha = 1;
+    } else {
+      ctx.fillStyle = SKIN; ctx.strokeStyle = INK; ctx.lineWidth = olw; const tx = Math.sin(yaw) * .12 * R; ctx.beginPath(); ctx.ellipse(tx, -1.02 * R, .3 * R, .2 * R, 0, 0, 2 * PI); ctx.fill(); ctx.stroke();
+      ctx.lineWidth = R * .04; ctx.lineCap = "round"; for (const a of [-.5, 0, .5]) { ctx.beginPath(); ctx.moveTo(tx + Math.sin(a) * .05 * R, -.93 * R); ctx.lineTo(tx + Math.sin(a) * .26 * R, -1.1 * R); ctx.stroke(); }
+      ctx.save(); ctx.translate(Math.sin(yaw) * .3 * R, 0); ctx.scale(1 - .3 * Math.abs(Math.sin(yaw)), 1); faceF(ctx, R, expr, blink, tm); ctx.restore();
+    }
+    ctx.restore();
+  }
+  /* ข้อต่อสามมิติ [ซ้ายขวา, สูง, ไปข้างหน้า] */
+  function jointsF(ex, pose, sk, T) {
+    T = T || lat(ex, pose);
+    return { hip: [0, sk.hip[1], sk.hip[0]], sh: [0, sk.sh[1], sk.sh[0]], head: [0, sk.head[1], sk.head[0]],
+      legs: sk.legs.map((L, i) => { const q = i ? 1 : -1; return { h: [q * T.l[0], sk.hip[1], sk.hip[0]], k: [q * T.l[1], L.knee[1], L.knee[0]], a: [q * T.l[2], L.ankle[1], L.ankle[0]] }; }),
+      arms: sk.arms.map((A, i) => { const q = i ? 1 : -1, sz = sk.sh[0]; let e, h;
+        if (T.mode === "lat") { /* หมุนระนาบแขนให้กางออกข้างลำตัว: มุมจากแนวห้อยลง กางออก ไปจนยกสูง (จำกัดไม่ให้ตั้งตรงจนไปซ่อนหลังหัว) */
+          const sw = (pt) => { const rx = pt[0] - sz, ry = pt[1] - sk.sh[1], L = Math.hypot(rx, ry), b = Math.min(Math.atan2(rx, -ry), 2.45); return [q * (T.a[0] + L * Math.sin(b)), sk.sh[1] - L * Math.cos(b), sz]; };
+          e = sw(A.elbow); h = sw(A.hand); }
+        else { const g = A.hand[1] < .3; e = [q * (g ? Math.max(T.a[1], .3) : T.a[1]), A.elbow[1], A.elbow[0]]; h = [q * (g ? Math.max(T.a[2], .33) : T.a[2]), A.hand[1], A.hand[0]]; }
+        return { s: [q * T.a[0], sk.sh[1], sz], e, h }; }) };
+  }
+  /* กรอบภาพของท่านั้นทั้งรอบการเคลื่อนไหว (คำนวณครั้งเดียวแล้วจำไว้) ให้ขนาดและตำแหน่งนิ่ง ไม่กระโดดตามจังหวะ */
+  const FBOX = {};
+  function frontBox(ex) {
+    if (FBOX[ex]) return FBOX[ex]; const def = EX[ex] || EX.squat, cam = camOf(ex); let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    const add = (X, Y, m) => { x0 = Math.min(x0, X - m); x1 = Math.max(x1, X + m); y0 = Math.min(y0, Y - m); y1 = Math.max(y1, Y + m); };
+    for (let i = 0; i < 24; i++) {
+      const pose = def.pose(i / 24 * def.period, def.period), sk = solve(pose), J = jointsF(ex, pose, sk), pj = (j, m) => add(j[0] * cam.c + j[2] * cam.s, j[1] - cam.fk * (j[2] * cam.c - j[0] * cam.s), m);
+      pj(J.hip, .2); pj(J.sh, .3); pj(J.head, D.H); J.legs.forEach(l => { pj(l.k, .15); pj(l.a, .22); }); J.arms.forEach(a => { pj(a.e, .15); pj(a.h, .2); });
+      add(0, 0, 0);
+    }
+    return FBOX[ex] = { x0, x1, y0, y1, cam };
+  }
+  function sceneFront(ctx, W, H, ex, pose, sk, st, now) {
+    const stH = D.l1 + D.l2 + D.ah + D.T + 2 * D.H + .5, ext = D.l1 + D.l2 + D.T + 2 * D.H + .9, tm = st.tm || 0, bb = frontBox(st.cheer ? "calf" : ex), cam = bb.cam, fk = cam.fk, zc = 0, dep = j => j[2] * cam.c - j[0] * cam.s;
+    const sc = Math.min(H * .8 / stH, W * .86 / ext, W * .92 / (bb.x1 - bb.x0), H * .8 / (bb.y1 - bb.y0)), cx = W / 2 - (bb.x0 + bb.x1) / 2 * sc, gy = H * .9 + bb.y0 * sc;
+    const cols = { shirt: look().shirt, shorts: "#8155C9", shoe: "#F0679B", dumb: !!pose.dumb && !st.nodumb }; if (cols.shirt.toLowerCase() === "#8155c9") cols.shorts = "#4C5DDA";
+    const T = lat(st.cheer ? "cheer" : ex, pose), olw = D.ol * sc, far = c => mix(c, "#24193B", .2), mid2 = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t)];
+    const J = jointsF(ex, pose, sk, T);
+    const P = j => [cx + (j[0] * cam.c + j[2] * cam.s) * sc, gy - (j[1] - fk * dep(j)) * sc];
+    const zs = [J.hip[2], J.sh[2], J.head[2]].concat(J.legs.map(l => l.a[2]), J.arms.map(a => a.h[2])), zmin = Math.min(...zs), zmax = Math.max(...zs);
+    /* พื้นเป็นเสื่อ: ฉายมุมของพื้นที่ที่ตัวทอดไปถึง แล้วเอากรอบมาวาด */
+    const cs = [[-.75, zmin - .4], [.75, zmin - .4], [-.75, zmax + .4], [.75, zmax + .4]].map(q => P([q[0], 0, q[1]])), mx0 = Math.min(...cs.map(q => q[0])), mx1 = Math.max(...cs.map(q => q[0])), my0 = Math.min(...cs.map(q => q[1])), my1 = Math.max(...cs.map(q => q[1]));
+    const mxL = Math.min(mx0, W * .5 - W * .42), mxR = Math.max(mx1, W * .5 + W * .42), my = my0 - 2, mh = Math.max(my1 - my0 + 4, .26 * sc);
+    if (pose.wall != null) { ctx.fillStyle = "#E8D9F5"; ctx.fillRect(0, 0, W, my + 6); }
+    ctx.fillStyle = "#F3D9BF"; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(mxL, my, mxR - mxL, mh, Math.min(20, mh / 2)); else ctx.rect(mxL, my, mxR - mxL, mh); ctx.fill();
+    const fz = (J.legs[0].a[2] + J.legs[1].a[2]) / 2, fy = P([0, 0, fz])[1]; ctx.fillStyle = "rgba(36,25,59,.14)"; ctx.beginPath(); ctx.ellipse(P([0, 0, fz])[0], Math.min(Math.max(fy, my + 4), my + mh - 3), Math.max(14, .75 * sc), Math.max(3, sc * .1), 0, 0, 2 * PI); ctx.fill();
+    if (pose.rope != null) { const c = P([0, Hs * .95 + D.ah, zc]), rr = (Hs * .95 + D.ah) * sc; ctx.save(); ctx.strokeStyle = "#F0679B"; ctx.lineWidth = 3; ctx.setLineDash([rr * .5, rr * .35]); ctx.lineDashOffset = -pose.rope * rr * .3; ctx.beginPath(); ctx.ellipse(c[0], c[1], rr * .78, rr, 0, 0, 2 * PI); ctx.stroke(); ctx.restore(); }
+    if (pose.bike) { const w = P([0, .52, 1.0]); ctx.save(); ctx.strokeStyle = "#2A1D45"; ctx.lineWidth = Math.max(2, .05 * sc); ctx.beginPath(); ctx.ellipse(w[0], w[1], .08 * sc, .52 * sc, 0, 0, 2 * PI); ctx.stroke(); const a = P([-.4, 1.07, .95]), b = P([.4, 1.07, .95]); ctx.strokeStyle = "#F0679B"; ctx.lineWidth = Math.max(3, .06 * sc); ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); ctx.restore(); }
+    const tz = (dep(J.hip) + dep(J.sh)) / 2, zOf = (...ps) => ps.reduce((q, p) => q + dep(p), 0) / ps.length, blink = (now % 3600) < 130;
+    const drawLeg = L => { const dk = zOf(L.h, L.k, L.a) < tz - .35, h = P(L.h), k = P(L.k), a = P(L.a), sg = L.a[0] < 0 ? -1 : 1;
+      line(ctx, [[h, k, D.lw[0] * sc * 1.1], [k, a, D.lw[1] * sc * 1.1]], dk ? far(SKIN) : SKIN, INK, olw); line(ctx, [[h, mid2(h, k, .6), D.lw[0] * sc * 1.26]], dk ? far(cols.shorts) : cols.shorts, INK, olw);
+      ctx.beginPath(); ctx.ellipse(a[0] + sg * .04 * sc, a[1] + .03 * sc, .15 * sc, .1 * sc, 0, 0, 2 * PI); ctx.lineWidth = olw * 2; ctx.strokeStyle = INK; ctx.stroke(); ctx.fillStyle = dk ? far(cols.shoe) : cols.shoe; ctx.fill(); };
+    const drawArm = A => { const dk = zOf(A.e, A.h) < tz - .4, s = P(A.s), e = P(A.e), h = P(A.h);
+      line(ctx, [[s, e, D.aw[0] * sc], [e, h, D.aw[1] * sc]], dk ? far(SKIN) : SKIN, INK, olw); line(ctx, [[s, mid2(s, e, .38), D.aw[0] * sc * 1.18]], dk ? far(cols.shirt) : cols.shirt, INK, olw);
+      if (cols.dumb) { ctx.lineCap = "round"; ctx.strokeStyle = INK; ctx.lineWidth = .1 * sc + olw * 2; ctx.beginPath(); ctx.moveTo(h[0] - .15 * sc, h[1]); ctx.lineTo(h[0] + .15 * sc, h[1]); ctx.stroke(); ctx.strokeStyle = "#52456E"; ctx.lineWidth = .1 * sc; ctx.stroke(); }
+      circ(ctx, h[0], h[1], D.aw[1] * sc * .62, dk ? far(SKIN) : SKIN, olw); };
+    const drawTorso = () => { const sw = .28, hw = .21, sL = P([-sw, J.sh[1], J.sh[2]]), sR = P([sw, J.sh[1], J.sh[2]]), hL = P([-hw, J.hip[1], J.hip[2]]), hR = P([hw, J.hip[1], J.hip[2]]), nk = P(J.sh), hd = P(J.head);
+      line(ctx, [[nk, hd, D.aw[0] * sc * .8]], SKIN, INK, olw);
+      ctx.lineJoin = "round"; ctx.lineWidth = olw * 2; ctx.strokeStyle = INK; ctx.fillStyle = cols.shirt; ctx.beginPath(); ctx.moveTo(sL[0], sL[1]); ctx.lineTo(sR[0], sR[1]); ctx.lineTo(hR[0], hR[1]); ctx.lineTo(hL[0], hL[1]); ctx.closePath(); ctx.stroke(); ctx.fill();
+      const pL = mid2(hL, sL, .3), pR = mid2(hR, sR, .3); ctx.fillStyle = cols.shorts; ctx.beginPath(); ctx.moveTo(hL[0], hL[1]); ctx.lineTo(hR[0], hR[1]); ctx.lineTo(pR[0], pR[1]); ctx.lineTo(pL[0], pL[1]); ctx.closePath(); ctx.fill(); };
+    const drawHead = () => { const hd = P(J.head); headF(ctx, hd[0], hd[1], D.H * sc, sk.ha, cam.a, st.expr && st.expr !== "auto" ? st.expr : autoExpr(ex, pose), blink, tm); };
+    const headBack = dep(J.head) < dep(J.sh) - .3;
+    if (headBack) drawHead();
+    J.legs.slice().sort((a, b) => zOf(a.h, a.k, a.a) - zOf(b.h, b.k, b.a)).forEach(drawLeg);
+    drawTorso();
+    J.arms.slice().sort((a, b) => zOf(a.e, a.h) - zOf(b.e, b.h)).forEach(drawArm);
+    if (!headBack) drawHead();
+  }
   function autoExpr(ex, pose) { if (/^(plank|run|walk|wallsit|catcow|cobra|armcircle|rope|climber|highknee|buttkick|cycle|shadow)$/.test(ex)) return ex === "catcow" || ex === "cobra" ? "smile" : "focus"; return pose.d > .82 ? "tired" : pose.d < .14 ? "smile" : "focus"; }
 
   function look() { try { const L = normLook(S.look); SKIN = /^#[0-9a-f]{6}$/i.test(L.skin) ? L.skin : "#FFF1D6"; return { shirt: /^#[0-9a-f]{6}$/i.test(L.oc) ? L.oc : "#8155C9" }; } catch (e) { return { shirt: "#8155C9" }; } }
@@ -146,6 +271,7 @@ const RIG = (() => {
     if (st.idle) { pose.hip = [pose.hip[0], pose.hip[1] + .02 * Math.sin(now / 420) * (st.heavy ? 2.2 : 1)]; }
     const sk = solve(pose), stH = D.l1 + D.l2 + D.ah + D.T + 2 * D.H + .5, ext = D.l1 + D.l2 + D.T + 2 * D.H + .9, sc = Math.min(H * .8 / stH, W * .86 / ext), gy = H * .87, cx = W / 2;
     const P = pt => [cx + (pt[0] - pose.ox) * sc, gy - pt[1] * sc];
+    if (!st.side && VIEW.v === "front") { sceneFront(ctx, W, H, ex, pose, sk, st, now); return pose; }
     ctx.fillStyle = "#F3D9BF"; ctx.fillRect(0, gy + 2, W, H - gy);
     const cols = { shirt: look().shirt, shorts: "#8155C9", shoe: "#F0679B", dumb: !!pose.dumb && !st.nodumb };
     if (cols.shirt.toLowerCase() === "#8155c9") cols.shorts = "#4C5DDA";
@@ -173,11 +299,12 @@ const RIG = (() => {
       scene(cv, opt.ex, st, now);
       if (!(reduce && !opt.state)) requestAnimationFrame(frame);
     };
+    cv._redraw = () => { if (reduce && !opt.state) frame(performance.now()); };
     requestAnimationFrame(frame);
   }
   /* ภาพเล็กในรายการ: วาดทีละหลายภาพด้วยลูปเดียว วาดเฉพาะที่เห็นอยู่บนจอ และจำกัดความถี่ให้เครื่องไม่ร้อน */
   const TH = { set: new Set(), raf: 0, io: null, last: 0 }, reduceM = () => matchMedia("(prefers-reduced-motion:reduce)").matches;
-  function drawThumb(cv, now, still) { const ex = cv.dataset.ex, per = (EX[ex] || EX.squat).period; scene(cv, ex, { tm: still ? per * .4 : (now - cv._t0) / 1000, nodumb: cv.dataset.nd ? 1 : 0 }, now); }
+  function drawThumb(cv, now, still) { const ex = cv.dataset.ex, per = (EX[ex] || EX.squat).period; scene(cv, ex, { tm: still ? per * .4 : (now - cv._t0) / 1000, nodumb: cv.dataset.nd ? 1 : 0, side: 1 }, now); }
   function thumbLoop(now) {
     TH.raf = 0; for (const cv of TH.set) if (!cv.isConnected) { TH.set.delete(cv); if (TH.io) TH.io.unobserve(cv); }
     if (!TH.set.size) return;
@@ -195,7 +322,13 @@ const RIG = (() => {
     });
     if (TH.set.size && !TH.raf) TH.raf = requestAnimationFrame(thumbLoop);
   }
-  return { mount, thumbs, has: k => !!EX[k], period: k => EX[k] && EX[k].period, html: (k, extra) => `<div class="stage rigstage"><canvas class="rig" data-rig="${k}" role="img" aria-label="ตัวละครก้อนเกี๊ยวทำท่าตัวอย่าง"></canvas>${extra || ""}</div>` };
+  const togHtml = () => `<div class="rigtog" role="group" aria-label="มุมมองของตัวอย่างท่า"><button type="button" data-act="rigview" data-v="side" class="${VIEW.v === "side" ? "on" : ""}" aria-pressed="${VIEW.v === "side"}">ด้านข้าง</button><button type="button" data-act="rigview" data-v="front" class="${VIEW.v === "front" ? "on" : ""}" aria-pressed="${VIEW.v === "front"}">ด้านหน้า</button></div>`;
+  ACT.rigview = a => {
+    const v = a.dataset.v === "front" ? "front" : "side"; VIEW.v = v; try { localStorage.setItem("maalot_rigview", v); } catch (e) { }
+    document.querySelectorAll(".rigtog button").forEach(b => { const on = b.dataset.v === v; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+    document.querySelectorAll("canvas.rig").forEach(c => { if (c._redraw) c._redraw(); });
+  };
+  return { mount, thumbs, has: k => !!EX[k], period: k => EX[k] && EX[k].period, html: (k, extra) => `<div class="stage rigstage"><canvas class="rig" data-rig="${k}" role="img" aria-label="ตัวละครก้อนเกี๊ยวทำท่าตัวอย่าง"></canvas>${togHtml()}${extra || ""}</div>`, view: () => VIEW.v };
 })();
 
 /* ต่อเข้าคลังท่า และหน้า "ออกกำลังด้วยกัน" */
