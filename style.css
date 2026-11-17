@@ -1031,3 +1031,59 @@ input[type=password], input[type=email] { width: 100%; background: var(--card); 
 .gp-drop { display: block; margin: 8px auto 0; }
 @keyframes gpop { 0% { transform: scale(.85); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .gov-ring .rf, .gcoin svg, .gpick, .gpick.on .glic.big, .gp-badge, .gp-prog .gbar i, .gpl.on { animation: none !important; } }
+
+/* ======== ยกระดับหน้าที่ยังโล่ง/เก่า: สถานะว่าง น้ำ-นอน สุ่มเมนู แผนมื้อ โปรแกรมสำเร็จรูป ======== */
+#sub .card { box-shadow: 0 12px 26px -22px rgba(36, 25, 59, .5); }
+#sub .sec::before { content: ""; display: inline-block; width: 4px; height: 14px; margin-right: 8px; border-radius: 2px; background: var(--accent); vertical-align: -2px; }
+input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
+input[type=date] { width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 11px 14px; min-height: 44px; }
+.item:active { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+.empty2 { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 26px 12px; text-align: center; color: var(--muted); font-size: 13px; width: 100%; }
+.e2-ic { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--soft); color: var(--accent); animation: mhbob 2.6s ease-in-out infinite; } .empty2 b { color: var(--ink); margin-top: 8px; font-size: 15px; }
+/* น้ำ: แก้วใหญ่มีคลื่น + แก้วเล็กกดบันทึก */
+.watank { display: flex; align-items: center; gap: 16px; padding: 16px; }
+.wt-glass { position: relative; flex: none; width: 94px; height: 124px; border-radius: 14px 14px 30px 30px; border: 3px solid var(--blue-ink); overflow: hidden; background: color-mix(in srgb, var(--blue-soft) 50%, var(--card)); }
+.wt-fill { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, #7CC8F2, #4D93D1); transition: height .8s cubic-bezier(.2, .9, .3, 1); animation: wtrise 1s cubic-bezier(.2, .9, .3, 1) both; }
+.wt-fill::before { content: ""; position: absolute; left: 0; top: -10px; width: calc(100% + 48px); height: 12px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 12'%3E%3Cpath d='M0 6 Q12 0 24 6 T48 6 V12 H0Z' fill='%237CC8F2'/%3E%3C/svg%3E") repeat-x; background-size: 48px 12px; animation: wtwave 2.4s linear infinite; }
+.wt-fill[style*="height:0%"] { display: none; }
+.wt-n { position: absolute; inset: 0; display: grid; place-items: center; font: 800 30px var(--font-display); color: var(--ink); text-shadow: 0 0 8px rgba(255, 255, 255, .9); } .wt-n small { font-size: 13px; font-weight: 600; margin-left: 1px; align-self: end; margin-bottom: 38px; }
+.wt-t { display: flex; flex-direction: column; gap: 5px; min-width: 0; } .wt-t > b { font-size: 16px; }
+.wglasses { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 6px; }
+.wglasses .glass { width: 33px; height: 42px; transition: transform .15s; } .wglasses .glass:active { transform: scale(.88); } .glass.on::after { animation: glassfill .55s cubic-bezier(.2, .9, .3, 1) both; animation-delay: calc(var(--i, 1) * .04s); }
+.sleepcard { margin-top: 12px; padding: 14px; } .sl-h { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; } .sl-h .grow { display: flex; flex-direction: column; }
+.sl-ic { flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: var(--blue-soft); color: var(--blue-ink); animation: mhbob 3s ease-in-out infinite; }
+.sl-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.slb { display: flex; flex-direction: column; align-items: center; padding: 8px 0 6px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; transition: transform .12s, background .2s; } .slb:active { transform: scale(.92); } .slb b { font-size: 16px; } .slb small { font-size: 10px; color: var(--muted); }
+.slb.on { background: var(--blue-ink); border-color: transparent; color: #fff; animation: gpop .4s cubic-bezier(.2, 1.4, .4, 1) both; } .slb.on small { color: inherit; opacity: .85; }
+/* สุ่มเมนู */
+.pickcard { text-align: center; margin-top: 14px; padding: 26px 16px; background: linear-gradient(160deg, var(--soft), var(--card) 70%); }
+.pk-ic { width: 78px; height: 78px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 10px; background: var(--card); color: var(--accent); box-shadow: 0 14px 24px -14px var(--accent); animation: mhbob 2.6s ease-in-out infinite; }
+.pk-n { font-size: 26px; font-weight: 700; } .pk-k { display: inline-block; margin-top: 8px; padding: 3px 12px; border-radius: 999px; background: var(--warn-soft); color: var(--warn-ink); font-weight: 600; font-size: 13px; }
+[data-act=pkre] svg { transition: transform .5s cubic-bezier(.2, 1.2, .4, 1); } [data-act=pkre]:active svg { transform: rotate(360deg) scale(1.2); }
+/* แผนมื้อสัปดาห์ */
+.plday { padding: 14px; animation: ptin .4s cubic-bezier(.2, .9, .3, 1) both; animation-delay: calc(var(--i, 0) * .05s); }
+.pl-dn { display: flex; align-items: center; gap: 8px; font-weight: 700; } .pl-dn i { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-style: normal; font-size: 13px; }
+.pl-k { padding: 2px 10px; border-radius: 999px; background: var(--warn-soft); color: var(--warn-ink); font-size: 12px; font-weight: 600; }
+.pl-meals { display: grid; gap: 8px; margin-top: 10px; } .pl-m { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--soft); } .pl-m .grow { display: flex; flex-direction: column; min-width: 0; } .pl-m small { font-size: 11px; color: var(--muted); }
+.pl-mi { flex: none; width: 30px; height: 30px; border-radius: 10px; background: var(--card); color: var(--accent); display: grid; place-items: center; } .chip.shop svg { color: var(--green); }
+/* โปรแกรมออกกำลังกาย: การ์ดสำเร็จรูป */
+.fd-desc { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+.fdhero { position: relative; overflow: hidden; isolation: isolate; border-radius: 24px; padding: 18px 16px; color: #fff; background-image: linear-gradient(125deg, #6B3FC0, #8D6CF0 50%, #4D6FE0); background-size: 220% 220%; animation: mhflow 9s ease-in-out infinite; box-shadow: 0 14px 26px -16px #6B3FC0; }
+.fd-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; } .fd-bg i { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, .15); animation: mhfloat 6s ease-in-out infinite; } .fd-bg i:nth-child(1) { width: 90px; height: 90px; right: -18px; top: -30px; } .fd-bg i:nth-child(2) { width: 40px; height: 40px; left: 30%; bottom: -14px; animation-delay: -3s; }
+.fd-s { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; } .fd-s span { display: flex; flex-direction: column; font-size: 12px; opacity: .96; } .fd-s b { font: 800 28px/1.1 var(--font-display); animation: ptin .5s both; } .fd-s span:nth-child(2) b { animation-delay: .08s; } .fd-s span:nth-child(3) b { animation-delay: .16s; }
+.pcgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pcard { position: relative; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; text-align: left; padding: 12px; min-height: 150px; border-radius: 22px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; overflow: hidden; animation: ptin .45s cubic-bezier(.2, .9, .3, 1) both; animation-delay: calc(var(--i, 0) * .04s); transition: transform .12s, box-shadow .2s; } .pcard:active { transform: scale(.97); }
+.pc-i { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; margin-bottom: 6px; }
+.pcard.amber .pc-i { background: #FFEFC2; color: #B66A0B; } .pcard.green .pc-i { background: var(--green-soft); color: var(--green); } .pcard.blue .pc-i { background: #E4E8FB; color: #3A48BD; } .pcard.rose .pc-i { background: #FFE0EA; color: #D6336C; } .pcard.violet .pc-i { background: var(--soft); color: var(--accent); }
+:root[data-theme="dark"] .pcard.amber .pc-i { background: #4D4220; color: #F3D77F; } :root[data-theme="dark"] .pcard.blue .pc-i { background: #28325F; color: #B5C0FF; } :root[data-theme="dark"] .pcard.rose .pc-i { background: #55303F; color: #F7B1C0; }
+.pcard b { font-size: 14.5px; line-height: 1.3; } .pc-d { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.pc-m { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; padding-top: 8px; } .pc-m i { font-style: normal; font-size: 10.5px; padding: 2px 8px; border-radius: 999px; background: var(--soft); color: var(--muted); display: inline-flex; align-items: center; gap: 3px; }
+.pc-ok { position: absolute; top: 10px; right: 10px; font-style: normal; font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--green-soft); color: var(--green); display: inline-flex; gap: 3px; align-items: center; }
+.pcact { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; } .pcact .btn { justify-content: center; }
+/* หน้าฟื้นตัว: เคล็ดลับเป็นข้อๆ · วิเคราะห์แผน · ตั้งค่าโปรแกรม */
+.tips { padding: 6px 14px; } .tip { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; animation: ptin .4s cubic-bezier(.2, .9, .3, 1) both; animation-delay: calc(var(--i, 0) * .05s); } .tip + .tip { border-top: 1px solid var(--line); }
+.tip span { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--green-soft); color: var(--green); display: grid; place-items: center; margin-top: 1px; } .tip p { margin: 0; font-size: 13.5px; }
+.rdot { animation: rdpulse 2s ease-in-out infinite; } @keyframes rdpulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+.fana i b { animation: mbar 1s cubic-bezier(.2, .9, .3, 1) both; } .fchip { transition: transform .12s, border-color .2s, background .2s; } .fchip:active { transform: scale(.97); } .fchip.on { animation: gpop .35s cubic-bezier(.2, 1.4, .4, 1) both; }
+@keyframes wtrise { from { height: 0 !important; } } @keyframes wtwave { to { transform: translateX(-48px); } } @keyframes glassfill { from { height: 0; } }
+@media (prefers-reduced-motion: reduce) { .e2-ic, .wt-fill, .wt-fill::before, .glass.on::after, .sl-ic, .slb.on, .pk-ic, .plday, .fdhero, .fd-bg i, .fd-s b, .pcard, .tip, .rdot, .fana i b, .fchip.on { animation: none !important; } }

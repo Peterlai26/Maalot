@@ -81,8 +81,8 @@ SUBS.pick = () => {
   const f = PICK.f, tags = [["b", "มื้อเช้า"], ["m", "มื้อหลัก"], ["s", "ของว่าง"], ["d", "เครื่องดื่ม"], ["f", "ผลไม้"]];
   return {
     title: "วันนี้กินอะไรดี", html: `<div class="row wrap">${tags.map(t => `<button class="btn sm ${PICK.tag === t[0] ? "sel" : ""}" data-act="pktag" data-t="${t[0]}">${t[1]}</button>`).join("")}</div>
-<div class="card pop" style="text-align:center;margin-top:14px;padding:28px 16px"><div style="font-size:26px;font-weight:600">${esc(f[0])}</div><div class="muted" style="margin-top:6px">ประมาณ ${fmtN(f[1])} kcal</div></div>
-<div class="row" style="margin-top:12px"><button class="btn" style="flex:1" data-act="pkre">${ic("dice", 18)}สุ่มใหม่</button><button class="btn primary" style="flex:1" data-act="logfood" data-t="${esc(f[0])}">กินอันนี้</button></div>
+<div class="card pop pickcard"><span class="pk-ic fc-${(typeof foodKind === "function" ? foodKind(f[0]) : { cat: "meal" }).cat}">${ic((typeof foodKind === "function" ? foodKind(f[0]) : { icon: "bowl" }).icon, 34)}</span><div class="pk-n">${esc(f[0])}</div><span class="pk-k">ประมาณ ${fmtN(f[1])} kcal</span></div>
+<div class="row" style="margin-top:12px"><button class="btn" style="flex:1" data-act="pkre">${ic("dice", 18)}สุ่มใหม่</button><button class="btn primary go" style="flex:1" data-act="logfood" data-t="${esc(f[0])}">${ic("check", 18)}กินอันนี้</button></div>
 <p class="xs muted" style="margin-top:10px">เลือกจากเมนูที่ไม่เกินแคลอรี่ที่เหลือวันนี้ ถ้ามีเมนูพอ</p>`
   };
 };
@@ -93,10 +93,11 @@ SUBS.fridge = () => {
   const ing = FR.split(/[,，\s]+/).map(s => s.trim()).filter(Boolean);
   const res = ing.length ? FOODS.map(f => ({ f, n: f[4].filter(x => ing.some(i => x.indexOf(i) > -1 || i.indexOf(x) > -1)).length })).filter(x => x.n > 0).sort((a, b) => b.n - a.n || a.f[1] - b.f[1]).slice(0, 8) : [];
   return {
-    title: "ของในตู้เย็น", keepScroll: true, html: `<label class="f" for="frin">มีอะไรอยู่บ้าง (คั่นด้วยจุลภาคหรือเว้นวรรค)</label><div class="row"><input id="frin" type="text" placeholder="ไข่ หมูสับ ผักบุ้ง" value="${esc(FR)}"/><button class="btn primary" data-act="frgo">หาเมนู</button></div>
-${ing.length ? (res.length ? res.map(x => `<button class="item" style="width:100%;text-align:left" data-act="logfood" data-t="${esc(x.f[0])}"><div class="grow"><b>${esc(x.f[0])}</b><div class="xs muted">ใช้ของที่มี ${x.n} อย่าง · ต้องมี ${esc(x.f[4].join(", "))}</div></div><span>${fmtN(x.f[1])} kcal</span></button>`).join("") : '<p class="muted" style="margin-top:14px">ยังไม่เจอเมนูที่ตรง ลองใส่วัตถุดิบเพิ่มนะ</p>') : '<p class="muted sm" style="margin-top:14px">ใส่วัตถุดิบที่มี แล้วจะแนะนำเมนูที่ทำได้ แตะที่เมนูเพื่อบันทึกเลย</p>'}`
+    title: "ของในตู้เย็น", keepScroll: true, html: `<label class="f" for="frin">มีอะไรอยู่บ้าง (คั่นด้วยจุลภาคหรือเว้นวรรค)</label><div class="row"><input id="frin" type="text" placeholder="ไข่ หมูสับ ผักบุ้ง" value="${esc(FR)}"/><button class="btn primary" data-act="frgo">หาเมนู</button></div><div class="lgex" style="margin-top:8px">${["ไข่", "หมูสับ", "ไก่", "ผัก", "เต้าหู้", "ข้าว"].map((t, i) => `<button type="button" class="lgx" style="--i:${i}" data-act="fradd" data-t="${t}">${ic("plus", 12)}${t}</button>`).join("")}</div>
+${ing.length ? (res.length ? res.map(x => `<button class="item lgrow" style="width:100%;text-align:left" data-act="logfood" data-t="${esc(x.f[0])}"><span class="lgav fc-${(typeof foodKind === "function" ? foodKind(x.f[0]) : { cat: "meal" }).cat}">${ic((typeof foodKind === "function" ? foodKind(x.f[0]) : { icon: "bowl" }).icon, 20)}</span><div class="grow"><b>${esc(x.f[0])}</b><div class="xs muted">ใช้ของที่มี ${x.n} อย่าง · ต้องมี ${esc(x.f[4].join(", "))}</div></div><span>${fmtN(x.f[1])} kcal</span></button>`).join("") : emptyState("search", "ยังไม่เจอเมนูที่ตรง", "ลองใส่วัตถุดิบเพิ่มอีกนิดนะ")) : emptyState("fridge", "ในตู้เย็นมีอะไรบ้าง", "ใส่วัตถุดิบที่มี แล้วน้องจะแนะนำเมนูที่ทำได้ แตะเมนูเพื่อบันทึกเลย")}`
   };
 };
+ACT.fradd = a => { const i = $("#frin"); if (!i) return; i.value = (i.value.trim() + " " + a.dataset.t).trim(); ACT.frgo(); };
 ACT.frgo = () => { FR = $("#frin").value; rerenderSub(); };
 let NT = null;
 function stopNight() { if (NT && NT.iv) clearInterval(NT.iv); NT = null; }
@@ -135,13 +136,14 @@ ACT.chclear = () => { S.cheat = null; save(); rerenderSub(); };
 function makePlan() {
   const tgt = targetOn(todayKey()), by = t => FOODS.filter(f => f[2] === t && f[1] <= 450), pk = a => a[Math.floor(Math.random() * a.length)];
   const days = []; for (let i = 0; i < 7; i++) { let tries = 0, d; do { d = { b: pk(by("b"))[0], l: pk(FOODS.filter(f => f[2] === "m" && f[1] <= 550))[0], d: pk(FOODS.filter(f => f[2] === "m" && f[1] <= 550))[0] }; tries++; } while (tries < 12 && ["b", "l", "d"].reduce((s, k) => s + (FOODS.find(f => f[0] === d[k]) || [0, 0])[1], 0) > tgt); days.push(d); }
-  S.plan = { made: todayKey(), days }; save();
+  S.mealplan = { made: todayKey(), days }; save();
 }
 SUBS.plan = () => {
-  if (!S.plan) makePlan(); const P = S.plan, f = n => FOODS.find(x => x[0] === n) || [n, 0, "", [], []], cnt = {};
+  if (!S.mealplan) makePlan(); const P = S.mealplan, f = n => FOODS.find(x => x[0] === n) || [n, 0, "", [], []], cnt = {}, MI = [["b", "sun", "เช้า"], ["l", "bowl", "กลางวัน"], ["d", "moon", "เย็น"]];
   P.days.forEach(d => ["b", "l", "d"].forEach(k => f(d[k])[4].forEach(i => { cnt[i] = (cnt[i] || 0) + 1; })));
-  const rows = P.days.map((d, i) => { const k = ["b", "l", "d"].reduce((s, x) => s + f(d[x])[1], 0); return `<div class="card"><div class="row between"><b>วันที่ ${i + 1}</b><span class="xs muted">${fmtN(k)} kcal</span></div><div class="sm" style="margin-top:6px">เช้า: ${esc(d.b)}<br>กลางวัน: ${esc(d.l)}<br>เย็น: ${esc(d.d)}</div></div>`; }).join("");
-  return { title: "แผนมื้อสัปดาห์", html: `<button class="btn block" data-act="plre">${ic("dice", 18)}สุ่มแผนใหม่</button><div class="sec">รายการซื้อของ</div><div class="card"><div class="row wrap">${Object.keys(cnt).sort().map(i => `<span class="chip">${esc(i)}${cnt[i] > 1 ? " ×" + cnt[i] : ""}</span>`).join("")}</div></div><div class="sec">แผน 7 วัน</div>${rows}<p class="xs muted">เป็นไอเดียคร่าวๆ ปรับตามที่ชอบได้เสมอ</p>` };
+  const rows = P.days.map((d, i) => { const k = ["b", "l", "d"].reduce((s0, x) => s0 + f(d[x])[1], 0); return `<div class="card plday" style="--i:${i}"><div class="row between"><span class="pl-dn"><i>${i + 1}</i>วันที่ ${i + 1}</span><span class="pl-k">${fmtN(k)} kcal</span></div><div class="pl-meals">${MI.map(m => `<div class="pl-m"><span class="pl-mi">${ic(m[1], 16)}</span><div class="grow"><small>${m[2]}</small><b>${esc(d[m[0]])}</b></div><span class="xs muted">${fmtN(f(d[m[0]])[1])}</span></div>`).join("")}</div></div>`; }).join("");
+  const items = Object.keys(cnt).sort();
+  return { title: "แผนมื้อสัปดาห์", html: `<button class="btn primary block go" data-act="plre">${ic("dice", 18)}สุ่มแผนใหม่</button><div class="sec">รายการซื้อของ ${items.length} อย่าง</div><div class="card"><div class="row wrap">${items.length ? items.map(i => `<span class="chip shop">${ic("check", 12)}${esc(i)}${cnt[i] > 1 ? " ×" + cnt[i] : ""}</span>`).join("") : emptyState("bag", "ยังไม่มีรายการ", "สุ่มแผนใหม่เพื่อดูของที่ต้องซื้อ")}</div></div><div class="sec">แผน 7 วัน</div>${rows}<p class="xs muted" style="margin-top:10px">เป็นไอเดียคร่าวๆ ปรับตามที่ชอบได้เสมอ</p>` };
 };
 ACT.plre = () => { makePlan(); rerenderSub(); };
 SUBS.letter = () => {

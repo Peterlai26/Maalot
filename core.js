@@ -77,7 +77,7 @@ function blank() {
     claimed: {}, del: {}, moods: {}, streak: { last: "", n: 0, best: 0 }, cheat: null, plan: null, shop: {}, nights: 0
   };
 }
-function merge(d) { const b = blank(); const o = Object.assign({}, b, d || {}); o.look = Object.assign({}, b.look, (d && d.look) || {}); o.prof = Object.assign({}, b.prof, (d && d.prof) || {}); o.streak = Object.assign({}, b.streak, (d && d.streak) || {}); return o; }
+function merge(d) { const b = blank(); const o = Object.assign({}, b, d || {}); o.look = Object.assign({}, b.look, (d && d.look) || {}); o.prof = Object.assign({}, b.prof, (d && d.prof) || {}); o.streak = Object.assign({}, b.streak, (d && d.streak) || {}); /* แผนมื้อเคยเก็บใน S.plan ซึ่งชนกับแผนออกกำลังกาย: ย้ายไป S.mealplan */ if (o.plan && o.plan.days && o.plan.days[0] && o.plan.days[0].b !== undefined) { o.mealplan = o.mealplan || o.plan; o.plan = null; } return o; }
 function persistLocal() { try { localStorage.setItem("wl_state_v1", JSON.stringify(S)); } catch (e) { } }
 function save() {
   S.upd = Date.now(); persistLocal(); clearTimeout(saveT);

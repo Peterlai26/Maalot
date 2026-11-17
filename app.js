@@ -195,6 +195,8 @@ function ifStrip() {
   const L = m.live(), C = 2 * Math.PI * 21;
   return `<button class="ifstrip" data-act="sub" data-n="iff"><span class="ifs-bg" aria-hidden="true"><i></i><i></i><i></i></span><span class="ifs-ic"><svg viewBox="0 0 50 50" aria-hidden="true"><circle class="ibb" cx="25" cy="25" r="21"/><circle class="ibf" cx="25" cy="25" r="21" style="stroke-dasharray:${C.toFixed(1)};stroke-dashoffset:${(C * (1 - Math.max(0, Math.min(100, L.pct)) / 100)).toFixed(1)}"/></svg><b>IF</b></span><span class="ifs-t"><b>โหมด IF</b><span>${L.line}</span></span><span class="ifs-go">${ic("back", 18)}</span></button>`;
 }
+/* สถานะว่างที่มีชีวิต: ไอคอนลอย ข้อความอธิบาย และปุ่มทำต่อ (ใช้ได้ทุกหน้า) */
+function emptyState(icn, title, sub, act) { return `<div class="empty2"><span class="e2-ic">${ic(icn, 30)}</span><b>${title}</b><span>${sub}</span>${act || ""}</div>`; }
 function lgExtra(isF, tot) {
   if (isF) {
     const k = LG.when === "yest" ? addDays(todayKey(), -1) : todayKey(), i = dayInfo(k), tgt = targetOn(k) + i.wk, after = i.eaten + tot, pct = Math.max(0, Math.min(100, Math.round(after / Math.max(1, tgt) * 100))), over = after > tgt;
@@ -392,11 +394,12 @@ ACT.wsave = () => {
 };
 ACT.delw = (a) => { S.weights = S.weights.filter(x => x.d !== a.dataset.d); (S.del = S.del || {})["wt:" + a.dataset.d] = Date.now(); save(); rerenderSub(); };
 SUBS.water = () => {
-  const k = todayKey(), n = S.water[k] || 0, sl = S.sleep[k] || 0;
+  const k = todayKey(), n = S.water[k] || 0, sl = S.sleep[k] || 0, pct = Math.round(n / 8 * 100);
+  const wmsg = n >= 8 ? "ครบ 8 แก้วแล้ว เก่งมาก!" : n >= 5 ? "ใกล้ครบแล้ว อีก " + (8 - n) + " แก้ว" : n > 0 ? "เริ่มดีแล้ว ดื่มต่ออีกนิด" : "ยังไม่ได้ดื่มเลย แตะแก้วเพื่อเริ่ม";
+  const smsg = !sl ? "เลือกชั่วโมงที่นอนเมื่อคืน" : sl >= 7 ? "นอนเพียงพอ ร่างกายฟื้นตัวดี" : sl >= 6 ? "ใกล้พอแล้ว คืนนี้ลองนอนเร็วขึ้นอีกหน่อย" : "นอนน้อยไปหน่อย อาจหิวง่ายขึ้นวันนี้";
   return {
-    title: "น้ำและการนอน", html: `<div class="sec" style="margin-top:0">น้ำวันนี้ ${n} / 8 แก้ว</div><div class="row wrap">${[1, 2, 3, 4, 5, 6, 7, 8].map(i => `<button class="glass ${n >= i ? "on" : ""}" data-act="wset" data-n="${i}" aria-label="แก้วที่ ${i}"></button>`).join("")}</div>
-<div class="sec">เมื่อคืนนอนกี่ชั่วโมง</div><div class="row wrap">${[4, 5, 6, 7, 8, 9, 10].map(h => `<button class="btn sm ${sl === h ? "sel" : ""}" data-act="sleepset" data-h="${h}">${h} ชม.</button>`).join("")}</div>
-<p class="xs muted" style="margin-top:12px">นอนไม่พอทำให้หิวง่ายขึ้น ลองให้ได้ 7 ชั่วโมงขึ้นไป</p>`
+    title: "น้ำและการนอน", html: `<div class="card watank"><div class="wt-glass" role="img" aria-label="น้ำ ${n} จาก 8 แก้ว"><i class="wt-fill" style="height:${pct}%"></i><span class="wt-n">${n}<small>/8</small></span></div><div class="wt-t"><b>${wmsg}</b><span class="xs muted">แตะแก้วเพื่อบันทึก แตะซ้ำเพื่อลด</span><div class="wglasses">${[1, 2, 3, 4, 5, 6, 7, 8].map(i => `<button class="glass ${n >= i ? "on" : ""}" style="--i:${i}" data-act="wset" data-n="${i}" aria-label="แก้วที่ ${i}"></button>`).join("")}</div></div></div>
+<div class="card sleepcard"><div class="sl-h"><span class="sl-ic">${ic("bed", 22)}</span><div class="grow"><b>เมื่อคืนนอนกี่ชั่วโมง</b><span class="xs muted">${smsg}</span></div></div><div class="sl-row">${[4, 5, 6, 7, 8, 9, 10].map(h => `<button class="slb${sl === h ? " on" : ""}" data-act="sleepset" data-h="${h}"><b>${h}</b><small>ชม.</small></button>`).join("")}</div></div>`
   };
 };
 ACT.wset = (a) => { const k = todayKey(), i = +a.dataset.n; S.water[k] = (S.water[k] === i) ? i - 1 : i; if (S.water[k] === 8) { earn(2); toast("ครบ 8 แก้วแล้ว"); } save(); rerenderSub(); };
