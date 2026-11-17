@@ -1,5 +1,6 @@
 /* แกนกลาง: ไอคอน ข้อมูลผู้ใช้ การคำนวณ การตีความข้อความ */
 const ICONS = {
+  bell: '<path d="M6 17V11a6 6 0 0112 0v6l1.5 2h-15z"/><path d="M10 21a2 2 0 004 0"/>',
   home: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
   chart: '<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',

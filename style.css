@@ -1155,3 +1155,8 @@ input:not([type]), input[type="text"]:not(.bare), input[type="number"]:not(.bare
 .plpl { display: flex; flex-direction: column; } .plpi { display: flex; align-items: center; gap: 8px; padding: 13px 4px; border-bottom: 1px solid var(--line); background: none; text-align: left; color: var(--ink); font-size: 14.5px; } .plpi[hidden] { display: none; } .plpi.cur { color: var(--accent); font-weight: 700; } .plpi:active { background: var(--soft); }
 .plm-ch { font-size: 22px; color: var(--muted); line-height: 1; }
 .plm-b, .plm-r, .plpi { border: 0; font-family: inherit; } .plpi { border-bottom: 1px solid var(--line); border-radius: 0; width: 100%; }
+.nask { text-align: center; } .nask h2 { margin: 12px 0 6px; } .nask p { margin-bottom: 16px; }
+.nask-ic { position: relative; display: inline-grid; place-items: center; width: 72px; height: 72px; border-radius: 24px; background: var(--soft); color: var(--accent); } .nask-ic svg { animation: nbell 2.4s ease-in-out infinite; transform-origin: 50% 10%; }
+.nask-ic i { position: absolute; top: 14px; right: 16px; width: 12px; height: 12px; border-radius: 50%; background: #E8579A; box-shadow: 0 0 0 3px var(--soft); animation: gmping 1.8s ease-out infinite; }
+@keyframes nbell { 0%, 60%, 100% { transform: rotate(0); } 10% { transform: rotate(14deg); } 20% { transform: rotate(-12deg); } 30% { transform: rotate(8deg); } 40% { transform: rotate(-6deg); } }
+@media (prefers-reduced-motion: reduce) { .nask-ic svg, .nask-ic i { animation: none !important; } }
