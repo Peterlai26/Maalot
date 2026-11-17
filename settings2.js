@@ -20,7 +20,7 @@ function setHead() {
   return `<div class="setprof"><div class="setav"><svg viewBox="-62 -204 124 130" role="img" aria-label="ตัวละคร">${figure(S.look, "happy", rx)}</svg></div><div class="grow"><b>${esc(S.name || "น้องก้อน")}</b><span>เป้าวันนี้ ${fmtN(tgt)} kcal</span><span class="setchips"><i>${ic("flame", 13)}${S.streak.n || 0} วัน</i><i>${ic("coin", 13)}${S.coins}</i></span></div><button class="btn sm" data-act="sub" data-n="wardrobe">แต่งตัว</button></div>`;
 }
 SUBS.settings = () => {
-  const p = S.prof, md = S.mode || "auto", c = typeof remCfg === "function" ? remCfg() : { on: false };
+  const p = S.prof, md = S.mode || "light", c = typeof remCfg === "function" ? remCfg() : { on: false };
   const sexT = p.sex === "m" ? "ชาย" : "หญิง", bk = S.lastBackup ? "สำรองล่าสุด " + new Date(S.lastBackup).toLocaleDateString("th-TH", { day: "numeric", month: "short" }) : "ยังไม่เคยสำรอง";
   const modes = [["auto", "ตามเครื่อง", "phone"], ["light", "สว่าง", "sun"], ["dark", "มืด", "moon"]];
   return {

@@ -93,7 +93,7 @@ ACT.onb3 = () => {
 /* ---------- หน้าแรก ---------- */
 function baseMood(now, info) {
   const h = now.getHours();
-  if ((h >= 23 || h < 5) && S.mode !== "light") return "sleepy";
+  if ((h >= 23 || h < 5) && (S.mode || "light") !== "light") return "sleepy";
   if (info.works.length) return "proud";
   if (info.logged && h >= 17 && info.eaten < floorKcal() * 0.45) return "hungry";
   return "happy";
@@ -144,7 +144,7 @@ function renderHome() {
   const now = new Date(), h = now.getHours(), per = periodOf(h), tk = todayKey();
   const info = dayInfo(tk), tgt = targetOn(tk), rem = tgt + info.wk - info.eaten;
   const w = estW(), rx = shapeRx(w), mood = fx || baseMood(now, info);
-  const md = S.mode || "auto", sper = md === "dark" ? "night" : md === "light" ? (per === "night" ? "noon" : per) : per, isDark = document.documentElement.dataset.theme === "dark";
+  const md = S.mode || "light", sper = md === "dark" ? "night" : md === "light" ? (per === "night" ? "noon" : per) : per, isDark = document.documentElement.dataset.theme === "dark";
   const sp = speech(mood, per, info, h);
   const g = per === "morning" ? "อรุณสวัสดิ์" : per === "noon" ? "สวัสดีตอนบ่าย" : per === "evening" ? "สวัสดีตอนเย็น" : "สวัสดีตอนค่ำ";
   const pct = clamp(Math.round(info.eaten / Math.max(1, tgt + info.wk) * 100), 0, 100);
