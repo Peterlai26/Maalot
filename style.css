@@ -755,3 +755,27 @@ button.item { background: none; border: 0; border-bottom: 1px solid var(--line);
 @keyframes pcring { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(1.6); opacity: 0; } }
 @keyframes pcnudge { 0%, 100% { transform: rotate(180deg) translateX(0); } 50% { transform: rotate(180deg) translateX(-5px); } }
 @media (prefers-reduced-motion: reduce) { .progcta, .progcta::after, .pc-ic, .pc-ic::before, .pc-go svg { animation: none; } }
+/* ---------- คลังท่า: ภาพเล็กทางซ้าย และแผนที่กล้ามเนื้อของน้องเกี๊ยว ---------- */
+.rt { flex: none; width: 64px; height: 64px; border-radius: 16px; background: #FFF1E3; display: block; }
+.rt.ph { display: grid; place-items: center; background: var(--soft); color: var(--accent); }
+.mmcard { padding: 12px 12px 10px; margin-bottom: 12px; }
+.mmhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 0 4px 2px; }
+svg.mmap { display: block; width: 100%; max-width: 250px; height: auto; margin: 0 auto; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }
+.mmseg { margin: 8px auto 0; max-width: 250px; }
+.mz { cursor: pointer; outline: none; }
+.mz .r { fill: var(--accent); fill-opacity: .2; stroke: transparent; stroke-width: 7px; paint-order: stroke; pointer-events: all; transform-box: fill-box; transform-origin: center; animation: mzidle 3.2s ease-in-out var(--d, 0s) infinite; transition: fill-opacity .2s; }
+.mz:focus-visible .r { fill-opacity: .45; }
+.mz.on .r { fill-opacity: .82; animation: mzflex 1.1s ease-in-out infinite; filter: drop-shadow(0 0 3px var(--accent)); }
+.mbob { animation: mmbob 2.6s ease-in-out infinite; }
+.mheart .r { fill: var(--accent); fill-opacity: .16; }
+.mheart .hi { fill: var(--accent); fill-opacity: .55; transform-box: fill-box; transform-origin: center; animation: mmbeat 1.3s ease-in-out infinite; pointer-events: none; }
+.mheart.on .hi { fill-opacity: 1; }
+.mtxt { font: 600 10px var(--font-body); fill: var(--muted); pointer-events: none; }
+.mmsel { padding: 4px 0 6px; } .mmsel .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.mmsel .chip.on { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+@keyframes mzidle { 0%, 100% { fill-opacity: .16; } 50% { fill-opacity: .34; } }
+@keyframes mzflex { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.09); } }
+@keyframes mmbob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes mmbeat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.22); } 30% { transform: scale(1); } 45% { transform: scale(1.14); } }
+@media (prefers-reduced-motion: reduce) { .mz .r, .mz.on .r, .mbob, .mheart .hi { animation: none; } .mz.on .r { fill-opacity: .82; } }
+.mview[hidden] { display: none; }

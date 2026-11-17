@@ -22,8 +22,9 @@ function openSheet(html) { const s = $("#sheet"); s.innerHTML = '<div class="pan
 function closeSheet() { $("#sheet").hidden = true; }
 function openModal(html) { const m = $("#modal"); m.innerHTML = '<div class="panel">' + html + "</div>"; m.hidden = false; }
 function closeModal() { $("#modal").hidden = true; }
-function openSub(name, arg) { subStack.push({ name, arg }); renderSub(); }
-function closeSub() { subStack.pop(); if (subStack.length) renderSub(); else { $("#sub").hidden = true; refresh(); } }
+/* จำตำแหน่งที่เลื่อนไว้ของแต่ละหน้า ตอนกดกลับจะกลับมาค้างตรงที่เลือกไว้ ไม่เด้งขึ้นบนสุด */
+function openSub(name, arg) { const el = $("#sub"); if (subStack.length && !el.hidden) subStack[subStack.length - 1].y = el.scrollTop; subStack.push({ name, arg }); renderSub(); }
+function closeSub() { subStack.pop(); if (subStack.length) { const y = subStack[subStack.length - 1].y || 0; renderSub(); if (y) $("#sub").scrollTop = y; } else { $("#sub").hidden = true; refresh(); } }
 function closeAllSubs() { subStack = []; $("#sub").hidden = true; refresh(); }
 function renderSub() {
   const top = subStack[subStack.length - 1], def = SUBS[top.name](top.arg || {});

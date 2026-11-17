@@ -175,7 +175,27 @@ const RIG = (() => {
     };
     requestAnimationFrame(frame);
   }
-  return { mount, has: k => !!EX[k], period: k => EX[k] && EX[k].period, html: (k, extra) => `<div class="stage rigstage"><canvas class="rig" data-rig="${k}" role="img" aria-label="ตัวละครก้อนเกี๊ยวทำท่าตัวอย่าง"></canvas>${extra || ""}</div>` };
+  /* ภาพเล็กในรายการ: วาดทีละหลายภาพด้วยลูปเดียว วาดเฉพาะที่เห็นอยู่บนจอ และจำกัดความถี่ให้เครื่องไม่ร้อน */
+  const TH = { set: new Set(), raf: 0, io: null, last: 0 }, reduceM = () => matchMedia("(prefers-reduced-motion:reduce)").matches;
+  function drawThumb(cv, now, still) { const ex = cv.dataset.ex, per = (EX[ex] || EX.squat).period; scene(cv, ex, { tm: still ? per * .4 : (now - cv._t0) / 1000, nodumb: cv.dataset.nd ? 1 : 0 }, now); }
+  function thumbLoop(now) {
+    TH.raf = 0; for (const cv of TH.set) if (!cv.isConnected) { TH.set.delete(cv); if (TH.io) TH.io.unobserve(cv); }
+    if (!TH.set.size) return;
+    if (now - TH.last > 50) { TH.last = now; for (const cv of TH.set) if (cv._vis) drawThumb(cv, now, false); }
+    TH.raf = requestAnimationFrame(thumbLoop);
+  }
+  function thumbs(root) {
+    if (!root) return; const dpr = Math.min(2, devicePixelRatio || 1), still = reduceM();
+    root.querySelectorAll("canvas.rigthumb").forEach(cv => {
+      if (cv._on || !EX[cv.dataset.ex]) return; cv._on = 1; cv._dpr = dpr; cv.width = cv.height = Math.round(64 * dpr); cv._t0 = performance.now() - Math.random() * 1500; cv._vis = false;
+      drawThumb(cv, performance.now(), true);
+      if (still) return;
+      if (!TH.io) TH.io = new IntersectionObserver(es => es.forEach(en => { en.target._vis = en.isIntersecting; }), { rootMargin: "80px" });
+      TH.io.observe(cv); TH.set.add(cv);
+    });
+    if (TH.set.size && !TH.raf) TH.raf = requestAnimationFrame(thumbLoop);
+  }
+  return { mount, thumbs, has: k => !!EX[k], period: k => EX[k] && EX[k].period, html: (k, extra) => `<div class="stage rigstage"><canvas class="rig" data-rig="${k}" role="img" aria-label="ตัวละครก้อนเกี๊ยวทำท่าตัวอย่าง"></canvas>${extra || ""}</div>` };
 })();
 
 /* ต่อเข้าคลังท่า และหน้า "ออกกำลังด้วยกัน" */
@@ -183,14 +203,27 @@ const RIG = (() => {
   const oLib = SUBS.lib, oTrain = SUBS.train;
   let mineOnly = false;
   const tags = e => `${["", "เริ่มต้น", "ปานกลาง", "ชำนาญ"][e.lvl] || ""}${e.eq.length ? " · " + e.eq.map(k => (EQN[k] || k).split(" ")[0]).join(" ") : " · ไม่ใช้อุปกรณ์"}${e.out ? " · กลางแจ้ง" : ""}`;
-  const libRow = e => `<button class="item" style="width:100%;text-align:left" data-act="sub" data-n="lib" data-arg="${e.id}"><div class="grow"><b>${e.n}</b><div class="xs muted">${e.sets ? e.sets + " เซ็ต × " : ""}${e.reps ? e.reps + " ครั้ง" : e.secs ? e.secs + " วินาที" : e.mins ? e.mins + " นาที" : ""}${e.mus ? " · " + esc(e.mus) : ""}</div><div class="xs muted">${tags(e)}</div></div>${ic("play", 18)}</button>`;
+  const thumbOf = e => e.rig && RIG.has(e.rig) ? `<canvas class="rigthumb rt" data-ex="${e.rig}"${e.noDumb ? ' data-nd="1"' : ""} role="img" aria-label="ภาพตัวอย่างท่า${esc(e.n)}"></canvas>` : `<span class="rt ph" aria-hidden="true">${ic("dumbbell", 26)}</span>`;
+  const libRow = e => { const m = typeof MMAP !== "undefined" ? MMAP.names(e) : e.mus; return `<button class="item" style="width:100%;text-align:left" data-act="sub" data-n="lib" data-arg="${e.id}">${thumbOf(e)}<div class="grow"><b>${e.n}</b><div class="xs muted">${e.sets ? e.sets + " เซ็ต × " : ""}${e.reps ? e.reps + " ครั้ง" : e.secs ? e.secs + " วินาที" : e.mins ? e.mins + " นาที" : ""}${m ? " · " + esc(m) : ""}</div><div class="xs muted">${tags(e)}</div></div>${ic("play", 18)}</button>`; };
+  /* รายการท่า: ไม่ได้เลือกส่วนไหนจะแบ่งตามหมวด ถ้าเลือกส่วนของร่างกายจะเรียงท่าที่ตรงมากที่สุดก่อน */
+  const ORDER = ["ขาและก้น", "อก แขน ไหล่", "หลัง", "แกนกลางลำตัว", "คาร์ดิโอ", "ยืดเหยียด"];
+  const okOf = () => { const F = S.fit; return e => !mineOnly || !F || (FIT.has(e, F) && !e.lim.some(l => F.lim.includes(l))); };
+  function resHtml() {
+    const ok = okOf(), M = typeof MMAP !== "undefined" ? MMAP : null;
+    if (M && M.sel.size) {
+      const chips = [...M.sel].map(k => `<button class="chip on" data-act="mz" data-m="${k}" aria-label="เอา${esc(M.name(k))}ออก">${esc(M.name(k))} ${ic("x", 12)}</button>`).join("");
+      const hit = LIB.filter(ok).map(e => ({ e, n: M.score(e) })).filter(x => x.n > 0).sort((a, b) => b.n - a.n || a.e.lvl - b.e.lvl);
+      return `<div class="mmsel"><div class="row between"><b>ท่าที่ตรงกับที่เลือก ${hit.length} ท่า</b><button class="linkbtn" data-act="mzclear">ล้างทั้งหมด</button></div><div class="chips">${chips}</div></div>` + (hit.length ? hit.map(x => libRow(x.e)).join("") : `<p class="muted sm" style="padding:14px 0">ไม่มีท่าที่ตรง ลองเอาตัวกรองอุปกรณ์ออก หรือเลือกส่วนอื่นเพิ่ม</p>`);
+    }
+    return ORDER.map(c => { const l = LIB.filter(e => e.cat === c && ok(e)); return l.length ? `<div class="sec" style="margin-top:14px">${c} (${l.length})</div>` + l.map(libRow).join("") : ""; }).join("");
+  }
+  window.libRes = () => { const box = document.getElementById("libres"); if (!box) return; box.innerHTML = resHtml(); RIG.thumbs(box); };
   ACT.libmine = () => { mineOnly = !mineOnly; rerenderSub(); };
   SUBS.lib = arg => {
     const id = arg && arg.id;
     if (!id || id === "work") {
-      const F = S.fit, order = ["ขาและก้น", "อก แขน ไหล่", "หลัง", "แกนกลางลำตัว", "คาร์ดิโอ", "ยืดเหยียด"], ok = e => !mineOnly || !F || (FIT.has(e, F) && !e.lim.some(l => F.lim.includes(l)));
-      const n = LIB.filter(ok).length;
-      return { title: "คลังท่าออกกำลัง " + LIB.length + " ท่า", html: `${F ? `<button class="fchip sm ${mineOnly ? "on" : ""}" data-act="libmine" aria-pressed="${mineOnly}">เฉพาะที่ฉันทำได้ตามอุปกรณ์ (${n})</button>` : `<button class="btn block" data-act="sub" data-n="fit">ตั้งค่าโปรแกรมเพื่อกรองตามอุปกรณ์</button>`}` + order.map(c => { const l = LIB.filter(e => e.cat === c && ok(e)); return l.length ? `<div class="sec" style="margin-top:14px">${c} (${l.length})</div>` + l.map(libRow).join("") : ""; }).join("") };
+      const F = S.fit, ok = okOf(), n = LIB.filter(ok).length;
+      return { title: "คลังท่าออกกำลัง " + LIB.length + " ท่า", after: el => RIG.thumbs(el.querySelector("#libres")), html: `${typeof MMAP !== "undefined" ? MMAP.html() : ""}${F ? `<button class="fchip sm ${mineOnly ? "on" : ""}" data-act="libmine" aria-pressed="${mineOnly}">เฉพาะที่ฉันทำได้ตามอุปกรณ์ (${n})</button>` : `<button class="btn block" data-act="sub" data-n="fit">ตั้งค่าโปรแกรมเพื่อกรองตามอุปกรณ์</button>`}<div id="libres">${resHtml()}</div>` };
     }
     const r = oLib(arg), e = LIB.find(x => x.id === id);
     if (e && r && r.html) {
