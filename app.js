@@ -243,15 +243,23 @@ ACT.lgai = async () => {
   const unk = LG.items.filter(x => !x.known && x.n.trim()); if (!unk.length) { toast("พิมพ์ชื่ออาหารก่อนนะ"); return; }
   LG.busy = true; rerenderSub();
   try { const res = await claudeEstimate(unk.map(x => x.n).join(", ")); LG.items = LG.items.filter(x => x.known).concat(res); }
-  catch (e) { toast(e.message === "nosample" ? "ตอนนี้ให้ Claude ประเมินไม่ได้ กรอกแคลอรี่เองได้เลย" : "ประเมินไม่สำเร็จ ลองกรอกเองนะ"); }
+  catch (e) { toast(estMsg(e, false)); }
   LG.busy = false; rerenderSub();
 };
+function estMsg(e, photo) {
+  const m = e && e.message;
+  if (m === "limit") return "วันนี้ใช้ AI ประเมินครบโควตาแล้ว พรุ่งนี้ลองใหม่ หรือพิมพ์แคลอรี่เองได้เลย";
+  if (m === "busy") return "ตอนนี้มีคนใช้ AI เยอะ ลองใหม่พรุ่งนี้ หรือพิมพ์ชื่ออาหารแทนได้";
+  if (m === "net") return "เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองอีกครั้ง";
+  if (m === "nosample" || m === "noimg") return photo ? "ตอนนี้ยังให้ AI อ่านรูปไม่ได้ พิมพ์ชื่ออาหารแทนได้เลย" : "ตอนนี้ให้ AI ประเมินไม่ได้ กรอกแคลอรี่เองได้เลย";
+  return photo ? "อ่านรูปไม่ชัด พิมพ์ชื่ออาหารแทนได้นะ" : "ประเมินไม่สำเร็จ ลองกรอกเองนะ";
+}
 async function handlePhoto(file) {
   if (!file) return;
   if (!LG || !$("#sub") || $("#sub").hidden) { LG = { tab: "food", text: "", items: [], when: "today", busy: false }; subStack = [{ name: "log", arg: {} }]; }
   LG.tab = "food"; LG.busy = true; renderSub();
   try { const b = await shrinkImage(file); const res = await claudeEstimate(null, b); if (!res.length) throw new Error("empty"); LG.items = res; toast("ดูรูปแล้ว ลองตรวจตัวเลขอีกที"); }
-  catch (e) { toast(e.message === "nosample" || e.message === "noimg" ? "ถ่ายรูปได้แล้ว แต่ตอนนี้ยังให้ AI อ่านรูปไม่ได้ พิมพ์ชื่ออาหารแทนได้เลย" : "อ่านรูปไม่ชัด พิมพ์ชื่ออาหารแทนได้นะ"); }
+  catch (e) { toast(estMsg(e, true)); }
   LG.busy = false; renderSub();
 }
 ACT.lgsave = () => {

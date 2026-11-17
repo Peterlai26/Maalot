@@ -236,15 +236,27 @@ function workLabel(it) {
 }
 
 /* ---------- ถาม Claude (ประเมินอาหารที่ไม่รู้จักหรือจากรูป) ---------- */
+const estApi = () => (typeof PUSH_API !== "undefined" && PUSH_API) ? PUSH_API + "/estimate" : "";
+function blobB64(b) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1] || ""); r.onerror = rej; r.readAsDataURL(b); }); }
 async function claudeEstimate(text, blob) {
   const sample = (typeof claude !== "undefined" && claude && claude.use) ? await claude.use("sample") : null;
-  if (!sample) throw new Error("nosample");
-  const opts = { modelTier: "quick" };
-  if (blob) { const lim = await sample.limits(); if (!lim || !lim.images) throw new Error("noimg"); opts.images = [blob]; }
-  const task = blob ? "ดูรูปอาหารที่แนบมา แล้วประเมินแคลอรี่ของแต่ละรายการที่เห็นตามปริมาณในรูป" : "ประเมินแคลอรี่ของอาหารต่อไปนี้ตามปริมาณปกติที่คนไทยกิน: " + text;
-  const r = await sample(task + '\nตอบเป็น JSON array เท่านั้น ไม่มีข้อความอื่น รูปแบบ [{"name":"ชื่อภาษาไทยสั้นๆ","kcal":ตัวเลขรวมต่อรายการ}] ถ้าไม่แน่ใจให้ประเมินแบบกลางๆ', opts);
-  const m = (r.text || "").match(/\[[\s\S]*\]/); if (!m) throw new Error("parse");
-  const arr = JSON.parse(m[0]);
+  let arr;
+  if (sample) {
+    const opts = { modelTier: "quick" };
+    if (blob) { const lim = await sample.limits(); if (!lim || !lim.images) throw new Error("noimg"); opts.images = [blob]; }
+    const task = blob ? "ดูรูปอาหารที่แนบมา แล้วประเมินแคลอรี่ของแต่ละรายการที่เห็นตามปริมาณในรูป" : "ประเมินแคลอรี่ของอาหารต่อไปนี้ตามปริมาณปกติที่คนไทยกิน: " + text;
+    const r = await sample(task + '\nตอบเป็น JSON array เท่านั้น ไม่มีข้อความอื่น รูปแบบ [{"name":"ชื่อภาษาไทยสั้นๆ","kcal":ตัวเลขรวมต่อรายการ}] ถ้าไม่แน่ใจให้ประเมินแบบกลางๆ', opts);
+    const m = (r.text || "").match(/\[[\s\S]*\]/); if (!m) throw new Error("parse");
+    arr = JSON.parse(m[0]);
+  } else {
+    const api = estApi(); if (!api) throw new Error("nosample");
+    let resp;
+    try { resp = await fetch(api, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(blob ? { image: await blobB64(blob), mime: blob.type || "image/jpeg" } : { text }) }); }
+    catch (e) { throw new Error("net"); }
+    const j = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(j.error === "limit" || j.error === "busy" ? j.error : j.error === "not_configured" ? "nosample" : "parse");
+    arr = (j.items || []).map(x => ({ name: x.name, kcal: x.kcal }));
+  }
   return arr.filter(x => x && x.name && isFinite(+x.kcal)).map(x => ({ n: String(x.name), k1: Math.round(+x.kcal), q: 1, known: true, ai: true }));
 }
 function shrinkImage(file) {

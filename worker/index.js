@@ -69,6 +69,32 @@ function cleanPrefs(p) {
 }
 const okEndpoint = (e) => { try { const u = new URL(e); return u.protocol === "https:" && PUSH_HOSTS.some((r) => r.test(u.hostname)) && e.length < 1000; } catch (_) { return false; } };
 
+
+/* ---------- ประเมินแคลอรี่ด้วย Claude (รูปหรือข้อความ) ---------- */
+const EST_MODEL = "claude-haiku-5-5", EST_PER_IP = 8, EST_GLOBAL = 250;
+async function estimate(req, env) {
+  if (!env.ANTHROPIC_API_KEY) return J(req, { error: "not_configured" }, 503);
+  let b; try { const t = await req.text(); if (t.length > 2500000) throw 0; b = JSON.parse(t); } catch (_) { return J(req, { error: "bad json" }, 400); }
+  const text = typeof b.text === "string" ? b.text.trim().slice(0, 200) : "", img = typeof b.image === "string" ? b.image : "";
+  const mime = ["image/jpeg", "image/png", "image/webp"].includes(b.mime) ? b.mime : "image/jpeg";
+  if (!text && !img) return J(req, { error: "empty" }, 400);
+  if (img && (img.length > 2000000 || !/^[A-Za-z0-9+/=]+$/.test(img))) return J(req, { error: "bad image" }, 400);
+  const day = new Date().toISOString().slice(0, 10), ip = req.headers.get("CF-Connecting-IP") || "x", kIp = "rl:" + day + ":" + (await sha(ip)).slice(0, 16), kAll = "rlg:" + day;
+  const [nIp, nAll] = await Promise.all([env.SUBS.get(kIp), env.SUBS.get(kAll)]);
+  if ((+nAll || 0) >= EST_GLOBAL) return J(req, { error: "busy" }, 429);
+  if ((+nIp || 0) >= EST_PER_IP) return J(req, { error: "limit" }, 429);
+  await Promise.all([env.SUBS.put(kIp, String((+nIp || 0) + 1), { expirationTtl: 172800 }), env.SUBS.put(kAll, String((+nAll || 0) + 1), { expirationTtl: 172800 })]);
+  const task = (img ? "ดูรูปอาหารที่แนบมา แล้วประเมินแคลอรี่ของแต่ละรายการที่เห็นตามปริมาณในรูป" : "ประเมินแคลอรี่ของอาหารต่อไปนี้ตามปริมาณปกติที่คนไทยกิน: " + text) + '\nตอบเป็น JSON array เท่านั้น ไม่มีข้อความอื่น รูปแบบ [{"name":"ชื่อภาษาไทยสั้นๆ","kcal":ตัวเลขรวมต่อรายการ}] ถ้าไม่ใช่อาหารให้ตอบ [] ถ้าไม่แน่ใจให้ประเมินแบบกลางๆ';
+  const content = img ? [{ type: "image", source: { type: "base64", media_type: mime, data: img } }, { type: "text", text: task }] : task;
+  let r; try { r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model: EST_MODEL, max_tokens: 500, messages: [{ role: "user", content }] }) }); } catch (_) { return J(req, { error: "upstream" }, 502); }
+  if (!r.ok) return J(req, { error: "upstream", status: r.status }, 502);
+  const j = await r.json().catch(() => null), out = j && j.content && j.content[0] && j.content[0].text || "", m = out.match(/\[[\s\S]*\]/);
+  let arr; try { arr = JSON.parse(m ? m[0] : "null"); } catch (_) { arr = null; }
+  if (!Array.isArray(arr)) return J(req, { error: "parse" }, 502);
+  const items = arr.filter((x) => x && typeof x.name === "string" && isFinite(+x.kcal) && +x.kcal >= 0 && +x.kcal < 5000).slice(0, 8).map((x) => ({ name: x.name.slice(0, 40), kcal: Math.round(+x.kcal) }));
+  return J(req, { items });
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -76,6 +102,7 @@ export default {
     if (!ALLOWED_ORIGINS.includes(req.headers.get("Origin"))) return new Response("forbidden", { status: 403 });
     if (req.method === "GET" && url.pathname === "/vapid") return J(req, { key: env.VAPID_PUBLIC });
     if (req.method !== "POST") return J(req, { error: "not found" }, 404);
+    if (url.pathname === "/estimate") return estimate(req, env);
     let b; try { const t = await req.text(); if (t.length > 4000) throw 0; b = JSON.parse(t); } catch (_) { return J(req, { error: "bad json" }, 400); }
     const ep = b.sub ? b.sub.endpoint : b.endpoint;
     if (!okEndpoint(ep)) return J(req, { error: "bad endpoint" }, 400);
