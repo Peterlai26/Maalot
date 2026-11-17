@@ -112,7 +112,7 @@ renderHub = function () {
   else list = MODES.filter(m => m.cat === hubCat);
   const on = !q && hubCat !== "rec";
   const bar = `<div class="hubtop"><div class="hubsearch"><span class="muted">${ic("search", 18)}</span><input id="hubq" type="text" placeholder="ค้นหา เช่น หิว น้ำหนัก เมนู" value="${esc(hubQ)}" aria-label="ค้นหาโหมด"/></div><button class="hubfb${on ? " on" : ""}" data-act="hubfilter" aria-label="กรองโหมด">${ic("sliders", 20)}${on ? "<i></i>" : ""}</button></div>${on ? `<button class="hubact" data-act="hubcat" data-c="rec">${ic(HUB_CI[hubCat] || "grid", 14)}${esc(hubCatName(hubCat))}<span>✕</span></button>` : ""}`;
-  $("#v-hub").innerHTML = `<div class="top"><div><h1>ทุกโหมด</h1></div></div>${bar}${home ? feats.map(featCard).join("") + hubQuick() : ""}${list.length ? `<div class="hgrid">${list.map((m, i) => modeTile(m, i)).join("")}</div>` : '<p class="muted" style="margin:24px 4px;text-align:center">ไม่พบ ลองคำอื่น เช่น น้ำ กราฟ ตัวละคร</p>'}`;
+  $("#v-hub").innerHTML = `<div class="top"><div><h1>ทุกโหมด</h1></div></div>${bar}${home ? feats.map(featCard).join("") + hubQuick() : ""}${list.length ? `<div class="sec hubsec">${q ? "ผลการค้นหา" : esc(hubCatName(hubCat))} <span class="hubn">${list.length}</span></div><div class="hgrid">${list.map((m, i) => modeTile(m, i)).join("")}</div>` : '<p class="muted" style="margin:24px 4px;text-align:center">ไม่พบ ลองคำอื่น เช่น น้ำ กราฟ ตัวละคร</p>'}`;
   const inp = $("#hubq"); if (hubQ) { inp.focus(); inp.setSelectionRange(hubQ.length, hubQ.length); }
 };
 

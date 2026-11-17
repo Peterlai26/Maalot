@@ -1232,3 +1232,4 @@ input:not([type]), input[type="text"]:not(.bare), input[type="number"]:not(.bare
 .hfr.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--card)); } .hfr.on svg:last-child { color: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .hubact { animation: none !important; } }
 .hq-grid + .hgrid { margin-top: 14px; } .hfeat + .hq-grid { margin-top: 14px; } .hubact + .hgrid, .hubtop + .hgrid { margin-top: 14px; }
+.hq-grid + .hubsec, .hfeat + .hubsec { margin-top: 18px; } .hubact + .hubsec { margin-top: 12px; }
