@@ -839,3 +839,82 @@ input[type=password], input[type=email] { width: 100%; background: var(--card); 
 .rigtog { position: absolute; top: 8px; right: 8px; z-index: 2; display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(255, 255, 255, .78); box-shadow: 0 4px 12px -6px rgba(36, 25, 59, .5); backdrop-filter: blur(4px); }
 .rigtog button { border: 0; background: transparent; color: #6B6080; font: 600 12px var(--font-body); padding: 5px 11px; border-radius: 999px; cursor: pointer; transition: background .2s, color .2s; }
 .rigtog button.on { background: #6B3FC0; background: var(--accent); color: var(--accent-ink); }
+
+/* ======== ระบบโหมด: หัวหน้าโหมด หน้าแบบแท็บ ช่องโหมดเด่น ======== */
+/* หน้าย่อยทุกหน้าไล่ขึ้นมาทีละส่วนตอนเปิด (ไม่เล่นซ้ำตอนกดในหน้า) */
+#sub.enter:not(.dress) .inner > :not(.subhead) { animation: ptin .5s cubic-bezier(.2, .9, .3, 1) both; }
+#sub.enter:not(.dress) .inner > :nth-child(3) { animation-delay: .04s; } #sub.enter:not(.dress) .inner > :nth-child(4) { animation-delay: .08s; } #sub.enter:not(.dress) .inner > :nth-child(5) { animation-delay: .12s; }
+#sub.enter:not(.dress) .inner > :nth-child(6) { animation-delay: .16s; } #sub.enter:not(.dress) .inner > :nth-child(7) { animation-delay: .2s; } #sub.enter:not(.dress) .inner > :nth-child(n+8) { animation-delay: .24s; }
+/* หัวหน้าโหมด */
+.mhero { position: relative; overflow: hidden; isolation: isolate; display: flex; align-items: center; gap: 14px; padding: 16px; margin: 0 0 12px; border-radius: 24px; color: #fff; background-size: 220% 220%; animation: mhflow 9s ease-in-out infinite; box-shadow: 0 14px 26px -16px rgba(36, 25, 59, .55); }
+.mhero.amber, .hfeat.amber { background-image: linear-gradient(120deg, #FFB347, #F7882F, #FFB347); } .mhero.green { background-image: linear-gradient(120deg, #5CC48B, #2F9E69, #5CC48B); }
+.mhero.blue { background-image: linear-gradient(120deg, #6B8CF0, #4D6FE0, #6B8CF0); } .mhero.rose { background-image: linear-gradient(120deg, #F4709A, #E0547E, #F4709A); } .mhero.violet { background-image: linear-gradient(120deg, #8D6CF0, #6B3FC0, #8D6CF0); }
+.mh-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; } .mh-bg i, .hf-bg i { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, .16); animation: mhfloat 6s ease-in-out infinite; }
+.mh-bg i:nth-child(1) { width: 90px; height: 90px; right: -20px; top: -30px; } .mh-bg i:nth-child(2) { width: 46px; height: 46px; right: 70px; bottom: -16px; animation-delay: -2s; } .mh-bg i:nth-child(3) { width: 26px; height: 26px; right: 26px; bottom: 14px; animation-delay: -4s; }
+.mh-ic { position: relative; flex: none; width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .26); animation: mhbob 3s ease-in-out infinite; }
+.mh-ic::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .6); animation: pcring 2.4s ease-out infinite; }
+.mh-t { min-width: 0; display: flex; flex-direction: column; line-height: 1.3; } .mh-t b { font-size: 18px; font-weight: 700; } .mh-t span { font-size: 12.5px; opacity: .92; margin-top: 2px; }
+/* แท็บของหน้าที่รวมหลายโหมด */
+.mtabs { margin: 0 0 12px; } .mtabs button { transition: background .2s, transform .12s; min-width: 0; font-size: 14px; padding: 9px 6px; } .mtabs button:active { transform: scale(.95); }
+.mtabs button.on { box-shadow: 0 6px 14px -8px rgba(36, 25, 59, .5); color: var(--accent); }
+.mbody.swap { animation: mswap .38s cubic-bezier(.2, .9, .3, 1) both; }
+.mlock { text-align: center; padding: 26px 18px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.ml-ic { width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; background: var(--soft); color: var(--accent); animation: mhbob 2.4s ease-in-out infinite; }
+/* ช่องโหมดเด่นบนหน้าทุกโหมด */
+.hfeat { position: relative; overflow: hidden; isolation: isolate; display: flex; align-items: center; gap: 12px; width: 100%; margin: 14px 0 4px; padding: 22px 18px 20px; min-height: 156px; border: 0; border-radius: 30px; color: #fff; text-align: left; cursor: pointer; background-image: linear-gradient(125deg, #7B4FE0, #B14FD8 45%, #F0679B 80%, #FF9A5C); background-size: 220% 220%; animation: mhflow 8s ease-in-out infinite, hfglow 2.6s ease-in-out infinite; box-shadow: 0 20px 36px -16px #7B4FE0; transition: transform .12s; }
+.hfeat:active { transform: scale(.98); }
+.hfeat::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, .38) 50%, transparent 62%); transform: translateX(-130%); animation: pcshine 4s ease-in-out .8s infinite; }
+.hf-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.hf-bg i:nth-child(1) { width: 120px; height: 120px; right: -30px; top: -40px; } .hf-bg i:nth-child(2) { width: 60px; height: 60px; left: 40%; bottom: -24px; animation-delay: -1.5s; } .hf-bg i:nth-child(3) { width: 30px; height: 30px; left: 8px; top: 12px; animation-delay: -3s; } .hf-bg i:nth-child(4) { width: 20px; height: 20px; right: 120px; top: 22px; animation-delay: -4.5s; }
+.hf-tag { position: absolute; top: 12px; left: 16px; display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; background: rgba(255, 255, 255, .24); font-size: 11.5px; font-weight: 600; letter-spacing: .3px; }
+.hf-tag svg { animation: mhspin 3s linear infinite; }
+.hf-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding-top: 14px; } .hf-t { font-size: 26px; font-weight: 800; letter-spacing: .2px; line-height: 1.15; } .hf-line { font-size: 13.5px; opacity: .96; line-height: 1.4; }
+.hf-cta { margin-top: 10px; align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 8px 15px; border-radius: 999px; background: #fff; color: #6B3FC0; font-weight: 700; font-size: 14px; box-shadow: 0 8px 16px -8px rgba(36, 25, 59, .6); }
+.hf-cta svg { transform: rotate(180deg); animation: pcnudge 1.2s ease-in-out infinite; }
+.hf-ring { position: relative; flex: none; width: 96px; height: 96px; } .hf-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.hf-ring .rb { fill: none; stroke: rgba(255, 255, 255, .28); stroke-width: 7; } .hf-ring .rf { fill: none; stroke: #fff; stroke-width: 7; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(255, 255, 255, .85)); animation: hfring 1.3s cubic-bezier(.2, .9, .3, 1) both; }
+.hf-ic { position: absolute; inset: 0; display: grid; place-items: center; animation: mhbob 2.6s ease-in-out infinite; }
+.htile { position: relative; animation: ptin .45s cubic-bezier(.2, .9, .3, 1) both; animation-delay: calc(var(--i, 0) * .04s); }
+.htile.soon { opacity: .85; background: linear-gradient(110deg, var(--card) 30%, var(--soft) 50%, var(--card) 70%); background-size: 220% 100%; animation: ptin .45s both, soonshim 2.6s linear infinite; }
+.soonbadge, .tabsbadge { position: absolute; top: 10px; right: 10px; font-style: normal; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--soft); color: var(--accent); }
+.tabsbadge { top: auto; bottom: 10px; }
+@keyframes mhflow { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@keyframes mhfloat { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-10px, 8px); } }
+@keyframes mhbob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes mhspin { to { transform: rotate(360deg); } }
+@keyframes hfglow { 0%, 100% { box-shadow: 0 20px 36px -16px #7B4FE0; } 50% { box-shadow: 0 22px 44px -10px #B14FD8; } }
+@keyframes hfring { from { stroke-dashoffset: 213.6; } }
+@keyframes mswap { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+@keyframes soonshim { to { background-position: -220% 0; } }
+@media (prefers-reduced-motion: reduce) { .mhero, .mh-ic, .mh-ic::before, .mh-bg i, .hf-bg i, .hfeat, .hfeat::after, .hf-ring .rf, .hf-ic, .hf-tag svg, .hf-cta svg, .htile, .htile.soon, .ml-ic, .mbody.swap, #sub.enter:not(.dress) .inner > * { animation: none !important; } }
+
+/* นาฬิกา 24 ชั่วโมงของโหมด IF */
+.ifdialcard { display: flex; align-items: center; gap: 14px; padding: 12px 14px; margin: 10px 0; }
+.ifdial { flex: none; width: 150px; height: 150px; overflow: visible; }
+.ifdial .idt { fill: none; stroke: var(--soft); stroke-width: 16; } .ifdial .ide { fill: none; stroke: var(--green); stroke-width: 16; stroke-linecap: round; transition: stroke-dasharray .6s cubic-bezier(.2, .9, .3, 1), stroke-dashoffset .6s cubic-bezier(.2, .9, .3, 1); animation: ifdraw 1.1s cubic-bezier(.2, .9, .3, 1) both; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--green) 55%, transparent)); }
+.ifdial .idk line { stroke: var(--line); stroke-width: 1.4; stroke-linecap: round; } .ifdial .idk line.tb { stroke: var(--muted); stroke-width: 2; }
+.ifdial .idl text { font: 600 9px var(--font-body); fill: var(--muted); }
+.ifdial .idc { font: 700 17px var(--font-display); fill: var(--ink); } .ifdial .ids { font: 500 10.5px var(--font-body); fill: var(--muted); }
+.ifdial .idn { transform-origin: 100px 100px; transition: transform 1s; } .ifdial .idnd { fill: #fff; stroke: var(--accent); stroke-width: 3; } .ifdial .idnr { fill: var(--accent); opacity: .35; transform-box: fill-box; transform-origin: center; animation: ifnow 1.8s ease-out infinite; }
+.ifdial.pop .idc, .ifdial.pop .ids { animation: ptin .4s both; }
+.ifd-side { display: flex; flex-direction: column; gap: 8px; min-width: 0; } .ifd-side b { font-size: 15px; }
+.ifleg { display: flex; align-items: center; gap: 7px; font-size: 13px; } .ifleg i { width: 12px; height: 12px; border-radius: 50%; flex: none; } .ifleg i.g { background: var(--green); } .ifleg i.v { background: var(--soft); border: 1px solid var(--line); }
+.iffdot { animation: dotpop .45s cubic-bezier(.2, 1.4, .4, 1) both; animation-delay: calc(var(--i, 0) * .05s); } .iffdot.now { animation: dotpop .45s both, ifnow 2s ease-out .6s infinite; }
+.btn.go { position: relative; overflow: hidden; isolation: isolate; } .btn.go::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .35) 50%, transparent 65%); transform: translateX(-120%); animation: pcshine 3s ease-in-out .8s infinite; }
+@keyframes ifdraw { from { stroke-dasharray: 0 480; } }
+@keyframes ifnow { 0% { transform: scale(.6); opacity: .6; } 100% { transform: scale(2.2); opacity: 0; } }
+@keyframes dotpop { from { opacity: 0; transform: scale(.3); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ifdial .ide, .ifdial .idnr, .iffdot, .iffdot.now, .btn.go::after, .ifdial.pop .idc, .ifdial.pop .ids { animation: none !important; } }
+
+/* นิ้วมือชี้ชวนจิ้มบนแผนที่กล้ามเนื้อ */
+.mfing { pointer-events: none; }
+.mf-hand { fill: #FFE2C4; stroke: #2A1D45; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; transform-box: view-box; animation: mftap 3s ease-in-out 1s infinite; opacity: 0; filter: drop-shadow(0 3px 3px rgba(36, 25, 59, .3)); }
+.mf-ln { fill: none; stroke-width: 1.3; opacity: .55; }
+.mf-rip { fill: none; stroke: var(--accent); stroke-width: 2.4; opacity: 0; transform-box: fill-box; transform-origin: center; animation: mfrip 3s ease-out 1s infinite; } .mf-rip.r2 { animation-delay: 1.25s; }
+.mmhint { display: inline-flex; align-items: center; gap: 5px; padding: 3px 11px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-size: 12.5px; font-weight: 600; animation: mhpulse 1.6s ease-in-out infinite; }
+.mmhint i { font-style: normal; display: inline-block; animation: mfwig 1.2s ease-in-out infinite; transform-origin: 50% 90%; }
+@keyframes mftap { 0% { opacity: 0; transform: translate(34px, 36px) rotate(14deg); } 18% { opacity: 1; transform: translate(0, 0) rotate(0); } 30% { opacity: 1; transform: translate(0, 4px) scale(.93); } 40% { opacity: 1; transform: translate(0, 0) scale(1); } 62% { opacity: 1; transform: translate(0, 0); } 82%, 100% { opacity: 0; transform: translate(34px, 36px) rotate(14deg); } }
+@keyframes mfrip { 0%, 26% { opacity: 0; transform: scale(.5); } 32% { opacity: .85; } 62%, 100% { opacity: 0; transform: scale(4.2); } }
+@keyframes mhpulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+@keyframes mfwig { 0%, 100% { transform: rotate(-12deg); } 50% { transform: rotate(10deg) translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) { .mf-hand { animation: none; opacity: 1; } .mf-rip, .mmhint, .mmhint i { animation: none; } }

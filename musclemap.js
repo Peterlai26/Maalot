@@ -32,6 +32,9 @@ const MMAP = (() => {
   const names = e => regs(e).map(nm).join(" · ");
   const score = e => regs(e).filter(k => sel.has(k)).length;
   let view = "f";
+  /* นิ้วชี้ชวนจิ้ม: โชว์จนกว่าจะแตะส่วนไหนสักครั้ง แล้วจำไว้ (เป็นความสะดวกต่อเครื่อง ไม่ซิงก์) */
+  const hintOn = () => { try { return localStorage.getItem("maalot_mm_seen") !== "1" && !sel.size; } catch (e) { return !sel.size; } };
+  const finger = () => `<g class="mfing" aria-hidden="true" transform="translate(84 125)"><circle class="mf-rip" r="6"/><circle class="mf-rip r2" r="6"/><g class="mf-hand"><path d="M-3.4 2 C-3.4 -2 4.4 -2 4.4 2 L4.4 22 L-3.4 22 Z"/><rect x="-10" y="17" width="23" height="23" rx="8"/><ellipse cx="-10" cy="27" rx="3.6" ry="7" transform="rotate(-24 -10 27)"/><path class="mf-ln" d="M1 24 V31 M6 24 V31 M10.5 25 V31"/></g></g>`;
 
   /* ---------- ตัวน้องเกี๊ยว (โครงร่างเดียวกันทั้งหน้าและหลัง) ---------- */
   const INK = "#2A1D45";
@@ -87,16 +90,16 @@ const MMAP = (() => {
   }
   const heart = () => `<g class="mz mheart${sel.has("hr") ? " on" : ""}" data-act="mz" data-m="hr" role="button" tabindex="0" aria-pressed="${sel.has("hr")}" aria-label="หัวใจ คาร์ดิโอ"><circle class="r hb" cx="172" cy="40" r="19"/><path class="hi" d="M172 50 C160 41 160 31 167 31 C170 31 172 34 172 34 C172 34 174 31 177 31 C184 31 184 41 172 50 Z"/></g><text x="172" y="72" text-anchor="middle" class="mtxt">คาร์ดิโอ</text>`;
   function html() {
-    return `<div class="card mmcard"><div class="mmhead"><b>จิ้มส่วนที่อยากฝึก</b><span class="xs muted">เลือกได้หลายส่วน</span></div>
-<svg class="mmap" viewBox="0 0 200 334" role="group" aria-label="แผนที่กล้ามเนื้อของน้องเกี๊ยว แตะเพื่อเลือกส่วนที่ต้องการ">${fig("f")}${fig("b")}${heart()}</svg>
+    return `<div class="card mmcard"><div class="mmhead"><b>จิ้มส่วนที่อยากฝึก</b>${hintOn() ? '<span class="mmhint"><i>👆</i>ลองจิ้มดูสิ</span>' : '<span class="xs muted">เลือกได้หลายส่วน</span>'}</div>
+<svg class="mmap" viewBox="0 0 200 334" role="group" aria-label="แผนที่กล้ามเนื้อของน้องเกี๊ยว แตะเพื่อเลือกส่วนที่ต้องการ">${fig("f")}${fig("b")}${heart()}${hintOn() && view === "f" ? finger() : ""}</svg>
 <div class="seg mmseg" role="tablist"><button class="${view === "f" ? "on" : ""}" data-act="mview" data-v="f" role="tab">ด้านหน้า</button><button class="${view === "b" ? "on" : ""}" data-act="mview" data-v="b" role="tab">ด้านหลัง</button></div></div>`;
   }
   const sync = root => root.querySelectorAll(".mz").forEach(g => { const on = sel.has(g.dataset.m); g.classList.toggle("on", on); g.setAttribute("aria-pressed", on); });
   function afterChange() { const root = document.getElementById("sub"); if (!root) return; sync(root); if (typeof libRes === "function") libRes(); }
-  ACT.mz = a => { const k = a.dataset.m; if (!R[k]) return; sel.has(k) ? sel.delete(k) : sel.add(k); if (typeof haptic === "function") haptic(8); afterChange(); };
+  ACT.mz = a => { const k = a.dataset.m; if (!R[k]) return; try { localStorage.setItem("maalot_mm_seen", "1"); } catch (e) { } document.querySelectorAll(".mfing, .mmhint").forEach(n => n.remove()); sel.has(k) ? sel.delete(k) : sel.add(k); if (typeof haptic === "function") haptic(8); afterChange(); };
   ACT.mzclear = () => { sel.clear(); afterChange(); };
   ACT.mview = a => {
-    const v = a.dataset.v; if (v === view) return; const root = document.getElementById("sub"), svg = root && root.querySelector("svg.mmap"); view = v;
+    const v = a.dataset.v; if (v === view) return; document.querySelectorAll(".mfing").forEach(n => { n.style.display = v === "f" ? "" : "none"; }); const root = document.getElementById("sub"), svg = root && root.querySelector("svg.mmap"); view = v;
     root.querySelectorAll(".mmseg button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
     if (!svg) return; const cur = svg.querySelector(".mview:not([hidden])"), nxt = svg.querySelector(`.mview[data-v="${v}"]`); if (!cur || !nxt || cur === nxt) return;
     if (!cur.animate || matchMedia("(prefers-reduced-motion:reduce)").matches) { cur.toggleAttribute("hidden", true); nxt.toggleAttribute("hidden", false); return; }
