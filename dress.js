@@ -17,9 +17,9 @@ function dressItems(kind, tab) {
 function dressCur(kind, slot) { return kind === "wear" ? EDIT.look[slot] || SLOT_DEFAULT[slot] : (EDIT.room || {})[slot] || ROOM_DEFAULT[slot]; }
 
 function dressScene() { return scene({ look: EDIT.look, mood: "happy", rx: EDIT.rx, period: periodNow(), owned: S.owned, room: EDIT.room || ROOM_DEFAULT, l1: "", l2: "" }); }
-const NEXTBTN = (cls) => `<button class="btn primary dnext ${cls || ""}" data-act="onb1">ต่อไป <span class="dnarrow">${ic("back", 18)}</span></button>`;
+const NEXTBTN = (cls) => `<button class="btn primary dnext ${cls || ""}" data-act="onb1">ต่อไป ${ic("arrow", 16)}</button>`;
 function dressPreview(sc) {
-  return `<div class="dprevwrap"><div class="dawn" aria-hidden="true"></div><div class="dwin"><div class="dprev stage">${sc.replace('viewBox="0 0 380 300"', 'viewBox="66 50 248 234"')}</div></div>${EDIT.onb ? NEXTBTN() : ""}</div>`;
+  return `<div class="dprevwrap"><div class="dwin"><div class="dprev stage">${sc.replace('viewBox="0 0 380 300"', 'viewBox="66 50 248 234"')}</div></div>${EDIT.onb ? NEXTBTN() : ""}</div>`;
 }
 function wearThumb(slot, id) {
   const L = normLook(EDIT.look); L[slot] = id;
@@ -27,7 +27,7 @@ function wearThumb(slot, id) {
 }
 function dressCell(kind, tab, it) {
   const cur = dressCur(kind, tab), on = cur === it.id, owned = itemOwnedC(it.code), sel = EDIT.sel && EDIT.sel.slot === tab && EDIT.sel.id === it.id;
-  const badge = on ? `<span class="dbadge ok">ใส่อยู่</span>` : !owned ? (it.price ? `<span class="dbadge tag">${ic("coin", 11)}${it.price}</span>` : `<span class="dbadge lk">${it.medal ? ic("sparkle", 13) : ic("lock", 13)}</span>`) : "";
+  const badge = on ? `<span class="dbadge ok">${ic("check", 11)}ใส่อยู่</span>` : !owned ? (it.price ? `<span class="dbadge tag">${ic("coin", 11)}${it.price}</span>` : `<span class="dbadge lk">${it.medal ? ic("sparkle", 13) : ic("lock", 13)}</span>`) : "";
   if (kind === "wear" && SWATCH_SLOTS[tab]) return `<button class="dcell dcolor ${on ? "on" : ""} ${sel ? "sel" : ""} ${owned ? "" : "locked"}" data-act="dpick" data-slot="${tab}" data-id="${esc(it.id)}"><span class="dthumb" style="background:${it.id}"></span><span class="dname">${esc(it.n)}</span>${badge}</button>`;
   const thumb = kind === "wear" ? wearThumb(tab, it.id) : roomThumb(tab, it.id, periodNow() === "night");
   return `<button class="dcell ${on ? "on" : ""} ${sel ? "sel" : ""} ${owned ? "" : "locked"}" data-act="dpick" data-slot="${tab}" data-id="${esc(it.id)}"><span class="dthumb">${thumb}</span><span class="dname">${esc(it.n)}</span>${badge}</button>`;
@@ -36,7 +36,7 @@ function dressSelf() {
   const L = EDIT.look, chip = (v, n) => `<button class="btn sm ${L.g === v ? "sel" : ""}" data-act="dgender" data-v="${v}">${n}</button>`;
   return `<label class="f" for="nm">ชื่อตัวละคร</label><input id="nm" type="text" maxlength="14" placeholder="เช่น ก้อน หรือ เบนซ์" value="${esc(EDIT.name != null ? EDIT.name : S.name || "")}" data-in="dname"/>
 <label class="f">เพศของตัวละคร</label><div class="row wrap">${chip("male", "ชาย")}${chip("female", "หญิง")}${chip("neutral", "กลางๆ")}</div>
-<label class="f">สีผิว</label><div class="dgrid cl">${SKINS.map((c, i) => `<button class="dcell dcolor ${L.skin === c ? "on" : ""}" data-act="dskin" data-id="${c}" aria-label="สีผิว ${i + 1}"><span class="dthumb" style="background:${c}"></span><span class="dname">สีผิว ${i + 1}</span>${L.skin === c ? `<span class="dbadge ok">ใส่อยู่</span>` : ""}</button>`).join("")}</div>`;
+<label class="f">สีผิว</label><div class="dgrid cl">${SKINS.map((c, i) => `<button class="dcell dcolor ${L.skin === c ? "on" : ""}" data-act="dskin" data-id="${c}" aria-label="สีผิว ${i + 1}"><span class="dthumb" style="background:${c}"></span><span class="dname">สีผิว ${i + 1}</span>${L.skin === c ? `<span class="dbadge ok">${ic("check", 11)}ใส่อยู่</span>` : ""}</button>`).join("")}</div>`;
 }
 function dressBar() {
   const s = EDIT.sel, kind = EDIT.mode;

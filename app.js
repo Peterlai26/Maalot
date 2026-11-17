@@ -48,7 +48,7 @@ function lookPreview(L, rx) {
 
 /* ---------- เริ่มต้นครั้งแรก ---------- */
 function renderOnb() {
-  const el = $("#onb"); el.hidden = false; $("#app").hidden = true; $(".nav").hidden = true; el.classList.toggle("shopwall", ONB.step === 1);
+  const el = $("#onb"); el.hidden = false; $("#app").hidden = true; $(".nav").hidden = true; el.classList.toggle("dream", ONB.step === 1);
   if (ONB.step === 1) {
     EDIT = EDIT && EDIT.host === renderOnb ? Object.assign(EDIT, { look: ONB.look }) : { look: ONB.look, rx: 46, name: ONB.name, host: renderOnb, mode: "wear", tab: "self", onb: true, sel: null };
     el.innerHTML = `<div class="inner"><p class="muted sm">ขั้นที่ 1 จาก 3</p><h1>สร้างตัวแทนของคุณ</h1><p class="muted sm" style="margin:4px 0 12px">เลือกหน้าตาที่ชอบ เปลี่ยนใหม่ได้ทุกเมื่อ แล้วกดต่อไปที่มุมขวาล่างของภาพ</p>${lookEditor()}</div>`;

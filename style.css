@@ -362,91 +362,92 @@ body.dmin .dnext.fab { opacity: 1; pointer-events: auto; transform: none; }
 
 .dcolor.locked .dthumb { opacity: .85; filter: none; } .dcolor .dthumb { box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
 
-/* ====== ร้านก้อน: สไตล์ร้านค้าไทย (กันสาด ผ้าขาวม้า ป้ายราคา เพกบอร์ด) ใช้กับหน้าแรกและหน้าแต่งตัว ====== */
-:root { --sh-red: #D9382F; --sh-red-d: #A5231C; --sh-teal: #12857D; --sh-teal-d: #0B625C; --sh-bamboo: #E3B16A; --sh-yellow: #FFD23F; --sh-ink: #1F1915; --font-shop: "Chonburi", "Noto Sans Thai", serif;
-  --sh-awn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='48' viewBox='0 0 56 48'%3E%3Cg stroke='%231F1915' stroke-width='2.5' stroke-linejoin='round'%3E%3Cpath d='M0 1H28V32A14 14 0 0 1 0 32Z' fill='%23D9382F'/%3E%3Cpath d='M28 1H56V32A14 14 0 0 1 28 32Z' fill='%23FFFFFF'/%3E%3C/g%3E%3C/svg%3E");
-  --sh-peg: radial-gradient(circle, rgba(255,255,255,.2) 2.4px, transparent 3px);
-  --sh-gingham: linear-gradient(90deg, rgba(217,56,47,.62) 50%, transparent 50%), linear-gradient(rgba(217,56,47,.62) 50%, transparent 50%); }
-#onb.shopwall, #sub.dress { background-color: var(--sh-teal); background-image: var(--sh-peg); background-size: 24px 24px; color: #fff; }
-body:has(#onb.shopwall:not([hidden])), body:has(#sub.dress:not([hidden])) { background: var(--sh-teal-d); }
-#onb.shopwall .muted, #sub.dress .muted { color: rgba(255, 255, 255, .82); }
-#onb.shopwall h1, #sub.dress .subhead h2 { font-family: var(--font-shop); font-weight: 400; color: #fff; letter-spacing: .2px; }
-#onb.shopwall h1 { font-size: 26px; line-height: 1.3; }
-#sub.dress .iconbtn { color: #fff; }
-#sub.dress .subhead .chip { background: var(--sh-yellow); color: var(--sh-red); border: 2.5px solid var(--sh-ink); box-shadow: 2px 2px 0 var(--sh-ink); font-weight: 700; }
-#sub.dress label.f, #onb.shopwall label.f { color: #fff; font-weight: 600; }
-#sub.dress input[type=text], #onb.shopwall input[type=text] { background: #fff; color: var(--sh-ink); border: 2.5px solid var(--sh-ink); border-radius: 8px; box-shadow: 3px 3px 0 var(--sh-ink); }
+/* ====== โทนฝัน: ครีม ม่วงเข้ม ลาเวนเดอร์ไล่ชมพู โคบอลต์ (อ้างอิงมู้ดจาก wishlabs.ai) ใช้กับหน้าแรกและหน้าแต่งตัว ====== */
+:root { --dr-paper: #F9F5ED; --dr-plum: #24193B; --dr-indigo: #231968; --dr-violet: #8155C9; --dr-lav: #A699E9; --dr-pink: #F0679B; --dr-blush: #F9D5C3; --dr-cobalt: #4C5DDA; --dr-chip: #ECE7F6; --dr-line: #DDD5EC; --dr-mute: #6B6080; --font-dr: "Prompt", "Noto Sans Thai", system-ui, sans-serif;
+  --dr-ring: linear-gradient(135deg, #8155C9 0%, #F0679B 54%, #4C5DDA 100%); }
+#onb.dream, #sub.dress { background: var(--dr-paper); color: var(--dr-plum); font-family: var(--font-dr); }
+body:has(#onb.dream:not([hidden])), body:has(#sub.dress:not([hidden])) { background: var(--dr-paper); }
+#onb.dream .muted, #sub.dress .muted { color: var(--dr-mute); }
+#onb.dream h1, #sub.dress .subhead h2 { font-family: var(--font-dr); font-weight: 700; color: var(--dr-plum); letter-spacing: -.2px; }
+#onb.dream h1 { font-size: 26px; line-height: 1.3; }
+#sub.dress .subhead { background: var(--dr-paper); } #sub.dress .iconbtn { color: var(--dr-plum); }
+#sub.dress .subhead .chip { background: var(--dr-chip); color: var(--dr-plum); border: 0; font-weight: 600; }
+#sub.dress label.f, #onb.dream label.f { color: var(--dr-plum); font-weight: 600; }
+#sub.dress input[type=text], #onb.dream input[type=text] { background: #fff; color: var(--dr-plum); border: 1.5px solid var(--dr-line); border-radius: 16px; box-shadow: none; }
 
-/* กันสาด + หน้าต่างร้าน (ภาพตัวอย่างตัวละคร) */
-.dawn, .lawn { height: 48px; background: var(--sh-awn) repeat-x 0 0 / 56px 48px; position: relative; z-index: 3; filter: drop-shadow(0 3px 0 rgba(31, 25, 21, .35)); }
-#sub.dress .dprevwrap, #onb.shopwall .dprevwrap { position: relative; width: 280px; margin: 8px auto 12px; }
-#sub.dress .dawn, #onb.shopwall .dawn { margin: 0; background-position: 0 0; }
-.dwin { margin-top: -3px; padding: 9px; background-color: #fff; background-image: var(--sh-gingham); background-size: 18px 18px; border: 3px solid var(--sh-ink); box-shadow: 6px 6px 0 var(--sh-ink); position: relative; z-index: 2; }
-#sub.dress .dprev, #onb.shopwall .dprev { height: 216px; width: 100%; border: 3px solid var(--sh-ink); border-radius: 3px; background: #fff; box-shadow: none; }
-#sub.dress .dnext, #onb.shopwall .dnext { position: absolute; right: 18px; bottom: 18px; z-index: 4; }
+/* ภาพตัวละคร: กรอบไล่สีม่วง ชมพู ฟ้า */
+#sub.dress .dprevwrap, #onb.dream .dprevwrap { position: relative; width: 300px; margin: 6px auto 14px; }
+.dwin { padding: 5px; background: var(--dr-ring); border-radius: 34px; box-shadow: 0 22px 40px -22px rgba(36, 25, 59, .55); position: relative; }
+#sub.dress .dprev, #onb.dream .dprev { height: 232px; width: 100%; border: 0; border-radius: 29px; background: #fff; box-shadow: none; }
+#sub.dress .dnext, #onb.dream .dnext { position: absolute; right: 16px; bottom: 16px; z-index: 4; }
 
-/* ปุ่มและแท็บ: ขอบหมึกหนา เงาแข็งเยื้อง */
-#sub.dress .btn, #onb.shopwall .btn { border: 2.5px solid var(--sh-ink); border-radius: 8px; background: #fff; color: var(--sh-ink); box-shadow: 3px 3px 0 var(--sh-ink); font-weight: 700; transition: transform .08s, box-shadow .08s; }
-#sub.dress .btn:active, #onb.shopwall .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--sh-ink); }
-#sub.dress .btn.primary, #onb.shopwall .btn.primary { background: var(--sh-red); color: #fff; }
-#sub.dress .btn.sm.sel { background: var(--sh-yellow); }
-#sub.dress .btn.buy { background: var(--sh-yellow); color: var(--sh-red); }
-#sub.dress .btn.buy.poor { background: #fff; color: #8a7f76; }
-#sub.dress .dnext, #onb.shopwall .dnext { font-family: var(--font-shop); font-weight: 400; font-size: 17px; border-radius: 8px; min-height: 44px; padding: 8px 12px 8px 16px; }
-#sub.dress .seg, #onb.shopwall .seg { display: flex; gap: 10px; background: none; border: 0; padding: 0; margin: 6px 4px 8px; }
-#sub.dress .seg button { flex: 1; border: 2.5px solid var(--sh-ink); background: #fff; color: var(--sh-ink); border-radius: 8px; box-shadow: 3px 3px 0 var(--sh-ink); font-weight: 700; min-height: 42px; }
-#sub.dress .seg button.on { background: var(--sh-red); color: #fff; }
-#sub.dress .dstick, #onb.shopwall .dstick { background: var(--sh-teal-d); border-bottom: 3px solid var(--sh-ink); padding: 8px 16px 8px; }
-#sub.dress .dtab, #onb.shopwall .dtab { border: 2.5px solid var(--sh-ink); border-radius: 6px; background: #fff; color: var(--sh-ink); font-weight: 600; box-shadow: 2px 2px 0 var(--sh-ink); padding: 6px 13px; margin: 2px 4px 4px 0; }
-#sub.dress .dtab.on, #onb.shopwall .dtab.on { background: var(--sh-red); color: #fff; font-weight: 700; }
-#sub.dress .dmini, #onb.shopwall .dmini { border: 2.5px solid var(--sh-ink); border-radius: 6px; background: #fff; }
-#sub.dress .dfilter .chip, #onb.shopwall .dfilter .chip { background: #fff; color: var(--sh-ink); border: 2px solid var(--sh-ink); border-radius: 4px; font-weight: 600; box-shadow: 2px 2px 0 var(--sh-ink); }
-#sub.dress .dfilter .chip.on { background: var(--sh-yellow); }
+/* ปุ่ม แท็บ: แคปซูล */
+#sub.dress .btn, #onb.dream .btn { border: 1.5px solid var(--dr-line); border-radius: 999px; background: #fff; color: var(--dr-plum); font-weight: 600; box-shadow: none; transition: transform .1s; }
+#sub.dress .btn:active, #onb.dream .btn:active { transform: scale(.96); }
+#sub.dress .btn.primary, #onb.dream .btn.primary { background: var(--dr-plum); color: #fff; border-color: transparent; }
+#sub.dress .btn.sm.sel { background: var(--dr-plum); color: #fff; border-color: transparent; }
+#sub.dress .btn.buy { background: var(--dr-pink); color: #fff; border-color: transparent; } #sub.dress .btn.buy.poor { background: var(--dr-chip); color: var(--dr-mute); }
+#sub.dress .dnext, #onb.dream .dnext { min-height: 46px; padding: 10px 18px 10px 20px; gap: 7px; font-size: 16px; box-shadow: 0 12px 24px -10px rgba(36, 25, 59, .75); }
+#sub.dress .seg, #onb.dream .seg { display: flex; gap: 4px; background: var(--dr-chip); border: 0; border-radius: 999px; padding: 4px; margin: 4px 0 8px; }
+#sub.dress .seg button { flex: 1; border: 0; background: transparent; color: var(--dr-plum); border-radius: 999px; font-weight: 600; min-height: 40px; box-shadow: none; }
+#sub.dress .seg button.on { background: var(--dr-plum); color: #fff; }
+#sub.dress .dstick, #onb.dream .dstick { background: var(--dr-paper); border-bottom: 0; box-shadow: 0 1px 0 var(--dr-line); padding: 8px 16px; }
+#sub.dress .dtab, #onb.dream .dtab { border: 0; border-radius: 999px; background: var(--dr-chip); color: var(--dr-plum); font-weight: 500; box-shadow: none; padding: 8px 16px; margin: 0 6px 0 0; }
+#sub.dress .dtab.on, #onb.dream .dtab.on { background: var(--dr-plum); color: #fff; font-weight: 600; }
+#sub.dress .dmini, #onb.dream .dmini { border: 0; border-radius: 14px; background: var(--dr-chip); }
+#sub.dress .dfilter .chip, #onb.dream .dfilter .chip { background: transparent; color: var(--dr-mute); border: 1.5px solid var(--dr-line); border-radius: 999px; font-weight: 500; box-shadow: none; }
+#sub.dress .dfilter .chip.on { background: var(--dr-chip); color: var(--dr-plum); border-color: var(--dr-plum); font-weight: 600; }
 
-/* ของแต่ละชิ้นเป็นป้ายบนเพกบอร์ด */
-#sub.dress .dgrid, #onb.shopwall .dgrid { gap: 16px 12px; padding: 18px 0 6px; }
-#sub.dress .dcell, #onb.shopwall .dcell { background: #fff; color: var(--sh-ink); border: 2.5px solid var(--sh-ink); border-radius: 8px; box-shadow: 3px 3px 0 var(--sh-ink); padding: 6px; transition: transform .08s, box-shadow .08s; }
-#sub.dress .dcell:active, #onb.shopwall .dcell:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--sh-ink); }
-#sub.dress .dcell.on, #onb.shopwall .dcell.on { background: #FFF1B0; border-color: var(--sh-ink); }
-#sub.dress .dcell.sel:not(.on), #onb.shopwall .dcell.sel:not(.on) { outline: 3px solid var(--sh-red); outline-offset: 2px; }
-#sub.dress .dthumb, #onb.shopwall .dthumb { border: 2px solid var(--sh-ink); border-radius: 4px; background: #D9F0EC; }
-#sub.dress .dname, #onb.shopwall .dname { color: var(--sh-ink); font-weight: 600; font-size: 12px; }
-#sub.dress .dcell.locked .dthumb { opacity: .72; filter: grayscale(.2); }
-#sub.dress .dbadge, #onb.shopwall .dbadge { position: absolute; top: -9px; right: -7px; left: auto; background: var(--sh-yellow); color: var(--sh-red); border: 2px solid var(--sh-ink); border-radius: 4px; font-family: var(--font-shop); font-size: 12px; padding: 1px 6px; transform: rotate(5deg); box-shadow: 2px 2px 0 var(--sh-ink); gap: 3px; }
-#sub.dress .dbadge.lk, #onb.shopwall .dbadge.lk { background: #fff; color: var(--sh-ink); padding: 3px 5px; }
-#sub.dress .dbadge.ok, #onb.shopwall .dbadge.ok { top: -12px; left: -10px; right: auto; width: 46px; height: 46px; border: 2.5px solid var(--sh-red); border-radius: 50%; background: rgba(255, 255, 255, .92); color: var(--sh-red); font-family: "Noto Sans Thai", sans-serif; font-weight: 800; font-size: 11px; padding: 0; display: grid; place-items: center; transform: rotate(-14deg); box-shadow: none; text-align: center; line-height: 1.1; }
+/* ของแต่ละชิ้น = การ์ดขาวมุมโค้ง */
+#sub.dress .dgrid, #onb.dream .dgrid { gap: 12px; padding: 14px 0 6px; }
+#sub.dress .dcell, #onb.dream .dcell { background: #fff; color: var(--dr-plum); border: 2px solid transparent; border-radius: 22px; box-shadow: 0 8px 20px -14px rgba(36, 25, 59, .5); padding: 6px 6px 8px; }
+#sub.dress .dcell.on, #onb.dream .dcell.on { border-color: var(--dr-plum); background: #fff; }
+#sub.dress .dcell.sel:not(.on), #onb.dream .dcell.sel:not(.on) { border-color: var(--dr-pink); outline: 0; }
+#sub.dress .dthumb, #onb.dream .dthumb { border: 0; border-radius: 16px; background: #F1ECFA; }
+#sub.dress .dname, #onb.dream .dname { color: var(--dr-plum); font-weight: 500; font-size: 12.5px; }
+#sub.dress .dcell.locked .dthumb { opacity: .75; filter: grayscale(.15); }
+#sub.dress .dbadge, #onb.dream .dbadge { position: absolute; top: 10px; right: 10px; left: auto; background: var(--dr-pink); color: #fff; border: 0; border-radius: 999px; font: 600 11.5px var(--font-dr); padding: 3px 9px; transform: none; box-shadow: none; gap: 3px; width: auto; height: auto; }
+#sub.dress .dbadge.lk, #onb.dream .dbadge.lk { background: var(--dr-plum); color: #fff; padding: 4px 7px; }
+#sub.dress .dbadge.ok, #onb.dream .dbadge.ok { top: 10px; left: 10px; right: auto; background: var(--dr-plum); color: #fff; font: 600 11px var(--font-dr); padding: 3px 9px 3px 7px; display: inline-flex; align-items: center; border-radius: 999px; }
 
-/* แถบซื้อ = ใบเสร็จ */
-#sub.dress .dbar { background: #fff; color: var(--sh-ink); border: 2.5px solid var(--sh-ink); border-radius: 6px; box-shadow: 4px 4px 0 var(--sh-ink); margin: 16px 4px 10px; bottom: 10px; padding: 16px 12px 12px; position: sticky; }
-#sub.dress .dbar::before { content: ""; position: absolute; left: 10px; right: 10px; top: 6px; border-top: 2px dashed #b8aca0; }
-#sub.dress .dinfo { color: var(--sh-ink); }
-#sub.dress .dbody .muted { color: rgba(255, 255, 255, .88); }
+/* แถบซื้อ */
+#sub.dress .dbar { background: var(--dr-plum); color: #fff; border: 0; border-radius: 26px; box-shadow: 0 22px 36px -18px rgba(36, 25, 59, .8); margin: 14px 2px 10px; bottom: 10px; padding: 12px 14px; position: sticky; }
+#sub.dress .dbar::before { display: none; }
+#sub.dress .dinfo { color: #fff; }
+#sub.dress .dbar .btn { border-color: transparent; } #sub.dress .dbar .btn:not(.buy) { background: #fff; color: var(--dr-plum); }
+#sub.dress .dbody .muted { color: var(--dr-mute); }
 
 /* หน้าแรก */
-.land { padding: 0 0 36px; color: #fff; }
-.land .lawn { margin: -14px -16px 0; }
-.lsign { position: relative; display: block; width: max-content; max-width: 90%; margin: 14px auto 0; padding: 4px 20px 6px; background: var(--sh-bamboo); border: 3px solid var(--sh-ink); border-radius: 6px; box-shadow: 4px 4px 0 var(--sh-ink); transform: rotate(-1.5deg); text-align: center; color: var(--sh-ink); }
-.lsign::before, .lsign::after { content: ""; position: absolute; top: -16px; width: 3px; height: 16px; background: var(--sh-ink); }
-.lsign::before { left: 18%; } .lsign::after { right: 18%; }
-.lsign-name { display: block; font-family: var(--font-shop); font-size: 40px; line-height: 1.15; }
-.lsign-th { display: block; font-size: 13px; font-weight: 700; letter-spacing: 2px; margin-top: -2px; }
-.lwin { position: relative; margin: 26px 6px 0; padding: 10px; background-color: #fff; background-image: var(--sh-gingham); background-size: 20px 20px; border: 3px solid var(--sh-ink); box-shadow: 7px 7px 0 var(--sh-ink); }
-.lwin-in { border: 3px solid var(--sh-ink); background: #fff; line-height: 0; } .lwin-in svg { width: 100%; height: auto; display: block; }
-.ltag { position: absolute; right: -8px; top: -20px; padding: 5px 12px 5px 22px; background: var(--sh-yellow); color: var(--sh-red); border: 2.5px solid var(--sh-ink); border-radius: 4px; font-family: var(--font-shop); font-size: 14px; line-height: 1.25; transform: rotate(6deg); box-shadow: 3px 3px 0 var(--sh-ink); }
-.ltag::before { content: ""; position: absolute; left: 6px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border: 2px solid var(--sh-ink); border-radius: 50%; background: var(--sh-teal); }
-.lhead { margin: 28px 4px 0; font-family: var(--font-shop); font-weight: 400; font-size: 30px; line-height: 1.35; color: #fff; text-shadow: 3px 3px 0 var(--sh-ink); }
-.lsub { margin: 12px 4px 0; font-size: 16px; line-height: 1.65; max-width: 34ch; color: rgba(255, 255, 255, .95); }
-.lcta { display: block; width: calc(100% - 8px); margin: 22px 4px 0; padding: 15px 16px; background: var(--sh-red); color: #fff; border: 3px solid var(--sh-ink); border-radius: 10px; box-shadow: 5px 5px 0 var(--sh-ink); font-family: var(--font-shop); font-size: 21px; transition: transform .08s, box-shadow .08s; }
-.lcta:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--sh-ink); }
-.lfine { margin: 12px 4px 0; font-size: 13px; color: rgba(255, 255, 255, .85); }
-.llogin { margin: 18px 4px 0; padding: 12px; background: rgba(255, 255, 255, .14); border: 2px dashed rgba(255, 255, 255, .7); border-radius: 8px; } .llogin p { font-size: 13px; margin-bottom: 8px; }
-.lboard { margin: 34px 4px 0; padding: 18px 16px 8px; background: #fff; color: var(--sh-ink); border: 3px solid var(--sh-ink); border-radius: 14px; box-shadow: 6px 6px 0 var(--sh-ink); outline: 3px dotted var(--sh-teal); outline-offset: -11px; }
-.lboard h2 { font-family: var(--font-shop); font-weight: 400; font-size: 21px; color: var(--sh-red); margin: 0 0 6px; }
-.lrow { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 2px dashed #d7cfc6; } .lrow:first-of-type { border-top: 0; }
-.lrow .bunbul { flex-shrink: 0; margin-top: 3px; } .lrow b { display: block; font-family: var(--font-shop); font-weight: 400; font-size: 16px; } .lrow span { display: block; font-size: 13.5px; line-height: 1.55; color: #5b514a; }
-.lsteps { list-style: none; counter-reset: st; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 26px 4px 0; padding: 0; }
-.lsteps li { counter-increment: st; position: relative; padding: 18px 8px 10px; background: var(--sh-yellow); color: var(--sh-ink); border: 2.5px solid var(--sh-ink); border-radius: 4px; box-shadow: 3px 3px 0 var(--sh-ink); font-size: 12.5px; font-weight: 700; line-height: 1.35; text-align: center; }
-.lsteps li::before { content: counter(st); position: absolute; left: 50%; top: -12px; width: 24px; height: 24px; margin-left: -12px; display: grid; place-items: center; background: var(--sh-red); color: #fff; border: 2.5px solid var(--sh-ink); border-radius: 50%; font-family: var(--font-shop); font-size: 12px; }
-.ldisc { margin: 26px 4px 0; font-size: 12px; line-height: 1.6; color: rgba(255, 255, 255, .78); }
-.land .lwin.wave .armR { animation: wavearm .5s ease-in-out 6 alternate; }
-#sub.dress .subhead { background: var(--sh-teal); background-image: var(--sh-peg); background-size: 24px 24px; }
+.land { padding: 0 0 40px; color: var(--dr-plum); font-family: var(--font-dr); }
+.lhero { position: relative; margin: -14px -16px 0; padding: 22px 22px 150px; text-align: center; color: #fff; border-radius: 0 0 40px 40px; overflow: hidden; background: linear-gradient(180deg, #A699E9 0%, #8E6BDB 30%, #8155C9 52%, #4F2681 78%, #231968 100%); }
+.lclouds i { position: absolute; border-radius: 50%; filter: blur(22px); background: radial-gradient(closest-side, rgba(247, 150, 190, .95), rgba(247, 150, 190, 0)); }
+.lclouds i:nth-child(1) { width: 270px; height: 120px; left: -70px; top: 190px; } .lclouds i:nth-child(2) { width: 300px; height: 130px; right: -90px; top: 110px; opacity: .75; } .lclouds i:nth-child(3) { width: 360px; height: 150px; left: 30px; top: 340px; }
+.lbrand { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; font: 700 22px var(--font-dr); letter-spacing: .2px; } .lbrand img { border-radius: 11px; }
+.lhead { position: relative; z-index: 2; margin: 52px 0 0; font: 700 32px/1.3 var(--font-dr); letter-spacing: -.3px; color: #fff; text-wrap: balance; }
+.lsub { position: relative; z-index: 2; margin: 14px auto 0; max-width: 32ch; font-size: 16px; line-height: 1.65; color: rgba(255, 255, 255, .92); }
+.lcta { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 8px; margin-top: 24px; padding: 14px 24px; background: var(--dr-plum); color: #fff; border: 0; border-radius: 999px; font: 600 17px var(--font-dr); box-shadow: 0 16px 30px -12px rgba(15, 8, 40, .75); transition: transform .1s; }
+.lcta:active { transform: scale(.96); }
+.lfine { position: relative; z-index: 2; margin-top: 12px; font-size: 13px; color: rgba(255, 255, 255, .85); }
+.lhills { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 150px; z-index: 1; }
+.lroom { position: relative; z-index: 3; margin: -98px 0 0; padding: 0 4px; }
+.lring { padding: 5px; background: var(--dr-ring); border-radius: 36px; box-shadow: 0 28px 44px -22px rgba(36, 25, 59, .6); }
+.lroom-in { border-radius: 31px; overflow: hidden; background: #fff; line-height: 0; } .lroom-in svg { width: 100%; height: auto; display: block; }
+.lroom.wave .armR { animation: wavearm .5s ease-in-out 6 alternate; }
+.llogin { margin: 22px 4px 0; padding: 12px; border: 1.5px dashed var(--dr-line); border-radius: 18px; text-align: center; } .llogin p { font-size: 13px; color: var(--dr-mute); margin-bottom: 8px; }
+.lpaper { padding: 46px 4px 0; text-align: center; }
+.lpaper h2, .lblue h2, .lend h2 { font: 700 26px/1.35 var(--font-dr); letter-spacing: -.2px; text-wrap: balance; }
+.lp { margin: 10px auto 0; max-width: 34ch; color: var(--dr-mute); font-size: 15px; line-height: 1.65; }
+.lplum { margin-top: 24px; padding: 20px 18px 16px; background: var(--dr-plum); color: #fff; border-radius: 30px; text-align: left; box-shadow: 0 24px 40px -26px rgba(36, 25, 59, .85); }
+.lin { padding: 13px 15px; border-radius: 16px; background: rgba(255, 255, 255, .1); color: #E7DEFF; font-size: 15px; }
+.lplum .lrow { display: flex; justify-content: space-between; padding: 12px 4px 2px; font-size: 15px; } .lplum .lrow b { color: var(--dr-lav); font-weight: 600; }
+.ltot { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .18); display: flex; justify-content: space-between; font-weight: 700; font-size: 17px; color: var(--dr-pink); }
+.lnote { margin-top: 10px; font-size: 12.5px; color: #B8ACD6; }
+.lfeat { list-style: none; margin: 30px 0 0; padding: 0; text-align: left; display: grid; gap: 18px; }
+.lfeat li { display: flex; gap: 14px; align-items: flex-start; }
+.lchip { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; background: var(--dr-chip); display: grid; place-items: center; color: var(--dr-violet); }
+.lfeat b { display: block; font-weight: 600; font-size: 15.5px; } .lfeat span:not(.lchip) { display: block; color: var(--dr-mute); font-size: 14px; line-height: 1.55; }
+.lblue { margin-top: 42px; padding: 30px 16px 24px; background: var(--dr-cobalt); color: #fff; border-radius: 34px; text-align: center; }
+.lblue h2 { color: #fff; } .lcast { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 14px; } .lcast svg { width: 100%; height: auto; }
+.lblue p { margin-top: 12px; font-size: 14.5px; line-height: 1.65; color: #DDE2FF; }
+.lend { padding: 46px 4px 0; text-align: center; } .lend .lcta { margin-top: 22px; }
+.ldisc { margin: 28px auto 0; max-width: 40ch; font-size: 12px; line-height: 1.65; color: var(--dr-mute); }
