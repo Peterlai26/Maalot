@@ -71,7 +71,7 @@ const okEndpoint = (e) => { try { const u = new URL(e); return u.protocol === "h
 
 
 /* ---------- ประเมินแคลอรี่ด้วย Claude (รูปหรือข้อความ) ---------- */
-const EST_MODEL = "claude-haiku-5-5", EST_PER_IP = 8, EST_GLOBAL = 250;
+const EST_MODEL = "claude-haiku-5-5", EST_PER_IP = 30, EST_GLOBAL = 600;
 const CF_VISION = ["@cf/meta/llama-4-scout-17b-16e-instruct", "@cf/mistralai/mistral-small-3.1-24b-instruct", "@cf/meta/llama-3.2-11b-vision-instruct", "@cf/llava-hf/llava-1.5-7b-hf"];
 const CF_TEXT = ["@cf/meta/llama-3.3-70b-instruct-fp8-fast", "@cf/google/gemma-3-12b-it", "@cf/meta/llama-3.1-8b-instruct-fast", "@cf/meta/llama-3.2-3b-instruct", "@cf/mistralai/mistral-small-3.1-24b-instruct"];
 const b64bytes = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
@@ -94,23 +94,31 @@ async function cfAI(env, task, img, mime) {
   }
   const err = new Error("all failed"); err.tried = tried; throw err;
 }
+const NUM_KEYS = [["protein", 500], ["carb", 500], ["fat", 500], ["fiber", 200], ["sugar", 500], ["sodium", 20000]];
+const FMT = ' ตอบเป็น JSON array เท่านั้น ไม่มีข้อความอื่น รูปแบบ [{"name":"ชื่อภาษาไทยสั้นๆ","kcal":ตัวเลข,"protein":กรัม,"carb":กรัม,"fat":กรัม,"fiber":กรัม,"sugar":กรัม,"sodium":มิลลิกรัม}] ค่าทั้งหมดเป็นของ 1 รายการตามปริมาณที่ระบุหรือ 1 เสิร์ฟปกติ ถ้าไม่แน่ใจให้ประเมินแบบกลางๆ';
 async function estimate(req, env) {
   if (!env.ANTHROPIC_API_KEY && !env.AI) return J(req, { error: "not_configured" }, 503);
   let b; try { const t = await req.text(); if (t.length > 2500000) throw 0; b = JSON.parse(t); } catch (_) { return J(req, { error: "bad json" }, 400); }
-  const text = typeof b.text === "string" ? b.text.trim().slice(0, 200) : "", img = typeof b.image === "string" ? b.image : "";
+  const text = typeof b.text === "string" ? b.text.trim().slice(0, 300) : "", img = typeof b.image === "string" ? b.image : "";
+  const foods = Array.isArray(b.foods) ? b.foods.slice(0, 12).filter((f) => f && typeof f.n === "string").map((f) => ({ n: f.n.slice(0, 40), k: Math.max(0, Math.min(5000, Math.round(+f.k || 0))) })) : [];
   const mime = ["image/jpeg", "image/png", "image/webp"].includes(b.mime) ? b.mime : "image/jpeg";
-  if (!text && !img) return J(req, { error: "empty" }, 400);
+  if (!text && !img && !foods.length) return J(req, { error: "empty" }, 400);
   if (img && (img.length > 2000000 || !/^[A-Za-z0-9+/=]+$/.test(img))) return J(req, { error: "bad image" }, 400);
   const day = new Date().toISOString().slice(0, 10), ip = req.headers.get("CF-Connecting-IP") || "x", kIp = "rl:" + day + ":" + (await sha(ip)).slice(0, 16), kAll = "rlg:" + day;
   const [nIp, nAll] = await Promise.all([env.SUBS.get(kIp), env.SUBS.get(kAll)]);
   if ((+nAll || 0) >= EST_GLOBAL) return J(req, { error: "busy" }, 429);
   if ((+nIp || 0) >= EST_PER_IP) return J(req, { error: "limit" }, 429);
-  await Promise.all([env.SUBS.put(kIp, String((+nIp || 0) + 1), { expirationTtl: 172800 }), env.SUBS.put(kAll, String((+nAll || 0) + 1), { expirationTtl: 172800 })]);
-  const task = (img ? "ดูรูปอาหารที่แนบมา แล้วประเมินแคลอรี่ของแต่ละรายการที่เห็นตามปริมาณในรูป" : "ประเมินแคลอรี่ของอาหารต่อไปนี้ตามปริมาณปกติที่คนไทยกิน: " + text) + '\nตอบเป็น JSON array เท่านั้น ไม่มีข้อความอื่น รูปแบบ [{"name":"ชื่อภาษาไทยสั้นๆ","kcal":ตัวเลขรวมต่อรายการ}] ถ้าไม่ใช่อาหารให้ตอบ [] ถ้าไม่แน่ใจให้ประเมินแบบกลางๆ';
+  /* นับรวมทั้งระบบแบบสุ่ม (เขียน KV น้อยลง ไม่ให้เกินโควตาเขียนฟรีต่อวัน) */
+  await env.SUBS.put(kIp, String((+nIp || 0) + 1), { expirationTtl: 172800 });
+  if (Math.random() < 0.2) await env.SUBS.put(kAll, String((+nAll || 0) + 5), { expirationTtl: 172800 });
+  let task;
+  if (foods.length) task = "ให้ข้อมูลโภชนาการต่อ 1 เสิร์ฟของอาหารต่อไปนี้ ตามลำดับเดิมและใช้ชื่อเดิมทุกชื่อ (ค่า kcal ในวงเล็บเป็นค่าอ้างอิงที่ควรใกล้เคียง):\n" + foods.map((f, i) => `${i + 1}. ${f.n} (${f.k} kcal)`).join("\n") + "\n" + FMT;
+  else if (img) task = "ดูรูปอาหารที่แนบมา แล้วแยกเป็นแต่ละรายการที่เห็น ประเมินโภชนาการตามปริมาณในรูป ถ้าไม่ใช่อาหารให้ตอบ []." + FMT;
+  else task = "ผู้ใช้พิมพ์บอกว่ากินอะไรมา: \"" + text + "\"\nข้อความอาจพิมพ์ผิด สะกดไม่ครบ ใช้คำย่อ หรือเป็นอาหารจากต่างประเทศ ให้เดาว่าหมายถึงอาหารอะไร แก้ชื่อให้ถูกต้อง (ชื่อต่างประเทศให้ใช้ชื่อที่คนไทยเรียกทั่วไป) แยกเป็นรายการ ถ้าระบุจำนวนให้คิดตามจำนวนนั้น ถ้าไม่ระบุให้คิด 1 เสิร์ฟปกติ ถ้าไม่ใช่อาหารให้ตอบ []." + FMT;
   let out = "", used = "";
   if (env.ANTHROPIC_API_KEY) {
     const content = img ? [{ type: "image", source: { type: "base64", media_type: mime, data: img } }, { type: "text", text: task }] : task;
-    let r; try { r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model: EST_MODEL, max_tokens: 500, messages: [{ role: "user", content }] }) }); } catch (_) { return J(req, { error: "upstream" }, 502); }
+    let r; try { r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model: EST_MODEL, max_tokens: 900, messages: [{ role: "user", content }] }) }); } catch (_) { return J(req, { error: "upstream" }, 502); }
     if (!r.ok) return J(req, { error: "upstream", status: r.status }, 502);
     const j = await r.json().catch(() => null); out = (j && j.content && j.content[0] && j.content[0].text) || "";
   } else {
@@ -120,7 +128,25 @@ async function estimate(req, env) {
   const m = out.match(/\[[\s\S]*\]/);
   let arr; try { arr = JSON.parse(m ? m[0] : "null"); } catch (_) { arr = null; }
   if (!Array.isArray(arr)) return J(req, { error: "parse" }, 502);
-  const items = arr.filter((x) => x && typeof x.name === "string" && isFinite(+x.kcal) && +x.kcal >= 0 && +x.kcal < 5000).slice(0, 8).map((x) => ({ name: x.name.slice(0, 40), kcal: Math.round(+x.kcal) }));
+  const hasN = (x) => ["protein", "carb", "fat"].some((k) => isFinite(+x[k]) && x[k] !== null && x[k] !== "");
+  const clean = (x) => {
+    const o = { name: x.name.slice(0, 40), kcal: Math.round(+x.kcal) };
+    if (hasN(x)) NUM_KEYS.forEach(([k, mx]) => { const v = +x[k]; o[k] = isFinite(v) && v >= 0 && v < mx ? Math.round(v * 10) / 10 : 0; });
+    return o;
+  };
+  const items = arr.filter((x) => x && typeof x.name === "string" && isFinite(+x.kcal) && +x.kcal >= 0 && +x.kcal < 5000).slice(0, 12).map(clean);
+  /* ถ้าโมเดลลืมใส่โภชนาการ ขอซ้ำเฉพาะรายการที่ขาด */
+  const lack = items.filter((x) => x.protein === undefined);
+  if (lack.length && !foods.length) {
+    try {
+      const t2 = "ให้ข้อมูลโภชนาการต่อ 1 เสิร์ฟของอาหารต่อไปนี้ ตามลำดับเดิมและใช้ชื่อเดิมทุกชื่อ (ค่า kcal ในวงเล็บเป็นค่าอ้างอิงที่ควรใกล้เคียง):\n" + lack.map((f, i) => `${i + 1}. ${f.name} (${f.kcal} kcal)`).join("\n") + "\n" + FMT;
+      let o2 = "";
+      if (env.ANTHROPIC_API_KEY) { const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model: EST_MODEL, max_tokens: 900, messages: [{ role: "user", content: t2 }] }) }); const j = await r.json(); o2 = (j.content && j.content[0] && j.content[0].text) || ""; }
+      else o2 = (await cfAI(env, t2, "", mime)).out;
+      const m2 = o2.match(/\[[\s\S]*\]/), a2 = JSON.parse(m2 ? m2[0] : "[]");
+      lack.forEach((it, i) => { const x = a2[i]; if (x && hasN(x)) NUM_KEYS.forEach(([k, mx]) => { const v = +x[k]; it[k] = isFinite(v) && v >= 0 && v < mx ? Math.round(v * 10) / 10 : 0; }); });
+    } catch (_) { }
+  }
   return J(req, { items, model: used });
 }
 
