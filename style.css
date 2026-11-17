@@ -1121,3 +1121,12 @@ input:not([type]), input[type="text"]:not(.bare), input[type="number"]:not(.bare
 @media (prefers-reduced-motion: reduce) { .mcard, .mcard.ready, .letter, .letter::after, .medal, .ife, .pills .pill.on { animation: none !important; } }
 #sub input:not([type]), #sub input[type="search"], #sub input[type="text"] { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); font: 500 15px var(--font-body); outline: none; transition: border-color .2s, box-shadow .2s; margin: 2px 0 8px; }
 #sub input:not([type]):focus, #sub input[type="search"]:focus, #sub input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent); }
+.gpsmap { display: block; } .gpsmap svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.gm-grid path { stroke: var(--line); stroke-width: 1; fill: none; opacity: .8; }
+.gm-route { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 8 9; opacity: .55; animation: gmflow 1.2s linear infinite; }
+@keyframes gmflow { to { stroke-dashoffset: -34; } }
+.gm-dot, .gm-ping { position: absolute; left: 10%; top: 81%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px #fff; }
+.gm-ping { background: var(--accent); opacity: .5; animation: gmping 1.8s ease-out infinite; box-shadow: none; }
+@keyframes gmping { to { transform: scale(3.2); opacity: 0; } }
+.gm-t { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 12px; color: var(--muted); padding: 0 12px; }
+@media (prefers-reduced-motion: reduce) { .gm-route, .gm-ping { animation: none !important; } }
