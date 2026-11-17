@@ -20,14 +20,14 @@ function figure(L, mood, rx) {
     if (hs === "messy") bangs = `<path d="M-52 -4L-50 -62L-36 -46L-30 -70L-16 -48L-6 -74L8 -50L20 -72L28 -48L42 -64L48 -40L52 -4C42 -24 22 -28 0 -18C-22 -28 -42 -24 -52 -4Z" fill="${hc}"/>`;
     if (hs === "curly") { bangs = `<path d="M-52 -4C-56 -50 56 -50 52 -4C46 -26 -46 -26 -52 -4Z" fill="${hc}"/>`; for (let x = -40; x <= 40; x += 16) bangs += `<circle cx="${x}" cy="-30" r="15" fill="${hc}"/>`; }
   }
-  const brow = g === "male" ? `<path d="M-31 -2 L-11 -6" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/><path d="M11 -6 L31 -2" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/>` : "";
+  const brow = mood === "sad" ? "" : wearBrow(L.brow, g, shade(hc, -0.4));
   const lash = g === "female" ? `<path d="M-27 8 L-33 3" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/><path d="M27 8 L33 3" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>` : "";
   const bl = g === "male" ? 6 : g === "female" ? 9 : 8;
   let eyes, mouth;
-  const open = `<g class="blink"><ellipse cx="-20" cy="14" rx="8" ry="11" fill="${INK}"/><ellipse cx="20" cy="14" rx="8" ry="11" fill="${INK}"/><circle cx="-17" cy="9" r="3.5" fill="#fff"/><circle cx="23" cy="9" r="3.5" fill="#fff"/><circle cx="-22" cy="18" r="1.8" fill="#fff"/><circle cx="18" cy="18" r="1.8" fill="#fff"/></g>`;
+  const open = wearEyes(L.eye, sk);
   const sleepy = `<path d="M-30 14 Q-20 22 -10 14" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/><path d="M10 14 Q20 22 30 14" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`;
   const proud = `<path d="M-30 18 Q-20 4 -10 18" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/><path d="M10 18 Q20 4 30 18" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`;
-  const smile = `<path d="M-8 30 Q0 40 8 30" fill="none" stroke="#8A4A3A" stroke-width="3" stroke-linecap="round"/>`;
+  const smile = wearMouth(L.mouth);
   if (mood === "sleepy") { eyes = sleepy; mouth = `<ellipse cx="0" cy="34" rx="4" ry="3" fill="#8A4A3A"/>`; }
   else if (mood === "hungry") { eyes = sleepy; mouth = `<ellipse cx="0" cy="34" rx="5" ry="4" fill="#8A4A3A"/>`; }
   else if (mood === "sad") { eyes = open; mouth = `<path d="M-31 2 L-12 -7M12 -7 L31 2" stroke="${INK}" stroke-width="3.2" stroke-linecap="round"/><path d="M-9 37 Q0 29 9 37" fill="none" stroke="#8A4A3A" stroke-width="3" stroke-linecap="round"/><path d="M-30 26 q4 6 0 9 q-4 -3 0 -9z" fill="#8CC8E8"/>`; }
@@ -42,7 +42,7 @@ ${wearShoes(L.shoe, lw)}
 <g class="armL"><ellipse cx="${aL}" cy="-54" rx="11" ry="26" fill="${oc}" transform="rotate(12 ${aL} -54)"/><circle cx="${hL}" cy="-30" r="9" fill="${sk}"/></g>
 <g class="armR"><ellipse cx="${aR}" cy="-54" rx="11" ry="26" fill="${oc}" transform="rotate(-12 ${aR} -54)"/><circle cx="${hR}" cy="-30" r="9" fill="${sk}"/><g transform="translate(${hR},-30)">${wearHand(L.hand)}</g></g>
 <g class="torso"><ellipse cx="0" cy="-54" rx="${rx}" ry="38" fill="${oc}"/><rect x="-22" y="-46" width="44" height="20" rx="9" fill="${oc2}"/>${wearPattern(L.pt, rx, oc)}</g>
-<g transform="translate(0,-134)"><g class="head">${back}<ellipse cx="0" cy="6" rx="50" ry="48" fill="${sk}"/>${bangs}${brow}${eyes}${lash}<ellipse cx="-34" cy="30" rx="${bl}" ry="5" fill="#F7B7A3"/><ellipse cx="34" cy="30" rx="${bl}" ry="5" fill="#F7B7A3"/>${mouth}${acc}</g></g>${wearNeck(L.neck)}${wearBackFront(L.back, rx)}
+<g transform="translate(0,-134)"><g class="head">${back}<ellipse cx="0" cy="6" rx="50" ry="48" fill="${sk}"/>${bangs}${brow}${eyes}${lash}${wearCheek(L.cheek, bl)}${mouth}${acc}</g></g>${wearNeck(L.neck)}${wearBackFront(L.back, rx)}
 </g>`;
 }
 
