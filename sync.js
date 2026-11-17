@@ -163,17 +163,20 @@ function lyingMascot(busy) {
   const sr = sh.toLowerCase() === "#8155c9" ? "#4C5DDA" : "#8155C9", K = "#2A1D45", ln = (a, b, w, c) => `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
   const limb = (a, b, w, c) => ln(a, b, w + 4.5, K) + ln(a, b, w, c);
   const mouth = busy ? `<ellipse cx="62" cy="64" rx="5" ry="4.5" fill="#8A4A3A"/>` : `<path d="M54 62 Q62 69 70 62" fill="none" stroke="#8A4A3A" stroke-width="2.6" stroke-linecap="round"/>`;
-  return `<svg class="lymas" viewBox="0 0 300 120" role="img" aria-label="น้องเกี๊ยวนอนตะแคง">
-<g class="lyfoot2">${limb([150, 99], [250, 103], 20, sk)}<ellipse cx="262" cy="103" rx="12" ry="9" fill="#F0679B" stroke="${K}" stroke-width="2.2"/></g>
-<g class="lybody">${limb([68, 88], [138, 88], 40, sh)}
-<path d="M126 74 Q150 70 172 76 L176 104 Q150 112 126 104 Z" fill="${sr}" stroke="${K}" stroke-width="2.4" stroke-linejoin="round"/>
-<g class="lyfoot1">${limb([150, 90], [248, 93], 20, sk)}<ellipse cx="261" cy="92" rx="12" ry="9" fill="#F0679B" stroke="${K}" stroke-width="2.2"/></g>
-<g class="lyhead"><g transform="rotate(-10 62 50)"><circle cx="62" cy="50" r="33" fill="${sk}" stroke="${K}" stroke-width="2.6"/>
-<ellipse cx="62" cy="15" rx="13" ry="8" fill="${sk}" stroke="${K}" stroke-width="2.4"/><path d="M53 13 Q55 8 57 6 M62 12 Q62 7 62 4 M71 13 Q69 8 67 6" fill="none" stroke="${K}" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
-<ellipse cx="50" cy="52" rx="4" ry="5" fill="${K}"/><ellipse cx="74" cy="52" rx="4" ry="5" fill="${K}"/><circle cx="51.4" cy="50" r="1.4" fill="#fff"/><circle cx="75.4" cy="50" r="1.4" fill="#fff"/>
-<ellipse cx="41" cy="62" rx="6.5" ry="4" fill="#F58AB0" opacity=".55"/><ellipse cx="83" cy="62" rx="6.5" ry="4" fill="#F58AB0" opacity=".55"/>${mouth}</g></g>
-${limb([84, 76], [97, 104], 15, sh)}${limb([97, 104], [78, 83], 13, sk)}<circle cx="76" cy="81" r="9" fill="${sk}" stroke="${K}" stroke-width="2.2"/>
-${limb([96, 70], [122, 80], 15, sh)}${limb([122, 80], [150, 80], 13, sk)}<circle cx="155" cy="80" r="8.5" fill="${sk}" stroke="${K}" stroke-width="2.2"/></g></svg>`;
+  /* ท่าอ้างอิงพระปางไสยาสน์: ศอกลงพื้น มือประคองศีรษะที่ยกสูง ลำตัวทอดยาว อีกมือพาดต้นขา ขาเหยียดซ้อนกัน ฝ่าเท้าตั้ง นอนบนเบาะ */
+  return `<svg class="lymas" viewBox="0 0 300 130" role="img" aria-label="น้องเกี๊ยวนอนตะแคง">
+<rect x="12" y="104" width="276" height="16" rx="8" fill="#F28DAA" stroke="${K}" stroke-width="2.4"/><path d="M26 112 H274" stroke="#FFD27A" stroke-width="2.4" stroke-dasharray="1 6.5" stroke-linecap="round"/>
+<g class="lyfoot2">${limb([140, 96], [244, 97], 17, sk)}<ellipse cx="256" cy="95" rx="8.5" ry="11.5" fill="#F0679B" stroke="${K}" stroke-width="2.2"/></g>
+<g class="lybody">${limb([82, 88], [138, 88], 34, sh)}
+<path d="M126 77 Q148 73 170 78 L174 102 Q148 107 126 102 Z" fill="${sr}" stroke="${K}" stroke-width="2.4" stroke-linejoin="round"/>
+<g class="lyfoot1">${limb([140, 87], [244, 88], 17, sk)}<ellipse cx="264" cy="85" rx="8.5" ry="11.5" fill="#F0679B" stroke="${K}" stroke-width="2.2"/></g>
+${limb([60, 66], [84, 80], 15, sk)}
+<g class="lyhead"><g transform="translate(-10 -8)"><g transform="rotate(-12 62 50)"><circle cx="62" cy="50" r="31" fill="${sk}" stroke="${K}" stroke-width="2.6"/>
+<ellipse cx="62" cy="17" rx="12.5" ry="7.5" fill="${sk}" stroke="${K}" stroke-width="2.4"/><path d="M54 15 Q56 10 58 8 M62 14 Q62 9 62 6 M70 15 Q68 10 66 8" fill="none" stroke="${K}" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+<ellipse cx="50" cy="52" rx="3.8" ry="4.8" fill="${K}"/><ellipse cx="74" cy="52" rx="3.8" ry="4.8" fill="${K}"/><circle cx="51.3" cy="50" r="1.4" fill="#fff"/><circle cx="75.3" cy="50" r="1.4" fill="#fff"/>
+<ellipse cx="42" cy="61" rx="6" ry="3.8" fill="#F58AB0" opacity=".55"/><ellipse cx="82" cy="61" rx="6" ry="3.8" fill="#F58AB0" opacity=".55"/>${mouth}</g></g></g>
+${limb([92, 78], [66, 97], 15, sh)}${limb([66, 97], [47, 70], 13, sk)}<circle cx="44" cy="68" r="8.5" fill="${sk}" stroke="${K}" stroke-width="2.2"/>
+${limb([100, 74], [128, 82], 15, sh)}${limb([128, 82], [158, 85], 13, sk)}<circle cx="164" cy="85" r="8" fill="${sk}" stroke="${K}" stroke-width="2.2"/></g></svg>`;
 }
 function gateHtml() {
   const P = accParts(), stars = '<i style="--x:8%;--y:20%"></i><i style="--x:88%;--y:12%;--d:.7s"></i><i style="--x:76%;--y:70%;--d:1.3s"></i><i style="--x:14%;--y:76%;--d:1.9s"></i>';
