@@ -105,7 +105,7 @@ ${v.k === "buffet" ? `<button class="btn block" style="margin-top:10px" data-act
 ACT.dnv = a => { DNK = a.dataset.k; rerenderSub(); };
 
 [
-  [{ cat: "วินัย", icon: "check", title: "นิสัยประจำวัน", sub: "ติ๊กเล็กๆ ทุกวัน สะสมสตรีค", name: "habits", tone: "green", kw: "นิสัย เช็กลิสต์ ติ๊ก สตรีค ผัก น้ำหวาน นอน วินัย" }, SUBS.habits],
-  [{ cat: "ออกกำลังกาย", icon: "run", title: "เดินวันนี้", sub: "นับก้าวจาก GPS ตั้งเป้ารายวัน", name: "walk", tone: "green", kw: "เดิน ก้าว gps ระยะ นับก้าว เป้า" }, SUBS.walk],
-  [{ cat: "ช่วยตัดสินใจ", icon: "bag", title: "กินนอกบ้าน", sub: "เลือกร้านแล้วแนะนำเมนูที่พอดี", name: "dineout", tone: "amber", kw: "นอกบ้าน ร้าน ข้าวแกง ตามสั่ง ก๋วยเตี๋ยว เซเว่น บุฟเฟ่ต์ คาเฟ่ ฟาสต์ฟู้ด" }, SUBS.dineout]
+  [{ cat: "วินัย", icon: "check", title: "นิสัยประจำวัน", sub: "ติ๊กเล็กๆ ทุกวัน สะสมสตรีค", name: "habits", isnew: true, tone: "green", kw: "นิสัย เช็กลิสต์ ติ๊ก สตรีค ผัก น้ำหวาน นอน วินัย" }, SUBS.habits],
+  [{ cat: "ออกกำลังกาย", icon: "run", title: "เดินวันนี้", sub: "นับก้าวจาก GPS ตั้งเป้ารายวัน", name: "walk", isnew: true, tone: "green", kw: "เดิน ก้าว gps ระยะ นับก้าว เป้า" }, SUBS.walk],
+  [{ cat: "ช่วยตัดสินใจ", icon: "bag", title: "กินนอกบ้าน", sub: "เลือกร้านแล้วแนะนำเมนูที่พอดี", name: "dineout", isnew: true, tone: "amber", kw: "นอกบ้าน ร้าน ข้าวแกง ตามสั่ง ก๋วยเตี๋ยว เซเว่น บุฟเฟ่ต์ คาเฟ่ ฟาสต์ฟู้ด" }, SUBS.dineout]
 ].forEach(x => registerMode(x[0], x[1]));

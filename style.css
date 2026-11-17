@@ -1213,3 +1213,11 @@ input:not([type]), input[type="text"]:not(.bare), input[type="number"]:not(.bare
 .dntip { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; } .dntip div { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; line-height: 1.5; } .dntip svg { flex: none; margin-top: 3px; color: var(--green, #1f9a58); }
 .dni { animation: ptin .35s both; animation-delay: calc(var(--i) * 40ms); } .dnb { padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #dcf5e6; color: #1f7a48; } .dni.s1 .dnb { background: #fff0cf; color: #b87400; } .dni.s2 .dnb { background: #fde4ea; color: #d6356a; }
 @media (prefers-reduced-motion: reduce) { .hbrow, .hbrow.on .hbc, .wkbtn.live, .wkb i, .dnvb, .dni { animation: none !important; } }
+/* ทุกโหมด: มาใหม่ + หมวดเรียงใหม่ + ชิปหมวดติดด้านบน */
+.hubnew { display: flex; gap: 10px; overflow-x: auto; margin: 0 -16px; padding: 4px 16px 8px; scrollbar-width: none; scroll-snap-type: x proximity; scroll-padding-inline: 16px; } .hubnew::-webkit-scrollbar { display: none; }
+.hnew { position: relative; flex: none; scroll-snap-align: start; display: flex; align-items: center; gap: 10px; min-width: 210px; padding: 12px 14px; border-radius: 18px; border: 1px solid var(--line); background: var(--card); text-align: left; color: var(--ink); animation: ptin .4s both; animation-delay: calc(var(--i) * 70ms); } .hnew:active { transform: scale(.98); }
+.hnew b { display: block; font-size: 14.5px; } .hnew small { display: block; font-size: 11.5px; color: var(--muted); }
+.hnew .hic { flex: none; width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; background: var(--soft); color: var(--accent); }
+.hnew i, .newbadge { position: absolute; top: 8px; right: 10px; font-style: normal; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: #E8579A; color: #fff; animation: gpop .4s both; }
+.hubchips { position: sticky; top: 0; z-index: 6; background: var(--bg, #faf5ee); padding-top: 8px; padding-bottom: 8px; margin-top: 8px; }
+@media (prefers-reduced-motion: reduce) { .hnew, .hnew i, .newbadge { animation: none !important; } }

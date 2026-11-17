@@ -96,7 +96,7 @@ function featCard(m) {
 function modeTile(m, i) {
   const tone = m.tone || MODE_TONE[m.cat] || "violet", st = `style="--i:${i}"`;
   if (m.soon || !m.name) return `<button class="htile ${tone} soon" disabled ${st}><span class="hic">${ic(m.icon, 22)}</span><b>${m.title}</b><span class="s">${m.sub}</span><i class="soonbadge">เร็วๆ นี้</i></button>`;
-  return `<button class="htile ${tone}" ${st} data-act="${m.name === "charts" ? "nav" : "sub"}" data-n="${m.name}" data-v="charts" ${m.arg ? `data-arg="${m.arg}"` : ""}><span class="hic">${ic(m.icon, 22)}</span><b>${m.title}</b><span class="s">${m.sub}</span>${m.tabs ? `<i class="tabsbadge">${m.tabs.length} ในหนึ่ง</i>` : ""}</button>`;
+  return `<button class="htile ${tone}" ${st} data-act="${m.name === "charts" ? "nav" : "sub"}" data-n="${m.name}" data-v="charts" ${m.arg ? `data-arg="${m.arg}"` : ""}><span class="hic">${ic(m.icon, 22)}</span><b>${m.title}</b><span class="s">${m.sub}</span>${m.isnew ? `<i class="newbadge">ใหม่</i>` : ""}${m.tabs ? `<i class="tabsbadge">${m.tabs.length} ในหนึ่ง</i>` : ""}</button>`;
 }
 renderHub = function () {
   const q = hubQ.trim(), cats = [], by = {}, feats = MODES.filter(m => m.featured);
@@ -104,9 +104,12 @@ renderHub = function () {
     if (q ? (m.title + m.sub + m.kw).toLowerCase().indexOf(q.toLowerCase()) < 0 : (m.quick || m.featured)) return;
     if (!by[m.cat]) { by[m.cat] = []; cats.push(m.cat); } by[m.cat].push(m);
   });
+  const ORD = ["บันทึก", "ออกกำลังกาย", "วินัย", "ช่วยตัดสินใจ", "ดูความคืบหน้า", "ตัวละครของฉัน", "อื่นๆ"]; cats.sort((a, b) => (ORD.indexOf(a) < 0 ? 99 : ORD.indexOf(a)) - (ORD.indexOf(b) < 0 ? 99 : ORD.indexOf(b)));
+  const fresh = q ? "" : MODES.filter(m => m.isnew && m.name);
+  const newRow = fresh.length ? `<div class="sec hubsec">${ic("sparkle", 14)} มาใหม่</div><div class="hubnew">${fresh.map((m, i) => `<button class="hnew ${m.tone || "violet"}" style="--i:${i}" data-act="sub" data-n="${m.name}"><span class="hic">${ic(m.icon, 20)}</span><span><b>${m.title}</b><small>${m.sub}</small></span><i>ใหม่</i></button>`).join("")}</div>` : "";
   const shown = q ? cats : cats.filter(c => hubCat === "all" || c === hubCat), n = { i: 0 };
   const secs = shown.map(c => `<div class="sec hubsec">${c} <span class="hubn">${by[c].length}</span></div><div class="hgrid">${by[c].map(m => modeTile(m, n.i++)).join("")}</div>`).join("");
   const chips = q ? "" : `<div class="hubchips" role="tablist">${[["all", "ทั้งหมด"]].concat(cats.map(c => [c, c])).map(c => `<button class="hchip ${hubCat === c[0] ? "on" : ""}" data-act="hubcat" data-c="${c[0]}" role="tab" aria-selected="${hubCat === c[0]}">${c[1]}</button>`).join("")}</div>`;
-  $("#v-hub").innerHTML = `<div class="top"><div><h1>ทุกโหมด</h1><div class="xs muted">ทุกอย่างของ Maalot ที่เดียว</div></div></div><div class="hubsearch"><span class="muted">${ic("search", 18)}</span><input id="hubq" type="text" placeholder="ค้นหา เช่น หิว น้ำหนัก เมนู" value="${esc(hubQ)}" aria-label="ค้นหาโหมด"/></div>${q ? "" : feats.map(featCard).join("")}${q ? "" : hubQuick()}${chips}${secs || '<p class="muted" style="margin:24px 4px;text-align:center">ไม่พบ ลองคำอื่น เช่น น้ำ กราฟ ตัวละคร</p>'}`;
+  $("#v-hub").innerHTML = `<div class="top"><div><h1>ทุกโหมด</h1><div class="xs muted">ทุกอย่างของ Maalot ที่เดียว</div></div></div><div class="hubsearch"><span class="muted">${ic("search", 18)}</span><input id="hubq" type="text" placeholder="ค้นหา เช่น หิว น้ำหนัก เมนู" value="${esc(hubQ)}" aria-label="ค้นหาโหมด"/></div>${q ? "" : feats.map(featCard).join("")}${newRow}${q ? "" : hubQuick()}${chips}${secs || '<p class="muted" style="margin:24px 4px;text-align:center">ไม่พบ ลองคำอื่น เช่น น้ำ กราฟ ตัวละคร</p>'}`;
   const inp = $("#hubq"); if (hubQ) { inp.focus(); inp.setSelectionRange(hubQ.length, hubQ.length); }
 };
