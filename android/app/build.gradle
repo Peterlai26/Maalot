@@ -1,0 +1,23 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'app.maalot.twa'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'app.maalot.twa'
+        minSdk 23
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+    signingConfigs {
+        release {
+            storeFile file(System.getenv('MAALOT_KEYSTORE') ?: 'maalot.keystore')
+            storePassword System.getenv('MAALOT_STOREPASS') ?: ''
+            keyAlias 'maalot'
+            keyPassword System.getenv('MAALOT_STOREPASS') ?: ''
+        }
+    }
+    buildTypes { release { minifyEnabled false; signingConfig signingConfigs.release } }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+dependencies { implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0' }

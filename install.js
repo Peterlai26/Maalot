@@ -22,6 +22,7 @@ ACT.pwa = () => {
   if (PWA_EV) { const ev = PWA_EV; PWA_EV = null; ev.prompt(); ev.userChoice && ev.userChoice.then(r => { if (r.outcome === "accepted") instBar(false); else instBar(true); }); return; }
   instHowTo();
 };
+ACT.apkdl = () => { openModal(`<h2>ติดตั้งไฟล์ .apk บน Android</h2><ol class="insteps"><li>กดดาวน์โหลดด้านล่าง</li><li>เปิดไฟล์ที่ดาวน์โหลดจากแถบแจ้งเตือนหรือแอปไฟล์</li><li>ถ้าเครื่องถาม ให้อนุญาต “ติดตั้งแอปจากแหล่งนี้” ให้เบราว์เซอร์ที่ใช้ดาวน์โหลด แล้วกดติดตั้ง</li></ol><p class="muted sm" style="margin:10px 0 14px">เป็นแอปที่เปิดหน้าเว็บ Maalot เต็มจอ ข้อมูลของคุณเหมือนในเว็บ อัปเดตตามเว็บอัตโนมัติ ถ้าเครื่องเตือนว่าไม่รู้จักผู้พัฒนา เป็นเรื่องปกติของไฟล์ที่ไม่ได้มาจาก Google Play</p><div class="row"><button class="btn" style="flex:1" data-act="modalclose">ปิด</button><a class="btn primary" style="flex:1;text-align:center;text-decoration:none" href="maalot.apk" download="maalot.apk" data-act="modalclose">ดาวน์โหลด</a></div>`); };
 ACT.instx = () => { try { localStorage.setItem(INST_KEY, String(Date.now())); } catch (e) {} instBar(false); };
 addEventListener("beforeinstallprompt", e => { e.preventDefault(); PWA_EV = e; });
 addEventListener("appinstalled", () => { instBar(false); document.querySelectorAll(".linst").forEach(x => x.remove()); toast("ติดตั้งแล้ว เปิดจากหน้าจอโฮมได้เลย"); });
