@@ -1160,3 +1160,14 @@ input:not([type]), input[type="text"]:not(.bare), input[type="number"]:not(.bare
 .nask-ic i { position: absolute; top: 14px; right: 16px; width: 12px; height: 12px; border-radius: 50%; background: #E8579A; box-shadow: 0 0 0 3px var(--soft); animation: gmping 1.8s ease-out infinite; }
 @keyframes nbell { 0%, 60%, 100% { transform: rotate(0); } 10% { transform: rotate(14deg); } 20% { transform: rotate(-12deg); } 30% { transform: rotate(8deg); } 40% { transform: rotate(-6deg); } }
 @media (prefers-reduced-motion: reduce) { .nask-ic svg, .nask-ic i { animation: none !important; } }
+/* ออนบอร์ดดิ้ง ขั้นที่ 2 */
+.onbdots { display: flex; gap: 6px; margin-bottom: 14px; } .onbdots i { flex: 1; height: 6px; border-radius: 999px; background: var(--line); } .onbdots i.done { background: var(--accent); opacity: .5; } .onbdots i.on { background: var(--accent); animation: mbar .8s cubic-bezier(.2, .9, .3, 1) both; }
+.onbh { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; } .onbh h1 { font-size: 21px; line-height: 1.25; margin: 0 0 2px; }
+.onbh-ic { flex: none; width: 54px; height: 54px; border-radius: 18px; display: grid; place-items: center; color: #fff; background-image: linear-gradient(135deg, #6B3FC0, #8D6CF0 60%, #4D6FE0); box-shadow: 0 10px 20px -12px #6B3FC0; animation: mhbob 3s ease-in-out infinite; }
+.onbc { padding: 14px; margin-bottom: 12px; animation: ptin .4s both; } .onbc .pills { margin-bottom: 8px; } .onbc .f { margin-top: 2px; }
+.nfg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; } .nfg .nf:last-child { grid-column: 1 / -1; }
+.nf { display: block; } .nf-l { display: flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+.nf-i { position: relative; display: block; } .nf-i input { width: 100%; box-sizing: border-box; padding: 14px 44px 14px 14px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--soft); font: 800 20px var(--font-display); color: var(--ink); outline: none; transition: border-color .2s, box-shadow .2s, background .2s; } .nf-i input::placeholder { color: var(--muted); opacity: .45; font-weight: 600; }
+.nf-i input:focus { background: var(--card); border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent); } .nf-i em { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-style: normal; font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .onbh-ic, .onbc, .onbdots i.on { animation: none !important; } }
+.nf-i input::-webkit-outer-spin-button, .nf-i input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; } .nf-i input { -moz-appearance: textfield; }
