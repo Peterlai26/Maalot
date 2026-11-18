@@ -48,15 +48,17 @@ function lookPreview(L, rx) {
 }
 
 /* ---------- เริ่มต้นครั้งแรก ---------- */
+const onbDots = n => `<div class="onbdots" aria-label="ขั้นที่ ${n} จาก 3">${[1, 2, 3].map(i => `<i class="${i < n ? "done" : i === n ? "on" : ""}"></i>`).join("")}</div>`;
+const onbHead = (icon, title, sub) => `<div class="onbh"><span class="onbh-ic">${ic(icon, 26)}</span><div><h1>${title}</h1><p class="muted sm">${sub}</p></div></div>`;
 function renderOnb() {
   const el = $("#onb"); el.hidden = false; $("#app").hidden = true; $(".nav").hidden = true; el.classList.toggle("dream", ONB.step === 1);
   if (ONB.step === 1) {
     EDIT = EDIT && EDIT.host === renderOnb ? Object.assign(EDIT, { look: ONB.look }) : { look: ONB.look, rx: 46, name: ONB.name, host: renderOnb, mode: "wear", tab: "self", onb: true, sel: null };
-    el.innerHTML = `<div class="inner"><p class="muted sm">ขั้นที่ 1 จาก 3</p><h1>สร้างตัวแทนของคุณ</h1><p class="muted sm" style="margin:4px 0 12px">เลือกหน้าตาที่ชอบ เปลี่ยนใหม่ได้ทุกเมื่อ แล้วกดต่อไปที่มุมขวาล่างของภาพ</p>${lookEditor()}</div>`;
+    el.innerHTML = `<div class="inner onb1">${onbDots(1)}${onbHead("sparkle", "สร้างตัวแทนของคุณ", "เลือกหน้าตาที่ชอบ เปลี่ยนใหม่ได้ทุกเมื่อ แล้วกดต่อไปที่มุมขวาล่างของภาพ")}${lookEditor()}</div>`;
   } else if (ONB.step === 2) {
     const p = ONB.prof, sx = p.sex, v = k => ONB.set ? p[k] : "";
     const fld = (id, ico, lab, unit, ph, val, extra) => `<label class="nf" for="${id}"><span class="nf-l">${ic(ico, 15)}${lab}</span><span class="nf-i"><input id="${id}" type="number" inputmode="decimal" ${extra || ""} placeholder="${ph}" value="${val}"/><em>${unit}</em></span></label>`;
-    el.innerHTML = `<div class="inner onb2"><div class="onbdots" aria-label="ขั้นที่ 2 จาก 3"><i class="done"></i><i class="on"></i><i></i></div><div class="onbh"><span class="onbh-ic">${ic("scale", 26)}</span><div><h1>ตัวละครจะมีรูปร่างเหมือนคุณ</h1><p class="muted sm">กรอกตัวเลขจริง เก็บไว้ในบัญชีของคุณเท่านั้น</p></div></div>
+    el.innerHTML = `<div class="inner onb2">${onbDots(2)}<div class="onbh"><span class="onbh-ic">${ic("scale", 26)}</span><div><h1>ตัวละครจะมีรูปร่างเหมือนคุณ</h1><p class="muted sm">กรอกตัวเลขจริง เก็บไว้ในบัญชีของคุณเท่านั้น</p></div></div>
 <div class="card onbc"><div class="nfg">${fld("ph", "ruler", "ส่วนสูง", "ซม.", "160", v("h"))}${fld("pw", "scale", "น้ำหนักตอนนี้", "กก.", "60", v("w0"), 'step="0.1"')}${fld("pa", "user", "อายุ", "ปี", "25", v("age"))}</div>
 ${ifPills("px", "สูตรคำนวณพลังงานใช้ค่าของ", [["f", "หญิง"], ["m", "ชาย"]], sx)}<select id="px" hidden><option value="f" ${sx === "f" ? "selected" : ""}>หญิง</option><option value="m" ${sx === "m" ? "selected" : ""}>ชาย</option></select></div>
 <div class="card onbc">${ifPills("pc", "กิจวัตรประจำวัน", [["1.2", "นั่งเป็นหลัก"], ["1.3", "เดินบ้าง"], ["1.4", "เดินเยอะ"]], String(p.act))}<select id="pc" hidden><option value="1.2" ${p.act === 1.2 ? "selected" : ""}>นั่งเรียนหรือทำงานเป็นหลัก</option><option value="1.3" ${p.act === 1.3 ? "selected" : ""}>เดินไปมาบ้าง</option><option value="1.4" ${p.act === 1.4 ? "selected" : ""}>ยืนหรือเดินเยอะ</option></select>
@@ -66,11 +68,14 @@ ${ifPills("pd", "ความเร็วในการลด", [["300", "เ�
   } else {
     const p = ONB.prof, w = p.w0, rx = shapeRx(w);
     S.prof = Object.assign({}, S.prof, p); const base = baseBurn(w), under = bmiOf(w) < 18.5, tgt = Math.max(under ? base : base - p.def, floorKcal());
-    el.innerHTML = `<div class="inner"><p class="muted sm">ขั้นที่ 3 จาก 3</p><h1>พร้อมแล้ว ยินดีที่ได้เจอกันนะ</h1><div style="margin:12px 0">${lookPreview(ONB.look, rx)}</div>
-<div class="card"><div class="row between"><span class="muted sm">พลังงานที่ใช้ต่อวัน (ประมาณ)</span><b>${fmtN(base)} kcal</b></div><div class="row between" style="margin-top:6px"><span class="muted sm">เป้ากินต่อวัน</span><b>${fmtN(tgt)} kcal</b></div></div>
+    const diff = Math.max(0, Math.round(base - tgt));
+    el.innerHTML = `<div class="inner onb3">${onbDots(3)}${onbHead("heart", "พร้อมแล้ว ยินดีที่ได้เจอกันนะ", "นี่คือตัวแทนของคุณและเป้าหมายเริ่มต้น")}<div class="onb3pv">${lookPreview(ONB.look, rx)}</div>
+<div class="card onbc o3t"><span class="o3-l">เป้ากินต่อวัน</span><b class="o3-n" data-n="${Math.round(tgt)}">${fmtN(tgt)}</b><span class="o3-u">kcal</span></div>
+<div class="o3g"><div class="card onbc"><span class="o3i">${ic("flame", 18)}</span><small>พลังงานที่ใช้ต่อวัน</small><b>${fmtN(base)}</b><em>kcal (ประมาณ)</em></div><div class="card onbc"><span class="o3i">${ic("scale", 18)}</span><small>${under ? "น้ำหนักตอนนี้" : "ลดจากที่ใช้"}</small><b>${under ? fmtN(w) : "−" + fmtN(diff)}</b><em>${under ? "กก." : "kcal ต่อวัน"}</em></div></div>
 ${under ? '<div class="hint">' + ic("heart", 18) + "<span>น้ำหนักของคุณอยู่ในเกณฑ์ต่ำแล้ว แอปจึงตั้งเป้าให้คงที่ ไม่แนะนำให้ลดต่อ ถ้ากังวลเรื่องการกิน ปรึกษาแพทย์ได้เสมอ</span></div>" : ""}
 <div class="hint">${ic("sparkle", 18)}<span>ถ้ากินน้อยเกินไป ตัวละครจะอ่อนแรงและเหนื่อย ไม่ได้ผอมเร็วขึ้น เป้าจะไม่ต่ำกว่า ${fmtN(floorKcal())} kcal เพื่อความปลอดภัย ถ้ามีโรคประจำตัว ตั้งครรภ์ หรือใช้ยา ควรปรึกษาแพทย์ก่อน</span></div>
-<div class="row" style="margin-top:16px"><button class="btn" data-act="onbback">ย้อนกลับ</button><button class="btn primary" style="flex:1" data-act="onb3">เริ่มเลย</button></div></div>`;
+<div class="row" style="margin-top:16px"><button class="btn" data-act="onbback">ย้อนกลับ</button><button class="btn primary go" style="flex:1" data-act="onb3">เริ่มเลย</button></div></div>`;
+    const cn = el.querySelector(".o3-n"); if (cn && !matchMedia("(prefers-reduced-motion: reduce)").matches) { const T = +cn.dataset.n, t0 = performance.now(); const st = t => { const k = Math.min(1, (t - t0) / 900); cn.textContent = fmtN(Math.round(T * (1 - Math.pow(1 - k, 3)))); if (k < 1) requestAnimationFrame(st); }; requestAnimationFrame(st); }
   }
   window.scrollTo(0, 0);
 }

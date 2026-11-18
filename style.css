@@ -1244,3 +1244,9 @@ input:not([type]), input[type="text"]:not(.bare), input[type="number"]:not(.bare
 @keyframes hfbwig { 0%, 70%, 100% { transform: rotate(0); } 78% { transform: rotate(-14deg); } 86% { transform: rotate(12deg); } 94% { transform: rotate(-6deg); } }
 @media (prefers-reduced-motion: reduce) { .hubfb, .hubfb::after, .hfb-ic svg, .hubfb i { animation: none !important; } }
 .hubfb i { animation: hfbdot 1.6s ease-in-out infinite !important; } @keyframes hfbdot { 50% { opacity: .45; transform: scale(.8); } }
+/* ออนบอร์ดดิ้ง ขั้นที่ 1 และ 3 */
+.onb1 .onbh { margin-bottom: 10px; } .onb1 .onbh h1 { font-size: 21px; }
+.onb3pv { margin: 4px 0 12px; animation: ptin .5s both; }
+.o3t { text-align: center; padding: 18px 14px; background: linear-gradient(135deg, var(--soft), var(--card) 75%); } .o3-l { display: block; font-size: 13px; color: var(--muted); } .o3-n { display: block; font: 800 46px/1.1 var(--font-display); color: var(--accent); } .o3-u { font-size: 13px; color: var(--muted); }
+.o3g { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .o3g .onbc { margin-bottom: 12px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px; } .o3g b { font: 800 22px var(--font-display); } .o3g small { font-size: 12px; color: var(--muted); } .o3g em { font-style: normal; font-size: 11px; color: var(--muted); }
+.o3i { width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; background: var(--soft); color: var(--accent); margin-bottom: 4px; }
