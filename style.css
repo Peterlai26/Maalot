@@ -1289,3 +1289,4 @@ input:not([type]), input[type="text"]:not(.bare), input[type="number"]:not(.bare
 :root { --blue: #4D6FE0; --accent-soft: color-mix(in srgb, var(--accent) 22%, transparent); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --blue: #8FA8FF; } }
 :root[data-theme="dark"] { --blue: #8FA8FF; }
+a.btn { text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; }

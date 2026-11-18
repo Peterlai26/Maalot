@@ -26,7 +26,7 @@ function renderLanding() {
 <h1 class="lhead">มื้อนี้กินอะไรมา<br>บอกน้องก้อนได้เลย</h1>
 <p class="lsub">พิมพ์เป็นประโยคธรรมดา น้องจดและประมาณแคลอรี่ให้<br>ไม่ต้องนับเอง ไม่มีใครตัดสิน</p>
 <button class="lcta" data-act="landgo">เริ่มจดมื้อแรก ${ic("arrow", 18)}</button>
-<p class="lfine">สมัครสมาชิกฟรี ใช้เวลาไม่ถึงนาที แล้วสร้างตัวละครได้เลย</p>${isApp() ? "" : `<button class="linst" data-act="pwa">${ic("phone", 16)}ติดตั้งเป็นแอปบนมือถือ</button>`}<button class="linst lacct" data-act="acctopen">${ic("user", 16)}มีบัญชีแล้ว? เข้าสู่ระบบ</button>${LHILLS}</section>
+<p class="lfine">สมัครสมาชิกฟรี ใช้เวลาไม่ถึงนาที แล้วสร้างตัวละครได้เลย</p>${isApp() ? "" : `<button class="linst" data-act="pwa">${ic("phone", 16)}${isAndroidWeb() ? "ดาวน์โหลดแอปสำหรับ Android (.apk)" : "ติดตั้งเป็นแอปบนมือถือ"}</button>`}<button class="linst lacct" data-act="acctopen">${ic("user", 16)}มีบัญชีแล้ว? เข้าสู่ระบบ</button>${LHILLS}</section>
 <section class="lroom"><div class="lring"><div class="lroom-in">${room}</div></div></section>
 
 <section class="lpaper"><h2>พิมพ์เหมือนเล่าให้เพื่อนฟัง</h2><p class="lp">ไม่ต้องค้นเมนูทีละอย่าง แอปแยกรายการและประมาณพลังงานให้</p>
