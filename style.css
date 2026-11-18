@@ -1270,3 +1270,22 @@ input:not([type]), input[type="text"]:not(.bare), input[type="number"]:not(.bare
 .flbar { display: block; height: 6px; border-radius: 3px; background: var(--soft); margin-top: 5px; overflow: hidden; } .flbar u { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #8155C9, #F0679B); animation: mbar .9s cubic-bezier(.2, .9, .3, 1) both; text-decoration: none; }
 .fls { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; color: var(--warn-ink); } .flp { min-width: 40px; text-align: right; font: 800 16px var(--font-display); } .flx { width: 34px !important; height: 34px; border-radius: 12px; }
 @media (prefers-reduced-motion: reduce) { .flq, .flr, .flbar u { animation: none !important; } }
+
+/* โหมดมืด: หน้าแต่งตัว/ร้านค้า/สร้างตัวละคร */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --dr-paper: #170F27; --dr-plum: #F4EEFB; --dr-chip: #34274F; --dr-line: #3A2D55; --dr-mute: #B6A9CF; }
+  :root:not([data-theme="light"]) #sub.dress input[type=text], :root:not([data-theme="light"]) #onb.dream input[type=text], :root:not([data-theme="light"]) #sub.dress .dprev, :root:not([data-theme="light"]) #onb.dream .dprev, :root:not([data-theme="light"]) #sub.dress .btn, :root:not([data-theme="light"]) #onb.dream .btn, :root:not([data-theme="light"]) #sub.dress .dcell, :root:not([data-theme="light"]) #onb.dream .dcell, :root:not([data-theme="light"]) #sub.dress .dcell.on, :root:not([data-theme="light"]) #onb.dream .dcell.on { background: var(--card); color: var(--dr-plum); }
+  :root:not([data-theme="light"]) #sub.dress .btn.primary, :root:not([data-theme="light"]) #onb.dream .btn.primary, :root:not([data-theme="light"]) #sub.dress .btn.sm.sel, :root:not([data-theme="light"]) #sub.dress .seg button.on, :root:not([data-theme="light"]) #sub.dress .dtab.on, :root:not([data-theme="light"]) #onb.dream .dtab.on, :root:not([data-theme="light"]) #sub.dress .dbadge.lk, :root:not([data-theme="light"]) #onb.dream .dbadge.lk, :root:not([data-theme="light"]) #sub.dress .dbadge.ok, :root:not([data-theme="light"]) #onb.dream .dbadge.ok, :root:not([data-theme="light"]) #sub.dress .dbar, :root:not([data-theme="light"]) .lcta { background: var(--accent); color: var(--accent-ink); }
+  :root:not([data-theme="light"]) #sub.dress .dinfo { color: var(--accent-ink); } :root:not([data-theme="light"]) #sub.dress .dbar .btn:not(.buy) { background: var(--card); color: var(--dr-plum); }
+  :root:not([data-theme="light"]) #sub.dress .dcell.on, :root:not([data-theme="light"]) #onb.dream .dcell.on { border-color: var(--accent); }
+}
+:root[data-theme="dark"] { --dr-paper: #170F27; --dr-plum: #F4EEFB; --dr-chip: #34274F; --dr-line: #3A2D55; --dr-mute: #B6A9CF; }
+:root[data-theme="dark"] #sub.dress input[type=text], :root[data-theme="dark"] #onb.dream input[type=text], :root[data-theme="dark"] #sub.dress .dprev, :root[data-theme="dark"] #onb.dream .dprev, :root[data-theme="dark"] #sub.dress .btn, :root[data-theme="dark"] #onb.dream .btn, :root[data-theme="dark"] #sub.dress .dcell, :root[data-theme="dark"] #onb.dream .dcell, :root[data-theme="dark"] #sub.dress .dcell.on, :root[data-theme="dark"] #onb.dream .dcell.on { background: var(--card); color: var(--dr-plum); }
+:root[data-theme="dark"] #sub.dress .btn.primary, :root[data-theme="dark"] #onb.dream .btn.primary, :root[data-theme="dark"] #sub.dress .btn.sm.sel, :root[data-theme="dark"] #sub.dress .seg button.on, :root[data-theme="dark"] #sub.dress .dtab.on, :root[data-theme="dark"] #onb.dream .dtab.on, :root[data-theme="dark"] #sub.dress .dbadge.lk, :root[data-theme="dark"] #onb.dream .dbadge.lk, :root[data-theme="dark"] #sub.dress .dbadge.ok, :root[data-theme="dark"] #onb.dream .dbadge.ok, :root[data-theme="dark"] #sub.dress .dbar, :root[data-theme="dark"] .lcta { background: var(--accent); color: var(--accent-ink); }
+:root[data-theme="dark"] #sub.dress .dinfo { color: var(--accent-ink); } :root[data-theme="dark"] #sub.dress .dbar .btn:not(.buy) { background: var(--card); color: var(--dr-plum); }
+:root[data-theme="dark"] #sub.dress .dcell.on, :root[data-theme="dark"] #onb.dream .dcell.on { border-color: var(--accent); }
+.letter::after { right: auto !important; left: 14px; top: auto !important; bottom: 10px; }
+/* สีที่ลืมนิยาม (กราฟแท่งเซ็ตเคยเป็นสีดำ) */
+:root { --blue: #4D6FE0; --accent-soft: color-mix(in srgb, var(--accent) 22%, transparent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --blue: #8FA8FF; } }
+:root[data-theme="dark"] { --blue: #8FA8FF; }
