@@ -223,7 +223,7 @@ SUBS.settings = () => {
 <div class="sec">หรือคัดลอกเป็นข้อความ</div><textarea id="bk" rows="3" aria-label="ข้อมูลสำรอง" placeholder="กดคัดลอก หรือวางข้อมูลที่เคยสำรองไว้ที่นี่"></textarea>
 <div class="row" style="margin-top:8px"><button class="btn" style="flex:1" data-act="bkout">คัดลอกข้อมูล</button><button class="btn" style="flex:1" data-act="bkin">นำเข้า</button></div>
 ${remHTML()}
-<div class="sec">ติดตั้งเป็นแอป</div><button class="btn block" data-act="pwa">เพิ่ม Maalot ลงหน้าจอหลัก</button>
+<div class="sec">ติดตั้งเป็นแอป</div><button class="btn block" data-act="pwa">${isAndroidWeb() ? "ดาวน์โหลดแอป Maalot (.apk)" : "เพิ่ม Maalot ลงหน้าจอหลัก"}</button>
 <div class="sec">อื่นๆ</div><button class="btn danger block" data-act="resetask">เริ่มใหม่ทั้งหมด</button>
 <p class="xs muted" style="margin-top:12px">ใช้เป็นข้อมูลทั่วไป ไม่ใช่คำแนะนำทางการแพทย์ ถ้ามีโรคประจำตัว ตั้งครรภ์ หรือกังวลเรื่องการกิน ควรปรึกษาแพทย์</p>`, after: badge
   };
