@@ -2,6 +2,8 @@
 
 โฟลเดอร์นี้ห่อเว็บแอป Maalot เป็นแอปมือถือจริง เพื่อให้ **นับก้าวเบื้องหลัง** (ปิดจอหรือสลับแอปได้) และ **อ่านก้าวจาก Health Connect (Android) / Apple Health (iPhone)** เว็บเวอร์ชันปกติยังทำงานเหมือนเดิม โค้ดฝั่งเว็บตรวจเองว่าเปิดในแอปหรือไม่ (`native.js`)
 
+> คู่มือละเอียดทีละขั้น: [GUIDE-TH.md](GUIDE-TH.md)
+
 ## เอา APK ไปลองบน Android (ไม่ต้องมี Android Studio)
 1. เปิดหน้า Actions ของรีโพ แล้วเลือก **Build Android app** → **Run workflow**
 2. รอ 5–10 นาที ดาวน์โหลดไฟล์ `maalot-debug-apk` ที่ท้ายหน้า (ได้ไฟล์ `app-debug.apk`)
