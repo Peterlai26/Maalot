@@ -240,7 +240,7 @@ export async function handleAccount(req, env, url) {
     }
     if (p === "/auth/delete") {
       if (!HEX64.test(b.k || "") || !ctEq(await pw(env, me.a.salt, b.k), me.a.h)) { ipFail(ip); return J(req, { error: "wrong" }, 401); }
-      await env.SUBS.delete("a:" + me.uid); await env.SUBS.delete("u:" + (await sha(me.a.id))); await env.SUBS.delete("d:" + me.uid); return J(req, { ok: true });
+      await env.SUBS.delete("a:" + me.uid); await env.SUBS.delete("u:" + (await sha(me.a.id))); await env.SUBS.delete("d:" + me.uid); await env.SUBS.delete("p:" + me.uid); await env.SUBS.delete("fr:" + me.uid); return J(req, { ok: true });
     }
     return J(req, { error: "not found" }, 404);
   }
@@ -260,6 +260,56 @@ export async function handleAccount(req, env, url) {
   return null;
 }
 
+/* ---------- เพื่อนช่วยกัน: ขอเป็นเพื่อน/ตอบรับ + คะแนนรายสัปดาห์ (แชร์เฉพาะชื่อตัวละคร สตรีค คะแนน) ---------- */
+const WEEK_RE = /^\d{4}-\d{2}-\d{2}$/, MAX_FRIENDS = 30, MAX_REQ = 20;
+const kvj = async (env, k, d) => JSON.parse((await env.SUBS.get(k)) || "null") || d;
+const cleanName = (s) => String(s || "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 20) || "เพื่อน";
+async function uidOfId(env, id) { return env.SUBS.get("u:" + (await sha(String(id || "").trim().toLowerCase()))); }
+async function idOfUid(env, uid) { const a = await kvj(env, "a:" + uid, null); return a ? a.id : null; }
+export async function handleFriends(req, env, url) {
+  const p = url.pathname, ip = req.headers.get("CF-Connecting-IP") || "x";
+  const me = await authed(req, env); if (!me) return J(req, { error: "unauthorized" }, 401);
+  const frKey = (u) => "fr:" + u, load = (u) => kvj(env, frKey(u), { f: [], inn: [], out: [] }), save = (u, v) => env.SUBS.put(frKey(u), JSON.stringify(v));
+  if (p === "/friends" && req.method === "GET") {
+    const m = await load(me.uid), pub = async (u) => { const st = await kvj(env, "p:" + u, null), id = await idOfUid(env, u); return id ? { id, name: st ? st.name : id, streak: st ? st.streak : 0, pts: st ? st.pts : 0, wk: st ? st.wk : "" } : null; };
+    const friends = (await Promise.all(m.f.map(pub))).filter(Boolean), incoming = (await Promise.all(m.inn.map(pub))).filter(Boolean).map((x) => ({ id: x.id, name: x.name })), outgoing = (await Promise.all(m.out.map(async (u) => { const id = await idOfUid(env, u); return id ? { id } : null; }))).filter(Boolean);
+    return J(req, { me: { id: me.a.id }, friends, incoming, outgoing });
+  }
+  if (req.method !== "POST") return J(req, { error: "not found" }, 404);
+  let b; try { b = await readJson(req, 600); } catch (_) { return J(req, { error: "bad json" }, 400); }
+  if (p === "/friends/stat") {
+    const pts = Math.round(Number(b.pts)), streak = Math.round(Number(b.streak));
+    if (!(pts >= 0 && pts <= 100000) || !(streak >= 0 && streak <= 10000) || !WEEK_RE.test(String(b.wk || ""))) return J(req, { error: "bad input" }, 400);
+    await env.SUBS.put("p:" + me.uid, JSON.stringify({ name: cleanName(b.name), streak, pts, wk: b.wk })); return J(req, { ok: true });
+  }
+  const tid = String(b.id || "").trim().toLowerCase(); if (!ID_RE.test(tid)) return J(req, { error: "bad input" }, 400);
+  if (p === "/friends/add") {
+    if (ipBlocked(ip)) return J(req, { error: "slow down" }, 429);
+    if (tid === me.a.id) return J(req, { error: "self" }, 400);
+    const tu = await uidOfId(env, tid); if (!tu) { ipFail(ip); return J(req, { error: "notfound" }, 404); }
+    const mine = await load(me.uid), theirs = await load(tu);
+    if (mine.f.includes(tu)) return J(req, { ok: true, state: "friends" });
+    if (mine.inn.includes(tu)) { /* อีกฝ่ายขอมาก่อน = ตอบรับเลย */
+      mine.inn = mine.inn.filter((x) => x !== tu); theirs.out = theirs.out.filter((x) => x !== me.uid); mine.f.push(tu); theirs.f.push(me.uid); await save(me.uid, mine); await save(tu, theirs); return J(req, { ok: true, state: "friends" });
+    }
+    if (mine.f.length >= MAX_FRIENDS) return J(req, { error: "full" }, 400);
+    if (!theirs.inn.includes(me.uid)) { if (theirs.inn.length >= MAX_REQ) return J(req, { error: "busy" }, 400); theirs.inn.push(me.uid); }
+    if (!mine.out.includes(tu)) mine.out.push(tu); await save(tu, theirs); await save(me.uid, mine); return J(req, { ok: true, state: "sent" });
+  }
+  const tu = await uidOfId(env, tid); if (!tu) return J(req, { error: "notfound" }, 404);
+  if (p === "/friends/respond") {
+    const mine = await load(me.uid), theirs = await load(tu); if (!mine.inn.includes(tu)) return J(req, { error: "no request" }, 404);
+    mine.inn = mine.inn.filter((x) => x !== tu); theirs.out = theirs.out.filter((x) => x !== me.uid);
+    if (b.accept) { if (mine.f.length >= MAX_FRIENDS || theirs.f.length >= MAX_FRIENDS) return J(req, { error: "full" }, 400); if (!mine.f.includes(tu)) mine.f.push(tu); if (!theirs.f.includes(me.uid)) theirs.f.push(me.uid); }
+    await save(me.uid, mine); await save(tu, theirs); return J(req, { ok: true });
+  }
+  if (p === "/friends/remove") {
+    const mine = await load(me.uid), theirs = await load(tu), rm = (m, u) => { m.f = m.f.filter((x) => x !== u); m.inn = m.inn.filter((x) => x !== u); m.out = m.out.filter((x) => x !== u); };
+    rm(mine, tu); rm(theirs, me.uid); await save(me.uid, mine); await save(tu, theirs); return J(req, { ok: true });
+  }
+  return J(req, { error: "not found" }, 404);
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -267,6 +317,7 @@ export default {
     if (!ALLOWED_ORIGINS.includes(req.headers.get("Origin"))) return new Response("forbidden", { status: 403 });
     if (req.method === "GET" && url.pathname === "/vapid") return J(req, { key: env.VAPID_PUBLIC });
     if (url.pathname.startsWith("/auth/") || url.pathname === "/sync") { const r = await handleAccount(req, env, url); if (r) return r; }
+    if (url.pathname === "/friends" || url.pathname.startsWith("/friends/")) return handleFriends(req, env, url);
     if (req.method !== "POST") return J(req, { error: "not found" }, 404);
     if (url.pathname === "/estimate") return estimate(req, env);
     let b; try { const t = await req.text(); if (t.length > 4000) throw 0; b = JSON.parse(t); } catch (_) { return J(req, { error: "bad json" }, 400); }

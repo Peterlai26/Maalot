@@ -37,7 +37,7 @@ const MODES = [
   { cat: "ตัวละครของฉัน", icon: "home", title: "ตกแต่งห้อง", sub: "ของแต่ง สัตว์เลี้ยง", name: "room", tone: "rose", kw: "ห้อง ตกแต่ง เฟอร์นิเจอร์ สัตว์เลี้ยง วอลเปเปอร์ พรม", nohero: true },
   { cat: "ตัวละครของฉัน", icon: "hanger", title: "แต่งตัว", sub: "เปลี่ยนได้ทุกเมื่อ", name: "wardrobe", tone: "rose", kw: "แต่งตัว เสื้อ ผม", nohero: true },
   { cat: "ตัวละครของฉัน", icon: "bag", title: "ร้านค้า", sub: "ใช้เหรียญซื้อ", name: "shop", tone: "rose", kw: "ร้าน ซื้อ เหรียญ", nohero: true },
-  { cat: "ตัวละครของฉัน", icon: "users", title: "เพื่อนช่วยกัน", sub: "เร็วๆ นี้", name: "", tone: "rose", kw: "เพื่อน", soon: true },
+    { cat: "ตัวละครของฉัน", icon: "users", title: "เพื่อนช่วยกัน", sub: "แข่งคะแนนรายสัปดาห์กับเพื่อน", name: "friends", isnew: true, tone: "rose", kw: "เพื่อน แข่ง คะแนน อันดับ สตรีค ชวน" },
   { cat: "อื่นๆ", icon: "settings", title: "ตั้งค่าและข้อมูล", sub: "เป้าหมาย สำรองข้อมูล", name: "settings", tone: "violet", kw: "ตั้งค่า สำรอง ข้อมูล รีเซ็ต บัญชี", nohero: true }
 ];
 const MODE_TONE = { "บันทึก": "amber", "ออกกำลังกาย": "amber", "ช่วยตัดสินใจ": "green", "วินัย": "violet", "ดูความคืบหน้า": "blue", "ตัวละครของฉัน": "rose", "อื่นๆ": "violet" };
