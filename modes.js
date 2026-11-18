@@ -98,7 +98,7 @@ function modeTile(m, i) {
   if (m.soon || !m.name) return `<button class="htile ${tone} soon" disabled ${st}><span class="hic">${ic(m.icon, 22)}</span><b>${m.title}</b><span class="s">${m.sub}</span><i class="soonbadge">เร็วๆ นี้</i></button>`;
   return `<button class="htile ${tone}" ${st} data-act="${m.name === "charts" ? "nav" : "sub"}" data-n="${m.name}" data-v="charts" ${m.arg ? `data-arg="${m.arg}"` : ""}><span class="hic">${ic(m.icon, 22)}</span><b>${m.title}</b><span class="s">${m.sub}</span>${m.isnew ? `<i class="newbadge">ใหม่</i>` : ""}${m.tabs ? `<i class="tabsbadge">${m.tabs.length} ในหนึ่ง</i>` : ""}</button>`;
 }
-const HUB_ORD = ["บันทึก", "ออกกำลังกาย", "วินัย", "ช่วยตัดสินใจ", "ดูความคืบหน้า", "ตัวละครของฉัน", "อื่นๆ"], HUB_REC = ["eat", "habits", "walk", "body", "rewards", "crave"];
+const HUB_ORD = ["บันทึก", "ออกกำลังกาย", "วินัย", "ช่วยตัดสินใจ", "ดูความคืบหน้า", "ตัวละครของฉัน", "อื่นๆ"], HUB_REC = ["eat", "habits", "walk", "stretch", "dineout", "body", "rewards", "crave"];
 const HUB_CI = { rec: "sparkle", all: "grid", "บันทึก": "bowl", "ออกกำลังกาย": "dumbbell", "วินัย": "timer", "ช่วยตัดสินใจ": "dice", "ดูความคืบหน้า": "chart", "ตัวละครของฉัน": "hanger", "อื่นๆ": "settings" };
 hubCat = "rec";
 const hubCatName = c => c === "rec" ? "แนะนำ" : c === "all" ? "ทั้งหมด" : c;
