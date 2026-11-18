@@ -1,0 +1,41 @@
+name: Build Android app
+on:
+  workflow_dispatch:
+  push:
+    tags: ["app-v*"]
+permissions:
+  contents: write
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install and create Android project
+        working-directory: native
+        run: |
+          npm install
+          node scripts/prepare-www.js
+          npx cap add android
+          node scripts/patch-android.js
+          npx cap sync android
+      - name: Build debug APK
+        working-directory: native/android
+        run: ./gradlew assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: maalot-debug-apk
+          path: native/android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Publish APK to the app-latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp native/android/app/build/outputs/apk/debug/app-debug.apk maalot.apk
+          gh release delete app-latest --yes --cleanup-tag || true
+          gh release create app-latest maalot.apk --prerelease --title "Maalot Android (debug build)" --notes "Debug APK for testing. Built from ${{ github.sha }}."

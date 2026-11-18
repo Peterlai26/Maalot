@@ -1,0 +1,21 @@
+{
+  "name": "maalot-native",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Capacitor shell that wraps the Maalot web app for Android/iOS",
+  "scripts": {
+    "prepare-www": "node scripts/prepare-www.js",
+    "android:add": "cap add android && node scripts/patch-android.js",
+    "sync": "node scripts/prepare-www.js && cap sync"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.6.10",
+    "@capacitor/core": "^7.6.10",
+    "@capacitor/ios": "^7.6.10",
+    "@capacitor-community/background-geolocation": "^1.3.1",
+    "@capgo/capacitor-health": "^7.2.15"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.6.10"
+  }
+}
