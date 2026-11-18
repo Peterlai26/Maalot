@@ -1,6 +1,6 @@
 /* ชวนติดตั้งเป็นแอป: แบนเนอร์ + ปุ่มในหน้าแรก ใช้ได้ทั้ง Android (ป๊อปอัปติดตั้ง) และ iPhone (ขั้นตอนเพิ่มไปหน้าจอโฮม) */
 let PWA_EV = null;
-const isApp = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const isApp = () => (typeof NATIVE !== "undefined" && NATIVE) || matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 const INST_KEY = "wl_inst_skip";
 function instSkipped() { try { const t = +localStorage.getItem(INST_KEY) || 0; return Date.now() - t < 3 * 864e5; } catch (e) { return false; } }
 function instHowTo() {

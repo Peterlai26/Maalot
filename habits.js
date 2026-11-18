@@ -33,7 +33,7 @@ document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target &&
 let WK = { on: false, last: null, wid: null, tick: null, err: "", t0: 0 };
 const wkLog = d => { if (!S.walkLog) S.walkLog = {}; return S.walkLog[d] || (S.walkLog[d] = { m: 0, extra: 0, secs: 0 }); };
 const wkStride = () => ((S.prof && S.prof.h) || 165) * .415 / 100;
-const wkSteps = d => { const l = (S.walkLog || {})[d]; return l ? Math.round(l.m / wkStride()) + (l.extra || 0) : 0; };
+const wkSteps = d => { const l = (S.walkLog || {})[d]; return l ? Math.max(l.health || 0, Math.round(l.m / wkStride())) + (l.extra || 0) : 0; };
 function wkOnPos(p) {
   const c = p.coords; if (c.accuracy > 40) { WK.err = "สัญญาณ GPS ยังไม่แม่น รอสักครู่หรือออกที่โล่ง"; return; } WK.err = "";
   const cur = { la: c.latitude, lo: c.longitude, t: p.timestamp };
@@ -47,25 +47,46 @@ function wkOnPos(p) {
   WK.last = cur;
 }
 let WKL = null;
-async function wkLock() { try { if ("wakeLock" in navigator && WK.on && document.visibilityState === "visible" && !WKL) { WKL = await navigator.wakeLock.request("screen"); WKL.addEventListener("release", () => { WKL = null; }); } } catch (e) { WKL = null; } }
+async function wkLock() { try { if (!NAT.bg && "wakeLock" in navigator && WK.on && document.visibilityState === "visible" && !WKL) { WKL = await navigator.wakeLock.request("screen"); WKL.addEventListener("release", () => { WKL = null; }); } } catch (e) { WKL = null; } }
 function wkUnlock() { try { if (WKL) WKL.release(); } catch (e) { } WKL = null; }
 document.addEventListener("visibilitychange", () => { if (WK.on && document.visibilityState === "visible") wkLock(); });
 function wkStart() {
+  if (NAT.bg) { /* แอปมือถือ: นับต่อเบื้องหลังได้ มีแจ้งเตือนค้างขณะนับ */
+    WK.on = true; WK.last = null; WK.err = "รอสัญญาณ GPS"; S.walkAsked = true; save();
+    NAT.bg.addWatcher({ backgroundTitle: "Maalot กำลังนับก้าว", backgroundMessage: "แตะเพื่อกลับไปที่แอป", requestPermissions: true, stale: false, distanceFilter: 5 }, (loc, err) => {
+      if (err) { WK.err = err.code === "NOT_AUTHORIZED" ? "ยังไม่ได้อนุญาตตำแหน่ง เปิดสิทธิ์ที่ตั้งค่าของเครื่องแล้วลองใหม่" : "สัญญาณ GPS อ่อน ลองออกที่โล่ง"; if (err.code === "NOT_AUTHORIZED") wkStop(); return; }
+      wkOnPos({ coords: { latitude: loc.latitude, longitude: loc.longitude, accuracy: loc.accuracy }, timestamp: loc.time || Date.now() });
+    }).then(id => { WK.nid = id; if (!WK.on) NAT.bg.removeWatcher({ id }); });
+    clearInterval(WK.tick); WK.tick = setInterval(() => { const t = subStack[subStack.length - 1]; if (t && t.name === "walk" && !$("#sub").hidden) rerenderSub(); }, 2500); rerenderSub(); return;
+  }
   if (!navigator.geolocation) { toast("เครื่องนี้ไม่รองรับ GPS ในเบราว์เซอร์ ใช้เพิ่มก้าวเองแทนได้"); return; }
   WK.on = true; WK.last = null; WK.err = "รอสัญญาณ GPS";
   try { WK.wid = navigator.geolocation.watchPosition(wkOnPos, e => { WK.err = e.code === 1 ? "ไม่ได้รับอนุญาตใช้ตำแหน่ง เปิดสิทธิ์ตำแหน่งให้เบราว์เซอร์แล้วลองใหม่" : "สัญญาณ GPS อ่อน ลองออกที่โล่ง"; if (e.code === 1) wkStop(); }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 20000 }); } catch (e) { WK.err = "เปิด GPS ไม่สำเร็จ"; WK.on = false; }
   wkLock();
   clearInterval(WK.tick); WK.tick = setInterval(() => { const t = subStack[subStack.length - 1]; if (t && t.name === "walk" && !$("#sub").hidden) rerenderSub(); }, 2500); rerenderSub();
 }
-function wkStop() { try { if (WK.wid != null) navigator.geolocation.clearWatch(WK.wid); } catch (e) { } WK.wid = null; WK.on = false; WK.last = null; wkUnlock(); clearInterval(WK.tick); WK.tick = null; save(); }
+function wkStop() { try { if (NAT.bg && WK.nid != null) NAT.bg.removeWatcher({ id: WK.nid }); } catch (e) { } WK.nid = null; try { if (WK.wid != null) navigator.geolocation.clearWatch(WK.wid); } catch (e) { } WK.wid = null; WK.on = false; WK.last = null; wkUnlock(); clearInterval(WK.tick); WK.tick = null; save(); }
+let HLT = { busy: false, t: 0 };
+function wkHealthSync(silent) { if (!NAT.health) return Promise.resolve(false); if (HLT.p) return HLT.p; HLT.p = wkHealthRun(silent).finally(() => { HLT.p = null; }); return HLT.p; }
+async function wkHealthRun(silent) {
+  try {
+    const av = await NAT.health.isAvailable(); if (av && av.available === false) { if (!silent) toast("เครื่องนี้ยังใช้ Health Connect ไม่ได้ ติดตั้ง Health Connect จาก Play Store ก่อน"); return false; }
+    const au = await NAT.health.requestAuthorization({ read: ["steps"] }); if (au && au.readAuthorized && au.readAuthorized.indexOf("steps") < 0) { if (!silent) toast("ยังไม่ได้อนุญาตให้อ่านก้าว"); return false; }
+    const st = new Date(); st.setHours(0, 0, 0, 0); st.setDate(st.getDate() - 6);
+    const r = await NAT.health.queryAggregated({ dataType: "steps", startDate: st.toISOString(), endDate: new Date().toISOString(), bucket: "day" });
+    (r.samples || []).forEach(x => { const d0 = new Date(x.startDate), k = d0.getFullYear() + "-" + String(d0.getMonth() + 1).padStart(2, "0") + "-" + String(d0.getDate()).padStart(2, "0"); wkLog(k).health = Math.round(x.value || 0); });
+    HLT.t = Date.now(); save(); const t = subStack[subStack.length - 1]; if (t && t.name === "walk") rerenderSub(); return true;
+  } catch (e) { if (!silent) toast("อ่านก้าวจากแอปสุขภาพไม่สำเร็จ"); return false; } }
+
+ACT.wkhealth = async () => { S.walkHealth = !S.walkHealth; save(); rerenderSub(); if (S.walkHealth) { const ok = await wkHealthSync(false); if (!ok) { S.walkHealth = false; save(); rerenderSub(); } else toast("ดึงก้าวจากแอปสุขภาพแล้ว"); } };
 SUBS.walk = () => {
   const t = todayKey(), goal = S.walkGoal || 8000, st = wkSteps(t), l = (S.walkLog || {})[t] || { m: 0, secs: 0 }, km = l.m / 1000, wt = (S.weights && S.weights.length ? S.weights[S.weights.length - 1].w : (S.prof && S.prof.w0)) || 60, kc = Math.round(.5 * wt * km + (l.extra || 0) * .04);
   const days = [6, 5, 4, 3, 2, 1, 0].map(k => { const d = addDays(t, -k), s = wkSteps(d); return { d, s }; }), mx = Math.max(goal, ...days.map(x => x.s));
   const wd = d => new Date(d + "T12:00:00").toLocaleDateString("th-TH", { weekday: "short" });
-  return { title: "เดินวันนี้", keepScroll: true, html: `<div class="card wkc">${hbRing(st / goal, fmtN(st), true)}<div class="wkt"><b>${fmtN(st)} / ${fmtN(goal)} ก้าว</b><span class="xs muted">${st >= goal ? "ถึงเป้าแล้ว!" : "อีก " + fmtN(goal - st) + " ก้าวถึงเป้า"}</span></div></div>
+  return { title: "เดินวันนี้", keepScroll: true, after: () => { if (S.walkHealth && NAT.health && Date.now() - HLT.t > 120000) wkHealthSync(true); }, html: `<div class="card wkc">${hbRing(st / goal, fmtN(st), true)}<div class="wkt"><b>${fmtN(st)} / ${fmtN(goal)} ก้าว</b><span class="xs muted">${st >= goal ? "ถึงเป้าแล้ว!" : "อีก " + fmtN(goal - st) + " ก้าวถึงเป้า"}</span></div></div>
 <div class="wkstat"><span><b>${km.toFixed(2)}</b>กม.</span><span><b>${fmtN(kc)}</b>kcal</span><span><b>${Math.round(l.secs / 60)}</b>นาที</span></div>
 <button class="btn ${WK.on ? "" : "primary"} block go wkbtn${WK.on ? " live" : ""}" data-act="wkgo">${ic(WK.on ? "pause" : "run", 18)}${WK.on ? "หยุดนับ" : "เริ่มนับก้าวด้วย GPS"}</button>
-<p class="xs muted wkn">${WK.on ? esc(WK.err || ("wakeLock" in navigator ? "กำลังนับ จอจะไม่ดับระหว่างเดิน อย่าสลับไปแอปอื่นหรือล็อกจอเอง" : "กำลังนับ เบราว์เซอร์นี้กันจอดับไม่ได้ ตั้งเวลาหน้าจอให้นานขึ้นและเปิดแอปค้างไว้")) : "ระหว่างนับ แอปจะกันจอดับให้ แต่ต้องเปิดแอปค้างไว้ ตำแหน่งอยู่ในเครื่องคุณเท่านั้น ก้าวคำนวณจากระยะทางและส่วนสูง (ค่าประมาณ)"}</p>
+<p class="xs muted wkn">${WK.on ? esc(WK.err || (NAT.bg ? "กำลังนับ นับต่อให้แม้ปิดจอหรือสลับแอป" : "wakeLock" in navigator ? "กำลังนับ จอจะไม่ดับระหว่างเดิน อย่าสลับไปแอปอื่นหรือล็อกจอเอง" : "กำลังนับ เบราว์เซอร์นี้กันจอดับไม่ได้ ตั้งเวลาหน้าจอให้นานขึ้นและเปิดแอปค้างไว้")) : (NAT.bg ? "นับต่อให้แม้ปิดจอหรือสลับแอป (จะมีแจ้งเตือนค้างขณะนับ) ตำแหน่งอยู่ในเครื่องคุณเท่านั้น ก้าวคำนวณจากระยะทางและส่วนสูง (ค่าประมาณ)" : "ระหว่างนับ แอปจะกันจอดับให้ แต่ต้องเปิดแอปค้างไว้ ตำแหน่งอยู่ในเครื่องคุณเท่านั้น ก้าวคำนวณจากระยะทางและส่วนสูง (ค่าประมาณ)")}</p>${NAT.health ? `<div class="card sm hlc"><div class="row between"><b>${ic("heart", 16)} ก้าวจากแอปสุขภาพของเครื่อง</b><button class="swt${S.walkHealth ? " on" : ""}" data-act="wkhealth" role="switch" aria-checked="${!!S.walkHealth}" aria-label="เปิดปิดอ่านก้าวจากแอปสุขภาพ"><i></i></button></div><p class="xs muted" style="margin-top:6px">อ่านจำนวนก้าวต่อวันจาก ${isIOS() ? "Apple Health" : "Health Connect"} ใช้ค่าที่มากกว่าระหว่างก้าวจากสุขภาพกับที่นับด้วย GPS</p></div>` : ""}
 <div class="sec">เป้าก้าวต่อวัน</div><div class="pills">${[5000, 8000, 10000].map(g => `<button class="pill${goal === g ? " on" : ""}" data-act="wkgoal" data-v="${g}">${fmtN(g)}</button>`).join("")}</div>
 <div class="sec">เพิ่มก้าวเอง</div><div class="hbadd"><input id="wkin" type="number" inputmode="numeric" placeholder="เช่น 1500" /><button class="btn" data-act="wkadd">${ic("plus", 16)}เพิ่ม</button></div>
 <div class="sec">7 วันล่าสุด</div><div class="card wkbars">${days.map(x => `<div class="wkb${x.d === t ? " today" : ""}"><i style="height:${Math.max(4, Math.round(x.s / mx * 100))}%" class="${x.s >= goal ? "ok" : ""}"></i><small>${wd(x.d)}</small></div>`).join("")}</div>` };
@@ -74,7 +95,8 @@ ACT.wkgo = () => {
   if (WK.on) { wkStop(); rerenderSub(); return; }
   const go = () => wkStart();
   const ask = () => openModal(`<div class="nask"><span class="nask-ic">${ic("run", 34)}</span><h2>ขออนุญาตใช้ตำแหน่ง</h2><p class="muted sm">ใช้วัดระยะทางที่เดินเพื่อนับก้าว ใช้เฉพาะตอนที่กดเริ่มนับและเปิดแอปไว้ ตำแหน่งเก็บอยู่ในเครื่องคุณ ไม่ส่งออกไปที่ไหน เมื่อกดยืนยัน เบราว์เซอร์จะถามสิทธิ์อีกครั้ง</p><button class="btn primary block go" data-act="wkok">${ic("check", 18)}ยืนยัน</button><button class="btn block" style="margin-top:8px" data-act="notifno">ไม่ใช่ตอนนี้</button></div>`);
-  if (navigator.permissions && navigator.permissions.query) navigator.permissions.query({ name: "geolocation" }).then(r => { if (r.state === "granted") go(); else ask(); }).catch(ask); else ask();
+  if (NAT.bg && S.walkAsked) { go(); return; }
+  if (!NAT.bg && navigator.permissions && navigator.permissions.query) navigator.permissions.query({ name: "geolocation" }).then(r => { if (r.state === "granted") go(); else ask(); }).catch(ask); else ask();
 };
 ACT.wkok = () => { closeModal(); wkStart(); };
 ACT.wkgoal = a => { S.walkGoal = +a.dataset.v; save(); rerenderSub(); };

@@ -1,0 +1,7 @@
+{
+  "appId": "app.maalot.mobile",
+  "appName": "Maalot (มาลด)",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "android": { "allowMixedContent": false }
+}

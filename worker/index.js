@@ -1,5 +1,5 @@
 /* Maalot push reminders: Cloudflare Worker (fetch + cron). Stores only push subscription + reminder prefs + last meal time. */
-const ALLOWED_ORIGINS = ["https://maalot-2jx.pages.dev", "https://peterlai26.github.io", "http://localhost:8765"];
+const ALLOWED_ORIGINS = ["https://maalot-2jx.pages.dev", "https://peterlai26.github.io", "http://localhost:8765", "https://localhost", "capacitor://localhost"];
 const PUSH_HOSTS = [/(^|\.)fcm\.googleapis\.com$/, /(^|\.)push\.services\.mozilla\.com$/, /(^|\.)push\.apple\.com$/, /(^|\.)notify\.windows\.com$/];
 const MSG = [[0, "มื้อเช้าได้จดหรือยังนะ เล่าให้น้องฟังได้เลย"], [10, "มื้อเที่ยงกินอะไรไปบ้างนะ จดไว้สักหน่อยไหม"], [15, "มื้อบ่ายหรือของว่างมีไหม เล่าให้น้องฟังได้นะ"], [17, "มื้อเย็นเป็นยังไงบ้าง มาจดไว้ก่อนลืมนะ"], [20, "ก่อนจบวัน ลองจดสิ่งที่กินวันนี้ให้ครบนะ"]];
 const b64u = {
