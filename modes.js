@@ -37,7 +37,7 @@ const MODES = [
   { cat: "ตัวละครของฉัน", icon: "home", title: "ตกแต่งห้อง", sub: "ของแต่ง สัตว์เลี้ยง", name: "room", tone: "rose", kw: "ห้อง ตกแต่ง เฟอร์นิเจอร์ สัตว์เลี้ยง วอลเปเปอร์ พรม", nohero: true },
   { cat: "ตัวละครของฉัน", icon: "hanger", title: "แต่งตัว", sub: "เปลี่ยนได้ทุกเมื่อ", name: "wardrobe", tone: "rose", kw: "แต่งตัว เสื้อ ผม", nohero: true },
   { cat: "ตัวละครของฉัน", icon: "bag", title: "ร้านค้า", sub: "ใช้เหรียญซื้อ", name: "shop", tone: "rose", kw: "ร้าน ซื้อ เหรียญ", nohero: true },
-  { cat: "ตัวละครของฉัน", icon: "users", title: "เพื่อนช่วยกัน", sub: "เร็วๆ นี้", name: "", tone: "rose", kw: "เพื่อน", soon: true },
+    { cat: "ตัวละครของฉัน", icon: "users", title: "เพื่อนช่วยกัน", sub: "แข่งคะแนนรายสัปดาห์กับเพื่อน", name: "friends", isnew: true, tone: "rose", kw: "เพื่อน แข่ง คะแนน อันดับ สตรีค ชวน" },
   { cat: "อื่นๆ", icon: "settings", title: "ตั้งค่าและข้อมูล", sub: "เป้าหมาย สำรองข้อมูล", name: "settings", tone: "violet", kw: "ตั้งค่า สำรอง ข้อมูล รีเซ็ต บัญชี", nohero: true }
 ];
 const MODE_TONE = { "บันทึก": "amber", "ออกกำลังกาย": "amber", "ช่วยตัดสินใจ": "green", "วินัย": "violet", "ดูความคืบหน้า": "blue", "ตัวละครของฉัน": "rose", "อื่นๆ": "violet" };
@@ -96,17 +96,28 @@ function featCard(m) {
 function modeTile(m, i) {
   const tone = m.tone || MODE_TONE[m.cat] || "violet", st = `style="--i:${i}"`;
   if (m.soon || !m.name) return `<button class="htile ${tone} soon" disabled ${st}><span class="hic">${ic(m.icon, 22)}</span><b>${m.title}</b><span class="s">${m.sub}</span><i class="soonbadge">เร็วๆ นี้</i></button>`;
-  return `<button class="htile ${tone}" ${st} data-act="${m.name === "charts" ? "nav" : "sub"}" data-n="${m.name}" data-v="charts" ${m.arg ? `data-arg="${m.arg}"` : ""}><span class="hic">${ic(m.icon, 22)}</span><b>${m.title}</b><span class="s">${m.sub}</span>${m.tabs ? `<i class="tabsbadge">${m.tabs.length} ในหนึ่ง</i>` : ""}</button>`;
+  return `<button class="htile ${tone}" ${st} data-act="${m.name === "charts" ? "nav" : "sub"}" data-n="${m.name}" data-v="charts" ${m.arg ? `data-arg="${m.arg}"` : ""}><span class="hic">${ic(m.icon, 22)}</span><b>${m.title}</b><span class="s">${m.sub}</span>${m.isnew ? `<i class="newbadge">ใหม่</i>` : ""}${m.tabs ? `<i class="tabsbadge">${m.tabs.length} ในหนึ่ง</i>` : ""}</button>`;
 }
+const HUB_ORD = ["บันทึก", "ออกกำลังกาย", "วินัย", "ช่วยตัดสินใจ", "ดูความคืบหน้า", "ตัวละครของฉัน", "อื่นๆ"], HUB_REC = ["eat", "habits", "walk", "stretch", "dineout", "body", "rewards", "crave"];
+const HUB_CI = { rec: "sparkle", all: "grid", "บันทึก": "bowl", "ออกกำลังกาย": "dumbbell", "วินัย": "timer", "ช่วยตัดสินใจ": "dice", "ดูความคืบหน้า": "chart", "ตัวละครของฉัน": "hanger", "อื่นๆ": "settings" };
+hubCat = "rec";
+const hubCatName = c => c === "rec" ? "แนะนำ" : c === "all" ? "ทั้งหมด" : c;
 renderHub = function () {
-  const q = hubQ.trim(), cats = [], by = {}, feats = MODES.filter(m => m.featured);
-  MODES.forEach(m => {
-    if (q ? (m.title + m.sub + m.kw).toLowerCase().indexOf(q.toLowerCase()) < 0 : (m.quick || m.featured)) return;
-    if (!by[m.cat]) { by[m.cat] = []; cats.push(m.cat); } by[m.cat].push(m);
-  });
-  const shown = q ? cats : cats.filter(c => hubCat === "all" || c === hubCat), n = { i: 0 };
-  const secs = shown.map(c => `<div class="sec hubsec">${c} <span class="hubn">${by[c].length}</span></div><div class="hgrid">${by[c].map(m => modeTile(m, n.i++)).join("")}</div>`).join("");
-  const chips = q ? "" : `<div class="hubchips" role="tablist">${[["all", "ทั้งหมด"]].concat(cats.map(c => [c, c])).map(c => `<button class="hchip ${hubCat === c[0] ? "on" : ""}" data-act="hubcat" data-c="${c[0]}" role="tab" aria-selected="${hubCat === c[0]}">${c[1]}</button>`).join("")}</div>`;
-  $("#v-hub").innerHTML = `<div class="top"><div><h1>ทุกโหมด</h1><div class="xs muted">ทุกอย่างของ Maalot ที่เดียว</div></div></div><div class="hubsearch"><span class="muted">${ic("search", 18)}</span><input id="hubq" type="text" placeholder="ค้นหา เช่น หิว น้ำหนัก เมนู" value="${esc(hubQ)}" aria-label="ค้นหาโหมด"/></div>${q ? "" : feats.map(featCard).join("")}${q ? "" : hubQuick()}${chips}${secs || '<p class="muted" style="margin:24px 4px;text-align:center">ไม่พบ ลองคำอื่น เช่น น้ำ กราฟ ตัวละคร</p>'}`;
+  const q = hubQ.trim(), feats = MODES.filter(m => m.featured), home = !q && hubCat === "rec";
+  const ord = c => HUB_ORD.indexOf(c) < 0 ? 99 : HUB_ORD.indexOf(c), byCat = (a, b) => ord(a.cat) - ord(b.cat);
+  let list;
+  if (q) list = MODES.filter(m => (m.title + m.sub + m.kw).toLowerCase().indexOf(q.toLowerCase()) > -1).sort(byCat);
+  else if (hubCat === "rec") list = HUB_REC.map(n => modeOf(n)).filter(m => m && !m.quick && !m.featured).sort((a, b) => (b.isnew ? 1 : 0) - (a.isnew ? 1 : 0));
+  else if (hubCat === "all") list = MODES.filter(m => !m.quick && !m.featured).sort(byCat);
+  else list = MODES.filter(m => m.cat === hubCat);
+  const on = !q && hubCat !== "rec";
+  const bar = `<div class="hubtop"><div class="hubsearch"><span class="muted">${ic("search", 18)}</span><input id="hubq" type="text" placeholder="ค้นหา เช่น หิว น้ำหนัก เมนู" value="${esc(hubQ)}" aria-label="ค้นหาโหมด"/></div><button class="hubfb${on ? " on" : ""}" data-act="hubfilter" aria-label="กรองโหมด"><span class="hfb-ic">${ic("sliders", 18)}</span><span class="hfb-t">กรอง</span>${on ? "<i></i>" : ""}</button></div>${on ? `<button class="hubact" data-act="hubcat" data-c="rec">${ic(HUB_CI[hubCat] || "grid", 14)}${esc(hubCatName(hubCat))}<span>✕</span></button>` : ""}`;
+  $("#v-hub").innerHTML = `<div class="top"><div><h1>ทุกโหมด</h1></div></div>${bar}${home ? feats.map(featCard).join("") + hubQuick() : ""}${list.length ? `<div class="sec hubsec">${q ? "ผลการค้นหา" : esc(hubCatName(hubCat))} <span class="hubn">${list.length}</span></div><div class="hgrid">${list.map((m, i) => modeTile(m, i)).join("")}</div>` : '<p class="muted" style="margin:24px 4px;text-align:center">ไม่พบ ลองคำอื่น เช่น น้ำ กราฟ ตัวละคร</p>'}`;
   const inp = $("#hubq"); if (hubQ) { inp.focus(); inp.setSelectionRange(hubQ.length, hubQ.length); }
 };
+
+ACT.hubfilter = () => {
+  const cats = HUB_ORD.filter(c => MODES.some(m => m.cat === c)), rows = [["rec", MODES.length ? HUB_REC.length : 0], ["all", MODES.filter(m => !m.quick && !m.featured).length]].concat(cats.map(c => [c, MODES.filter(m => m.cat === c).length]));
+  openModal(`<h2>กรองโหมด</h2><div class="hfl">${rows.map(r => `<button class="hfr${hubCat === r[0] ? " on" : ""}" data-act="hubcat" data-c="${r[0]}"><span class="hfr-i">${ic(HUB_CI[r[0]] || "grid", 18)}</span><b>${esc(hubCatName(r[0]))}</b><em>${r[1]}</em>${hubCat === r[0] ? ic("check", 16) : ""}</button>`).join("")}</div>`);
+};
+ACT.hubcat = a => { hubCat = a.dataset.c; if (!$("#modal").hidden) closeModal(); renderHub(); const v = $("#v-hub"); if (v) window.scrollTo(0, 0); };
