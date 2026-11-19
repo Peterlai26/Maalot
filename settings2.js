@@ -31,7 +31,7 @@ SUBS.settings = () => {
 <div class="sgt">ของฉัน</div>
 <div class="scard rows">${srow("sub", 'data-n="setprof"', "user", "", "ข้อมูลส่วนตัว", `ส่วนสูง ${p.h} ซม. · อายุ ${p.age} · ${sexT}`)}${srow("sub", 'data-n="setrem"', "timer", "amber", "เตือนให้บันทึก", c.on ? `เปิดอยู่ ทุก ${c.everyH} ชั่วโมง` : "ปิดอยู่")}${srow("sub", 'data-n="myfoods"', "bowl", "pink", "อาหารของฉัน", `${(S.myfoods || []).length} รายการ`)}${srow("sub", 'data-n="combos"', "heart", "pink", "มื้อประจำ", `${(S.combos || []).length} ชุด`)}</div>
 <div class="sgt">ข้อมูลและแอป</div>
-<div class="scard rows">${srow("sub", 'data-n="account"', "cloud", loggedIn() ? "green" : "", "บัญชีและซิงก์", acctRowSub())}${srow("tutstart", "", "sparkle", "amber", "สอนใช้งาน", "วิธีจดอาหาร กดตามทีละขั้น")}${srow("sub", 'data-n="setbk"', "cloud", S.lastBackup ? "green" : "warn", "สำรองและนำเข้าข้อมูล", bk)}${isApp() ? "" : srow("pwa", "", "phone", "", "ติดตั้งเป็นแอป", "เปิดจากหน้าจอโฮม เร็วขึ้น")}${srow("resetask", "", "trash", "danger", "เริ่มใหม่ทั้งหมด", "ลบข้อมูลทั้งหมดในเครื่องนี้")}</div>
+<div class="scard rows">${srow("sub", 'data-n="account"', "cloud", loggedIn() ? "green" : "", "บัญชีและซิงก์", acctRowSub())}${srow("tutstart", "", "sparkle", "amber", "สอนใช้งาน", "วิธีจดอาหาร กดตามทีละขั้น")}${srow("legal", 'data-u="privacy.html"', "lock", "", "นโยบายความเป็นส่วนตัว", "ข้อมูลที่เก็บ สิทธิของคุณ ติดต่อเรา")}${srow("legal", 'data-u="terms.html"', "list", "", "ข้อกำหนดการใช้งาน", "เงื่อนไขการใช้แอป")}${srow("sub", 'data-n="setbk"', "cloud", S.lastBackup ? "green" : "warn", "สำรองและนำเข้าข้อมูล", bk)}${isApp() ? "" : srow("pwa", "", "phone", "", "ติดตั้งเป็นแอป", "เปิดจากหน้าจอโฮม เร็วขึ้น")}${srow("resetask", "", "trash", "danger", "เริ่มใหม่ทั้งหมด", "ลบข้อมูลทั้งหมดในเครื่องนี้")}</div>
 <p class="xs muted" style="margin:14px 4px 0">ใช้เป็นข้อมูลทั่วไป ไม่ใช่คำแนะนำทางการแพทย์ ถ้ามีโรคประจำตัว ตั้งครรภ์ หรือกังวลเรื่องการกิน ควรปรึกษาแพทย์</p>`
   };
 };
@@ -49,3 +49,5 @@ SUBS.setbk = () => ({ title: "สำรองและนำเข้าข้�
 <div class="sgt">หรือคัดลอกเป็นข้อความ</div><div class="scard"><textarea id="bk" rows="3" aria-label="ข้อมูลสำรอง" placeholder="กดคัดลอก หรือวางข้อมูลที่เคยสำรองไว้ที่นี่"></textarea><div class="row" style="margin-top:8px"><button class="btn" style="flex:1" data-act="bkout">คัดลอกข้อมูล</button><button class="btn" style="flex:1" data-act="bkin">นำเข้า</button></div></div>` });
 const _ssave = ACT.ssave;
 ACT.ssave = (a, e) => { const h = parseFloat($("#sh").value), ag = parseInt($("#sa").value, 10); _ssave(a, e); if (h >= 120 && h <= 220 && ag >= 18 && ag <= 90) closeSub(); };
+
+ACT.legal = a => { location.href = a.dataset.u; };

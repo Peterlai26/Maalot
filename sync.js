@@ -152,7 +152,7 @@ function accParts() {
     : `${tabs}<label class="f" for="aid">ไอดี (อีเมลหรือชื่อผู้ใช้)</label><input id="aid" type="text" autocomplete="username" autocapitalize="none" placeholder="เช่น mali@example.com หรือ mali_01" value="${idv}"/>
 <label class="f" for="apw">รหัสผ่าน${reg ? " (อย่างน้อย 8 ตัว)" : ""}</label><input id="apw" type="password" autocomplete="${reg ? "new-password" : "current-password"}"/>
 ${reg ? `<label class="f" for="apw2">ยืนยันรหัสผ่าน</label><input id="apw2" type="password" autocomplete="new-password"/><p class="xs muted" style="margin-top:8px">ไม่มีการส่งอีเมลยืนยัน ถ้าลืมรหัสผ่านจะกู้ได้ด้วย “รหัสกู้คืน” ที่แอปให้หลังสมัคร เก็บไว้ให้ดี ถ้าไม่มีทั้งรหัสผ่านและรหัสกู้คืน จะเข้าบัญชีไม่ได้</p>` : ""}
-<button class="btn primary block" style="margin-top:14px" data-act="accgo" ${ACC.busy ? "disabled" : ""}>${ACC.busy ? "กำลังทำงาน…" : reg ? "สมัครสมาชิก" : "เข้าสู่ระบบ"}</button>${reg ? "" : `<button class="linkbtn" style="margin-top:8px" data-act="accmode" data-m="recover">ลืมรหัสผ่าน?</button>`}`;
+${reg ? `<label class="consent"><input id="aok" type="checkbox"/><span>ฉันอ่านและยอมรับ <a href="terms.html" target="_blank" rel="noopener">ข้อกำหนดการใช้งาน</a> และ <a href="privacy.html" target="_blank" rel="noopener">นโยบายความเป็นส่วนตัว</a> และยินยอมให้ประมวลผลข้อมูลสุขภาพของฉัน (น้ำหนัก อาหาร การออกกำลังกาย) เพื่อให้บริการของแอป ถอนความยินยอมได้โดยลบบัญชี</span></label>` : ""}<button class="btn primary block" style="margin-top:14px" data-act="accgo" ${ACC.busy ? "disabled" : ""}>${ACC.busy ? "กำลังทำงาน…" : reg ? "สมัครสมาชิก" : "เข้าสู่ระบบ"}</button>${reg ? "" : `<button class="linkbtn" style="margin-top:8px" data-act="accmode" data-m="recover">ลืมรหัสผ่าน?</button>`}`;
   return { m, reg, rec, err, expired, form };
 }
 /* ---------- ป๊อปอัพสมัครสมาชิก (ด่านก่อนสร้างตัวละคร) ---------- */
@@ -196,6 +196,8 @@ ACT.accgo = async () => {
   if (!ID_OK(id)) { accBusy(false, "ไอดีใช้ตัวอักษรอังกฤษ ตัวเลข . _ - @ + ยาว 3–40 ตัว"); return; }
   if (pw.length < 8) { accBusy(false, "รหัสผ่านต้องยาวอย่างน้อย 8 ตัว"); return; }
   if (m === "register" && pw !== $("#apw2").value) { accBusy(false, "รหัสผ่านสองช่องไม่ตรงกัน"); return; }
+  if (m === "register" && !($("#aok") && $("#aok").checked)) { accBusy(false, "ติ๊กยอมรับข้อกำหนดและนโยบายความเป็นส่วนตัวก่อนสมัคร"); return; }
+  if (m === "register") { S.consent = { v: "0.1", t: Date.now() }; save(); }
   if (m === "recover" && recCode($("#arc").value).length < 20) { accBusy(false, "ใส่รหัสกู้คืนให้ครบ"); return; }
   const rcIn = m === "recover" ? $("#arc").value : ""; accBusy(true);
   let r, rcNew = null;
