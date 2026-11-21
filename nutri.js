@@ -21,11 +21,14 @@ const fnObj = name => { const v = typeof FN !== "undefined" && FN[name]; return 
 const withNutr = it => { const n = it.p === undefined && (fnObj(it.n) || (S.nutr && S.nutr[it.n])); if (n) NK.forEach(([a]) => { it[a] = n[a] || 0; }); return it; };
 /* จับคู่ชื่อ: คืน {f, key, d} (d = จำนวนตัวอักษรที่เดา) ลองตรงตัวก่อน แล้วค่อยเดา */
 const foodList = () => (S.myfoods || []).map(m => [m.n, m.k, "m", [m.n], [], m]).concat(FOODS);
+/* ชื่ออาหารที่ติดปริมาณ เช่น "ขนมปังปิ้งเนยน้ำตาล 2 ชิ้น" ใช้ชื่อตัดปริมาณเป็นคำค้นด้วย */
+const nameCore = f => String(f[0]).replace(/\s*[\d(].*$/, "").trim();
+const keysOf = f => { const c = nameCore(f); return c !== f[0] && skel(c).length >= 4 ? f[3].concat([f[0], c]) : f[3].concat([f[0]]); };
 function matchFood(seg) {
   const n = normT(seg); let ex = null, bl = 0;
-  foodList().forEach(f => f[3].concat([f[0]]).forEach(k => { const kk = normT(k); if (kk.length > bl && n.indexOf(kk) > -1) { ex = { f, key: k, d: 0 }; bl = kk.length; } }));
+  foodList().forEach(f => keysOf(f).forEach(k => { const kk = normT(k); if (kk.length > bl && n.indexOf(kk) > -1) { ex = { f, key: k, d: 0 }; bl = kk.length; } }));
   const t = skel(seg); let fz = null, bs = 1e9;
-  if (t.length >= 3) foodList().forEach(f => f[3].concat([f[0]]).forEach(k => {
+  if (t.length >= 3) foodList().forEach(f => keysOf(f).forEach(k => {
     const kk = skel(k), L = kk.length; if (L < 3) return;
     const allow = L < 6 ? 0 : L < 14 ? 1 : 2; if (t.indexOf(kk.slice(0, 2)) < 0) return;
     const d = approxDist(kk, t);
@@ -34,19 +37,69 @@ function matchFood(seg) {
   if (ex && fz) { const se = skel(ex.key).length, sf = skel(fz.key).length - 3 * fz.d; return sf > se ? fz : ex; }
   return ex || fz;
 }
-const FILLER = /\d+(\.\d+)?|ครึ่ง|จาน|ชิ้น|แก้ว|ถ้วย|ห่อ|ที่|ชุด|อัน|ลูก|ผล|กิน|ทาน|วันนี้|หน่อย|นิดหน่อย|เล็ก|ใหญ่|ธรรมดา|พิเศษ|ใส่|ไม่|หวาน|เพิ่ม|น้อย|มาก|แก้วเล็ก|ร้อน|ไทย|สด|สุก|เย็น|ซอง|กระป๋อง|ขวด|ถุง|ที่|ห่อ|กล่อง|แท่ง|ก้อน|ไม้|ฟอง|คำ|ตัว|แผ่น|อัน|สกู๊ป|ม้วน|ถาด|ช้อน|ชุด/g;
+/* คำที่ไม่ใช่ชื่ออาหาร แต่ติดอยู่ในชื่ออาหารจริง (ไม่ตัดออกตอนวัดความครอบคลุม) */
+const PROTECT = /(ลูกชิ้น|ลูกชุบ|ลูกตาล|ลูกเดือย|ห่อหมก|ผลไม้|น้ำใส|น้ำแกง|น้ำพริก|ไส้กรอก|ก้อนเต้าหู้)/;
+/* คำขยายที่ไม่เปลี่ยนชนิดอาหาร */
+const MODS = /ไม่ใส่น้ำตาล|ไม่ใส่น้ำแข็ง|ไม่ใส่ผักชี|ไม่ใส่ผัก|ไม่ใส่ไข่|ไม่เอาหนัง|ไม่เอาผัก|ไม่เอาไข่|ไม่เอาน้ำ|น้ำข้น|น้ำใส|หวานน้อย|หวาน\s?\d+\s?%?|แบบแห้ง|แห้ง|เผ็ดมาก|เผ็ดน้อย|ไม่เผ็ด|ตามสั่ง|ราดข้าว/g;
+const FILLER = /\d+(\.\d+)?|ครึ่ง|จาน|ชิ้น|แก้ว|ถ้วย|ห่อ|ที่|ชุด|อัน|ลูก|ผล|กิน|ทาน|วันนี้|หน่อย|นิดหน่อย|เล็ก|ใหญ่|ธรรมดา|พิเศษ|ใส่|ไม่|หวาน|เพิ่ม|น้อย|มาก|แก้วเล็ก|ร้อน|ไทย|สด|สุก|เย็น|ซอง|กระป๋อง|ขวด|ถุง|ที่|ห่อ|กล่อง|แท่ง|ก้อน|ไม้|ฟอง|คำ|ตัว|แผ่น|อัน|สกู๊ป|ม้วน|ถาด|ช้อน|ชุด|กิโลกรัม|กรัม|มิลลิลิตร|ลิตร|ช้อนโต๊ะ|ช้อนชา|ชาม|พู|กลีบ|หัว|ใบ|คู่/g;
+/* แปลงหน่วยที่ผู้ใช้พิมพ์เป็นจำนวนหน่วยของเมนู เช่น "6 ชิ้น" กับ "1 คู่ (2 ชิ้น)" = 3 หน่วย, "100 กรัม" กับ "(200 ก.)" = 0.5 */
+function convQ(seg, name, q) {
+  const g = seg.match(/(\d+(?:\.\d+)?)\s*(?:กรัม|ก\.|g\b)/i); if (g) { const d = name.match(/(\d+)\s*(?:กรัม|ก\.)/); if (d && +d[1] > 0) return Math.max(0.1, Math.round(parseFloat(g[1]) / +d[1] * 10) / 10); return 1; }
+  const p = seg.match(/(\d+(?:\.\d+)?)\s*(ชิ้น|ลูก|ไม้|ตัว|คำ|แผ่น)/); if (p) { const d = name.match(/\((\d+)\s*(?:ชิ้น|ลูก|ไม้|ตัว|คำ|แผ่น)\)/), pair = /(?:^|\s)1\s*คู่/.test(name); const N = d ? +d[1] : pair ? 2 : 1; if (N > 1) return Math.max(0.5, Math.round(parseFloat(p[1]) / N * 2) / 2); }
+  return q;
+}
+const QTOK = /^(?:[\d.]+|กรัม|ก\.?|กก\.?|กิโล|มล\.?|ml|ลิตร|ช้อนโต๊ะ|ช้อนชา|ช้อน|ชิ้น|จาน|แก้ว|ถ้วย|ชาม|ห่อ|ถุง|ซอง|ขวด|กระป๋อง|ไม้|ฟอง|ลูก|ตัว|คำ|แผ่น|%|ครึ่ง|หน่อย)$|^\d+(?:\.\d+)?(?:กรัม|ก\.|กก|ml|มล|%)$/;
+const UNITTOK = /^(?:กรัม|ก\.?|กก\.?|กิโล|มล\.?|ml|ลิตร|ช้อนโต๊ะ|ช้อนชา|ช้อน|ชิ้น|จาน|แก้ว|ถ้วย|ชาม|ห่อ|ถุง|ซอง|ขวด|กระป๋อง|ไม้|ฟอง|ลูก|ตัว|คำ|แผ่น)$|^\d+(?:\.\d+)?(?:กรัม|ก\.|กก|ml|มล)$/;
+const isNameTok = t => !QTOK.test(t) && /[ก-๙]/.test(t) && !/^\d+\s*in\s*\d+$/i.test(t);
+splitBySpace = function (seg) {
+  const toks = seg.split(/\s+/).filter(Boolean); if (toks.length < 2) return [seg];
+  const out = []; let prevUnit = false;
+  toks.forEach(t => {
+    const name = isNameTok(t), modOnly = name && stripX(t).trim() === "", startNew = !out.length || (name && !modOnly && (prevUnit || (findFood(t) && out.length && findFood(out[out.length - 1].split(/\s+/)[0]))));
+    if (startNew) out.push(t); else out[out.length - 1] += " " + t; prevUnit = UNITTOK.test(t);
+  });
+  const known = out.filter(x => findFood(x)).length;
+  return out.length > 1 && (known >= 2 || out.length === toks.filter(isNameTok).length && known >= 1 && out.every(x => /\d|ครึ่ง/.test(x))) ? out : [seg];
+};
+const stripX = s => String(s).replace(MODS, "").split(PROTECT).map((p, i) => i % 2 ? p : p.replace(FILLER, "")).join("");
+const PROT = /หมูสับ|หมูกรอบ|หมูแดง|หมูหมัก|หมู|ไก่|เนื้อ|กุ้ง|ปลาหมึก|ปลา|ปู|หอย|ทะเล|เป็ด|แซลมอน|ทูน่า/;
+const PROTG = new RegExp(PROT.source, "g");
+const COOK = /ยำ|ต้ม|แกง|ทอด|ย่าง|เผา|นึ่ง|ตุ๋น|ลวก|ปิ้ง|อบ|พะโล้|ตุ๋น/g;
+const cookMiss = (seg, name, key) => { const sc = (seg.match(COOK) || []), kc = ((name + " " + key).match(COOK) || []); return sc.some(w => kc.indexOf(w) < 0); };
+const protLess = s => skel(stripX(s).replace(PROTG, ""));
+/* แยกวลีที่พิมพ์ติดกันหลายเมนู เช่น "ไก่ย่างส้มตำข้าวเหนียว" โดยตัดคำตามชื่อในฐานข้อมูล */
+let SEGDICT = null, SEGSIG = "";
+function segDict() {
+  const sig = FOODS.length + ":" + (S.myfoods || []).length; if (SEGDICT && sig === SEGSIG) return SEGDICT; const m = new Map();
+  foodList().forEach(f => keysOf(f).forEach(k => { const kk = skel(String(k).replace(/\s*[\d(].*$/, "")); if (kk.length < 3) return; const o = m.get(kk); if (!o || f[0].length < o[0].length) m.set(kk, f); }));
+  SEGSIG = sig; return (SEGDICT = Array.from(m.entries()).sort((a, b) => b[0].length - a[0].length));
+}
+function splitDishes(seg) {
+  const t = skel(stripX(seg)); if (t.length < 6) return null; const D = segDict(), n = t.length, best = new Array(n + 1).fill(null); best[0] = { cov: 0, pcs: [] };
+  for (let i = 0; i < n; i++) { if (!best[i]) continue;
+    const skip = { cov: best[i].cov, pcs: best[i].pcs.concat([null]) }; if (!best[i + 1] || skip.cov > best[i + 1].cov || (skip.cov === best[i + 1].cov && skip.pcs.length < best[i + 1].pcs.length)) best[i + 1] = skip;
+    for (const [kk, f] of D) { if (kk.length < 3 || i + kk.length > n || t.substr(i, kk.length) !== kk) continue; const cand = { cov: best[i].cov + kk.length, pcs: best[i].pcs.concat([{ f, kk }]) }, j = i + kk.length; if (!best[j] || cand.cov > best[j].cov || (cand.cov === best[j].cov && cand.pcs.length < best[j].pcs.length)) best[j] = cand; } }
+  const r = best[n]; if (!r) return null; const pcs = r.pcs.filter(Boolean); if (pcs.length < 2 || pcs.length > 4 || r.cov / n < 0.85) return null;
+  const keep = pcs.filter(a => !pcs.some(b => b !== a && skel(nameCore(b.f)).includes(a.kk) && skel(nameCore(b.f)).length > a.kk.length));
+  const fs = keep.map(p => p.f).filter((f, i, arr) => arr.indexOf(f) === i); return fs.length ? fs : null;
+}
 findFood = seg => (matchFood(seg) || {}).f || null;
 parseFood = function (text) {
-  return text.split(SPLIT).map(s => s.trim()).filter(Boolean).flatMap(splitBySpace).map(seg => {
-    const q = qtyOf(seg), r = matchFood(seg);
+  return text.split(SPLIT).map(s => s.trim()).filter(Boolean).flatMap(splitBySpace).flatMap(seg => {
+    const q = qtyOf(seg.replace(/\d+\s*in\s*\d+/gi, "").replace(/(?:หนึ่ง|สอง|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ)อย่าง/g, "")), r = matchFood(seg);
     if (r) {
-      const core = skel(seg.replace(FILLER, "")).length || 1, cov = skel(r.key.replace(FILLER, "")).length / core;
+      const core = skel(stripX(seg)).length || 1, cov = skel(stripX(r.key)).length / core;
       const riceMiss = /ข้าว/.test(seg) && !/ข้าว/.test(r.key + r.f[0]);
-      const it = { n: r.f[0], k1: r.f[1], q, raw: seg }; const my = r.f[5]; if (my) { it.my = my.id; if (my.p !== undefined) NK.forEach(([a]) => { it[a] = my[a] || 0; }); }
-      if (cov >= 0.7 && !riceMiss) { it.known = true; if (r.d > 0) it.fz = seg; return withNutr(it); }
+      const it = { n: r.f[0], k1: r.f[1], q: convQ(seg, r.f[0], q), raw: seg }; const my = r.f[5]; if (my) { it.my = my.id; if (my.p !== undefined) NK.forEach(([a]) => { it[a] = my[a] || 0; }); }
+      const cm = cookMiss(seg, nameCore(r.f), r.key);
+      if (cov >= 0.7 && !riceMiss && !cm) { it.known = true; if (r.d > 0) it.fz = seg; return withNutr(it); }
+      /* สลับเนื้อสัตว์ เช่น "แกงมัสมั่นเนื้อ" ใกล้เคียง "แกงมัสมั่นไก่" มาก ให้ใช้ค่าของเมนูนั้นและบอกว่าตีความเป็นอะไร */
+      const a = protLess(seg), b = protLess(nameCore(r.f)); if (!riceMiss && !cm && a.length >= 4 && (a === b || (a.length > b.length ? a.startsWith(b) && a.length - b.length <= 2 : b.startsWith(a) && b.length - a.length <= 2)) && (PROT.test(seg) || PROT.test(nameCore(r.f)))) { it.known = true; it.fz = seg; return withNutr(it); }
+      const sp = splitDishes(seg); if (sp) return sp.map(f => { const o = { n: f[0], k1: f[1], q: sp.length === 1 ? convQ(seg, f[0], q) : 1, raw: seg, known: true, fz: seg }; const my = f[5]; if (my) { o.my = my.id; if (my.p !== undefined) NK.forEach(([x]) => { o[x] = my[x] || 0; }); } return withNutr(o); });
       /* ชื่อยาวกว่าที่รู้จักมาก เช่น "ซูชิแซลมอน" ไม่ใช่ "แซลมอนย่าง": ให้ AI ดู ถ้า AI ไม่ได้ค่อยใช้ตัวเลือกใกล้เคียง */
       return { n: seg.replace(/\d+(\.\d+)?|ครึ่ง/g, "").trim() || seg, k1: 0, q, known: false, raw: seg, cand: it };
     }
+    const sp2 = splitDishes(seg); if (sp2) return sp2.map(f => { const o = { n: f[0], k1: f[1], q: 1, raw: seg, known: true, fz: seg }; const my = f[5]; if (my) { o.my = my.id; if (my.p !== undefined) NK.forEach(([x]) => { o[x] = my[x] || 0; }); } return withNutr(o); });
     return { n: seg.replace(/\d+(\.\d+)?|ครึ่ง/g, "").trim() || seg, k1: 0, q, known: false, raw: seg };
   });
 };
