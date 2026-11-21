@@ -22,6 +22,18 @@ function weekMg(from, to) {
     if (e.mg.includes("คาร์ดิโอ")) { const mm = /(\d+) นาที/.exec(w.n || ""); cardioMin += mm ? +mm[1] : (w.sets ? w.sets * .75 : 5); } });
   o["คาร์ดิโอ"] = cardioMin; return o;
 }
+/* แนะนำโหลดครั้งถัดไปแบบเพิ่มทีละนิด (double progression): ทำครบทุกเซ็ตตามเป้า → เพิ่มน้ำหนัก ยังไม่ครบ → คงเดิม พลาดเกินสองครั้งติดกัน → ลดเล็กน้อย */
+function nextLoad(e, tReps) {
+  if (!e || !tReps) return null; const L = liftsOf(e.id); if (!L.length) return null; const last = L[L.length - 1], ss = last.sets.filter(s => s.r > 0); if (!ss.length) return null;
+  const w = Math.max.apply(null, ss.map(s => s.w || 0)), st = stepW(e), hit = x => x.sets.length && x.sets.every(s => s.r >= tReps), far = x => x.sets.filter(s => s.r < tReps - 2).length >= 2;
+  if (w > 0) {
+    if (hit(last)) return { type: "up", w: r1(w + st), why: `ครั้งก่อนทำครบ ${ss.length} เซ็ต เซ็ตละ ${tReps} ครั้งที่ ${w} กก. ลองเพิ่มทีละนิด` };
+    if (L.length >= 2 && far(last) && far(L[L.length - 2])) return { type: "down", w: r1(Math.max(0, w - st)), why: `สองครั้งติดที่ยังไม่ถึงเป้า ลดเป็น ${r1(Math.max(0, w - st))} กก. สักครั้งแล้วค่อยกลับมา` };
+    return { type: "hold", w, why: `ครั้งก่อน ${ss.map(s => s.r).join("/")} ครั้งที่ ${w} กก. ทำให้ครบ ${tReps} ทุกเซ็ตก่อนค่อยเพิ่ม` };
+  }
+  if (hit(last) && L.length >= 2 && hit(L[L.length - 2])) return { type: "up", w: null, why: `ทำครบ ${tReps} ครั้งสองครั้งติด ลองเพิ่มเป็น ${tReps + 2} ครั้ง หรือถือน้ำหนักเบาๆ` };
+  return { type: "hold", w: null, why: `ครั้งก่อน ${ss.map(s => s.r).join("/")} ครั้ง ลองให้ครบ ${tReps} ครั้งทุกเซ็ต` };
+}
 const weekStart = () => addDays(todayKey(), -FIT.dow());
 
 /* ---------- กราฟเส้น ---------- */
