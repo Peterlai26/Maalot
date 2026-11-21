@@ -258,7 +258,7 @@ function sesFinish() {
     const label = e.n + (it.mins ? " · " + Math.round(d.sec / 60) + " นาที" : e.reps || it.reps ? ` · ${d.sets} เซ็ต ${it.reps} ครั้ง` : ` · ${d.sets} เซ็ต ${it.secs} วินาที`);
     S.works.push({ id: rid(), d: todayKey(), t: nowHM(), n: label, ex: e.id, sets: d.sets, reps: it.reps || 0, k: kc }); });
   s.sum = { secs: Math.round((Date.now() - s.startedAt) / 1000), k, ex, sets, active: Math.round(active), prs, nextUp }; s.phase = "done"; if (prs.length) earn(Math.min(prs.length, 3) * 2);
-  if (ex) { S.sessions = (S.sessions || []).concat([{ id: rid(), d: todayKey(), t: nowHM(), name: s.name, src: s.key, secs: s.sum.secs, k, ex }]).slice(-400); earn(5 + Math.min(ex, 5)); touchStreak(); confetti(); setFx("proud", 3000); beep(1100, .3); buzz([100, 60, 100, 60, 200]); }
+  if (ex) { S.sessions = (S.sessions || []).concat([{ id: rid(), d: todayKey(), t: nowHM(), name: s.name, src: s.key, secs: s.sum.secs, k, ex, plan: s.items.filter(x => !x.warm && !x.cool).map(x => x.id), done: Object.keys(s.done).filter(i => s.done[i].sets).map(i => s.items[i].id) }]).slice(-400); earn(5 + Math.min(ex, 5)); touchStreak(); confetti(); setFx("proud", 3000); beep(1100, .3); buzz([100, 60, 100, 60, 200]); }
   save(); rerenderSub();
 }
 SUBS.session = () => {

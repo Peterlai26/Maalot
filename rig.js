@@ -92,6 +92,36 @@ const RIG = (() => {
     wallsit: { period: 4, pose(tm, P) { const hip = [-.48 * D.l1, D.ah + 1.04 * D.l2 + .008 * Math.sin(tm * 11)];
       return { hip, th: .02, hb: 0, d: .6, ph: "คงท่า", ox: -.1, wall: hip[0] - D.tw[0] / 2 - .02, feet: [{ a: [.02, D.ah], fa: 0 }, { a: [0, D.ah], fa: 0 }], hands: S => [[S[0] + D.L * .9 + .05, S[1] - .08], [S[0] + D.L * .9, S[1] - .08]] }; } }
   });
+
+  /* ---------- ท่าเพิ่ม (มีอุปกรณ์ประกอบฉาก pose.props) ---------- */
+  const prop = {
+    rect: (x0, y0, x1, y1, c) => ({ t: "rect", x0, y0, x1, y1, c: c || "#C9B6EA" }),
+    line: (a, b, c, w) => ({ t: "line", a, b, c: c || "#F0679B", w: w || .05 }),
+    disc: (x, y, rr, c) => ({ t: "disc", x, y, r: rr, c: c || "#52456E" })
+  };
+  const sqBase = (tm, P) => EX.squat.pose(tm, P);
+  Object.assign(EX, {
+    goblet: { period: 3, pose(tm, P) { const b = sqBase(tm, P); return Object.assign(b, { dumb: true, hands: S => [[S[0] + .2, S[1] - .22 * D.L], [S[0] + .16, S[1] - .24 * D.L]] }); } },
+    bbsquat: { period: 3.4, pose(tm, P) { const b = sqBase(tm, P * .88 + 0); return Object.assign(b, { hands: S => [[S[0] + .12, S[1] + .04], [S[0] + .08, S[1] + .02]], propsFn: sk => [prop.disc(sk.sh[0] - .06, sk.sh[1] + .04, .3, "#52456E"), prop.disc(sk.sh[0] - .06, sk.sh[1] + .04, .13, "#8E7FB5")] }); } },
+    kneepush: { period: 2.6, pose(tm, P) { const d = sm(.04, .96, raw(tm, P)), hr = D.aw[0] / 2, K = [0, D.shoe * .5 + .05], Lb = D.T + D.l1, Sy = lerp(D.L * .97 + hr, D.L * .34 + hr, d), dy = Sy - K[1], dx = Math.sqrt(Math.max(.01, Lb * Lb - dy * dy)), S = [K[0] + dx, Sy], k = D.l1 / Lb, hip = [K[0] + dx * k, K[1] + dy * k], th = Math.atan2(dx * (1 - k), dy * (1 - k));
+      return { hip, th, hb: 0, d, ph: ph2(tm, P) ? "ลง" : "ขึ้น", ox: dx * .5, feet: [{ a: [K[0] - D.l2 * .9, D.ah], fa: PI }, { a: [K[0] - D.l2 * .86, D.ah], fa: PI }], hands: S2 => [[S2[0] + .04, hr], [S2[0], hr]] }; } },
+    inclinepush: { period: 2.6, pose(tm, P) { const d = sm(.04, .96, raw(tm, P)), hr = D.aw[0] / 2, bh = .62, A = [0, .89 * D.f + D.ah], Sy = bh + lerp(D.L * .97, D.L * .34, d) + hr, B = bodyLine(Sy, A);
+      return { hip: B.hip, th: B.th, hb: 0, d, ph: ph2(tm, P) ? "ลง" : "ขึ้น", ox: B.dx * .5, feet: [{ a: A, fa: -1.1 }, { a: A, fa: -1.1 }], hands: S => [[S[0] + .04, bh + hr], [S[0], bh + hr]], props: [prop.rect(B.S[0] - .45, 0, B.S[0] + .45, bh, "#C9B6EA")] }; } },
+    dbbench: { period: 3, pose(tm, P) { const d = sm(.06, .94, raw(tm, P)), bh = .55, y = bh + D.tw[0] / 2 + .02, hip = [0, y];
+      return { hip, th: -1.52, hb: .92, d, dumb: true, ph: ph2(tm, P) ? "ดัน" : "ลง", ox: -.3, feet: [{ a: [.62, D.ah], fa: 0 }, { a: [.56, D.ah], fa: 0 }], hands: S => { const t = lerp2([S[0] + .12, S[1] + .32 * D.L], [S[0] + .05, S[1] + .97 * D.L], d); return [[t[0] + .03, t[1]], t]; }, props: [prop.rect(-1.25, 0, .45, bh, "#C9B6EA")] }; } },
+    pullup: { period: 3, pose(tm, P) { const d = sm(.06, .94, raw(tm, P)), barY = 2.8, Sy = lerp(barY - D.L * .97, barY - .25, d), S = [0, Sy], hip = [0, Sy - D.T];
+      return { hip, th: 0, hb: -.2 * d, d, ph: ph2(tm, P) ? "ขึ้น" : "ลง", ox: .1, feet: [{ a: [-.08, hip[1] - Hs * .96], fa: -1.2 }, { a: [.04, hip[1] - Hs * .94], fa: -1.2 }], topY: 3.7, hands: () => [[.04, barY], [0, barY]], props: [prop.line([-1.35, barY + .04], [1.35, barY + .04], "#52456E", .07), prop.line([-1.35, barY + .04], [-1.35, 0], "#CBBCE0", .06), prop.line([1.35, barY + .04], [1.35, 0], "#CBBCE0", .06)] }; } },
+    lat: { period: 3, pose(tm, P) { const d = sm(.06, .94, raw(tm, P)), sy = .5, hip = [-.2, sy + .05];
+      return { hip, th: -.12 - .18 * d, hb: .1, d, ph: ph2(tm, P) ? "ดึง" : "ปล่อย", ox: .1, feet: [{ a: [.78, D.ah], fa: 0 }, { a: [.72, D.ah], fa: 0 }], hands: S => { const t = lerp2([S[0] + .18, S[1] + D.L * .95], [S[0] + .3, S[1] + .02], d); return [[t[0] + .03, t[1]], t]; }, topY: 3.5, propsFn: sk => { const h = sk.arms[1].hand; return [prop.rect(-.62, 0, .12, sy, "#C9B6EA"), prop.line([h[0], h[1]], [h[0] - .15, 3.2], "#52456E", .035), prop.line([h[0] - .3, h[1]], [h[0] + .3, h[1]], "#F0679B", .06)]; } }; } },
+    stepup: { period: 2.8, pose(tm, P) { const d = sm(.06, .94, raw(tm, P)), bh = .6, hy = D.ah + Hs * .92 + bh * d, lift = .28 * Math.sin(PI * d);
+      return { hip: [lerp(.1, .85, d), hy], th: .08, hb: 0, d, ph: ph2(tm, P) ? "ขึ้น" : "ลง", ox: .4, feet: [{ a: [lerp(-.05, .78, d), D.ah + bh * d + lift], fa: 0 }, { a: [.9, bh + D.ah], fa: 0 }], hands: S => [[S[0] + .02, S[1] - D.L * .95], [S[0], S[1] - D.L * .95]], props: [prop.rect(.6, 0, 1.3, bh, "#C9B6EA")] }; } },
+    kbswing: { period: 1.8, pose(tm, P) { const ph = raw(tm, P), d = sm(0, 1, ph), th = .08 + .95 * (1 - d); const a = lerp(-1.25, .1, d);
+      return { hip: lerp2([0, Hs + D.ah - .02], [-.3 * D.l, Hs + D.ah - .1], 1 - d), th, hb: -.35 * (1 - d), d: .5, dumb: true, ph: "สวิง", ox: .1, feet: [{ a: [.08, D.ah], fa: 0 }, { a: [0, D.ah], fa: 0 }], hands: S => [reach(S, .95 * D.L, a - .05), reach(S, .95 * D.L, a)] }; } },
+    tricepdip: { period: 2.8, pose(tm, P) { const d = sm(.06, .94, raw(tm, P)), bh = .55, hr = D.aw[0] / 2, hx = -.18, Sy = bh + hr + lerp(D.L * .97, D.L * .4, d), S = [hx + .02, Sy], hip = [hx, Sy - D.T];
+      return { hip, th: 0, hb: 0, d, ph: ph2(tm, P) ? "ลง" : "ขึ้น", ox: .1, feet: [{ a: [Hs * .88, D.ah], fa: .2 }, { a: [Hs * .84, D.ah], fa: .2 }], hands: () => [[hx - .06, bh + hr], [hx - .1, bh + hr]], props: [prop.rect(-1.0, 0, -.1, bh, "#C9B6EA")] }; } },
+    revlunge: { period: 3.4, pose(tm, P) { const d = sm(.04, .96, raw(tm, P)), l = D.l, e = Math.min(1, d * 1.7), hip = lerp2([.85 * l, 1.78 * l + D.ah], [.12 * l, 1.15 * l + D.ah], d);
+      return { hip, th: .06, hb: 0, d, ph: ph2(tm, P) ? "ลง" : "ขึ้น", ox: -.1, feet: [{ a: [lerp(.7 * l, -1.1 * l, e), lerp(D.ah, .78 * D.f + D.ah, e)], fa: lerp(0, -.9, e) }, { a: [.9 * l, D.ah], fa: 0 }], hands: S => [[S[0] - .02, S[1] - .6 * D.L], [S[0] + .05 * D.L, S[1] - .6 * D.L]] }; } }
+  });
   EX.stretch = EX.fold;
   const CHEER = (tm) => { const hop = Math.abs(Math.sin(tm * 6)) * .18, a = .15 * Math.sin(tm * 6); return stand([0, D.l1 + D.l2 + D.ah + hop], 0, 0, { d: 0, ox: 0, ph: "เสร็จแล้ว", feet: [{ a: [.08, D.ah + hop * .9], fa: 0 }, { a: [0, D.ah + hop * .9], fa: 0 }], hands: S => [[S[0] + .25 + a, S[1] + D.L * .9], [S[0] + .12 - a, S[1] + D.L * .95]] }); };
 
@@ -269,7 +299,7 @@ const RIG = (() => {
     const def = EX[ex] || EX.squat, tm = st.tm || 0;
     let pose = st.cheer ? CHEER(tm) : def.pose(tm, st.period || def.period);
     if (st.idle) { pose.hip = [pose.hip[0], pose.hip[1] + .02 * Math.sin(now / 420) * (st.heavy ? 2.2 : 1)]; }
-    const sk = solve(pose), stH = D.l1 + D.l2 + D.ah + D.T + 2 * D.H + .5, ext = D.l1 + D.l2 + D.T + 2 * D.H + .9, sc = Math.min(H * .8 / stH, W * .86 / ext), gy = H * .87, cx = W / 2;
+    const sk = solve(pose), stH = Math.max(D.l1 + D.l2 + D.ah + D.T + 2 * D.H + .5, pose.topY || 0), ext = D.l1 + D.l2 + D.T + 2 * D.H + .9, sc = Math.min(H * .8 / stH, W * .86 / ext), gy = H * .87, cx = W / 2;
     const P = pt => [cx + (pt[0] - pose.ox) * sc, gy - pt[1] * sc];
     if (!st.side && VIEW.v === "front") { sceneFront(ctx, W, H, ex, pose, sk, st, now); return pose; }
     ctx.fillStyle = "#F3D9BF"; ctx.fillRect(0, gy + 2, W, H - gy);
@@ -278,6 +308,11 @@ const RIG = (() => {
     const xs = [sk.hip[0], sk.sh[0], sk.head[0], ...sk.legs.map(l => l.ankle[0]), ...sk.arms.map(a => a.hand[0])], x0 = P([Math.min(...xs), 0])[0], x1 = P([Math.max(...xs), 0])[0];
     ctx.fillStyle = "rgba(36,25,59,.14)"; ctx.beginPath(); ctx.ellipse((x0 + x1) / 2, gy + 4, Math.max(10, (x1 - x0) / 2 * .9), Math.max(3, sc * .08), 0, 0, 2 * PI); ctx.fill();
     if (pose.run) { ctx.strokeStyle = "rgba(36,25,59,.18)"; ctx.lineWidth = 3; ctx.lineCap = "round"; const off = (tm * sc * (ex === "run" ? 3.2 : 1.2)) % (sc * .9); for (let x = W * .06 - off; x < W * .94; x += sc * .9) { if (x < W * .06) continue; ctx.beginPath(); ctx.moveTo(x, gy + 16); ctx.lineTo(x + sc * .35, gy + 16); ctx.stroke(); } }
+    { const pr = (pose.props || []).concat(pose.propsFn ? pose.propsFn(sk) : []); pr.forEach(o => { ctx.save(); ctx.lineCap = "round";
+      if (o.t === "rect") { const a = P([o.x0, o.y1]), b = P([o.x1, o.y0]); ctx.fillStyle = o.c; ctx.strokeStyle = INK; ctx.lineWidth = Math.max(1.5, .025 * sc); ctx.beginPath(); ctx.roundRect ? ctx.roundRect(a[0], a[1], b[0] - a[0], b[1] - a[1], 6) : ctx.rect(a[0], a[1], b[0] - a[0], b[1] - a[1]); ctx.fill(); ctx.stroke(); }
+      else if (o.t === "line") { const a = P(o.a), b = P(o.b); ctx.strokeStyle = o.c; ctx.lineWidth = Math.max(2, o.w * sc); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+      else if (o.t === "disc") { const a = P([o.x, o.y]); ctx.fillStyle = o.c; ctx.strokeStyle = INK; ctx.lineWidth = Math.max(1.5, .025 * sc); ctx.beginPath(); ctx.arc(a[0], a[1], o.r * sc, 0, 2 * PI); ctx.fill(); ctx.stroke(); }
+      ctx.restore(); }); }
     if (pose.wall != null) { const wx = P([pose.wall, 0])[0]; ctx.fillStyle = "#E8D9F5"; ctx.fillRect(0, 0, wx, gy + 2); ctx.fillStyle = "#CDB6EA"; ctx.fillRect(wx - 4, 0, 4, gy + 2); }
     if (pose.rope != null) { const c = P([0, Hs * .95 + D.ah]), rr = (Hs * .95 + D.ah) * sc; ctx.save(); ctx.strokeStyle = "#F0679B"; ctx.lineWidth = 3; ctx.setLineDash([rr * .5, rr * .35]); ctx.lineDashOffset = -pose.rope * rr * .3; ctx.beginPath(); ctx.arc(c[0], c[1], rr, 0, 2 * PI); ctx.stroke(); ctx.restore(); }
     if (pose.bike) { const bk = pose.bike, W1 = P([-.85, .52]), W2 = P([.95, .52]), C = P(bk.cr), Sd = P([-.2, .8]), St = P([.88, 1.0]), Hb = P([.86, .74]), rr = .52 * sc; ctx.save(); ctx.lineCap = "round"; ctx.strokeStyle = "#2A1D45"; ctx.lineWidth = Math.max(2, .05 * sc);
