@@ -1290,3 +1290,4 @@ input:not([type]), input[type="text"]:not(.bare), input[type="number"]:not(.bare
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --blue: #8FA8FF; } }
 :root[data-theme="dark"] { --blue: #8FA8FF; }
 a.btn { text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.fsug { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding: 8px 12px; border-radius: 12px; background: var(--soft); font-size: 12.5px; line-height: 1.45; } .fsug span { flex: 1; min-width: 0; } .fsug.up { background: var(--green-soft); } .fsug.down { background: var(--warn-soft); } .fsug .btn.sm { flex: 0 0 auto; min-height: 34px; padding: 4px 12px; font-size: 13px; }

@@ -41,7 +41,7 @@ function matchFood(seg) {
 const PROTECT = /(ลูกชิ้น|ลูกชุบ|ลูกตาล|ลูกเดือย|ห่อหมก|ผลไม้|น้ำใส|น้ำแกง|น้ำพริก|ไส้กรอก|ก้อนเต้าหู้)/;
 /* คำขยายที่ไม่เปลี่ยนชนิดอาหาร */
 const MODS = /ไม่ใส่น้ำตาล|ไม่ใส่น้ำแข็ง|ไม่ใส่ผักชี|ไม่ใส่ผัก|ไม่ใส่ไข่|ไม่เอาหนัง|ไม่เอาผัก|ไม่เอาไข่|ไม่เอาน้ำ|น้ำข้น|น้ำใส|หวานน้อย|หวาน\s?\d+\s?%?|แบบแห้ง|แห้ง|เผ็ดมาก|เผ็ดน้อย|ไม่เผ็ด|ตามสั่ง|ราดข้าว/g;
-const FILLER = /\d+(\.\d+)?|ครึ่ง|จาน|ชิ้น|แก้ว|ถ้วย|ห่อ|ที่|ชุด|อัน|ลูก|ผล|กิน|ทาน|วันนี้|หน่อย|นิดหน่อย|เล็ก|ใหญ่|ธรรมดา|พิเศษ|ใส่|ไม่|หวาน|เพิ่ม|น้อย|มาก|แก้วเล็ก|ร้อน|ไทย|สด|สุก|เย็น|ซอง|กระป๋อง|ขวด|ถุง|ที่|ห่อ|กล่อง|แท่ง|ก้อน|ไม้|ฟอง|คำ|ตัว|แผ่น|อัน|สกู๊ป|ม้วน|ถาด|ช้อน|ชุด|กิโลกรัม|กรัม|มิลลิลิตร|ลิตร|ช้อนโต๊ะ|ช้อนชา|ชาม|พู|กลีบ|หัว|ใบ|คู่/g;
+const FILLER = /\d+(\.\d+)?|ครึ่ง|จาน|ชิ้น|แก้ว|ถ้วย|ห่อ|ที่|ชุด|อัน|ลูก|ผล|กิน|ทาน|วันนี้|หน่อย|นิดหน่อย|เล็ก|ใหญ่|ธรรมดา|พิเศษ|ใส่|ไม่|หวาน|เพิ่ม|น้อย|มาก|แก้วเล็ก|ร้อน|ไทย|สด|สุก|เย็น|ซอง|กระป๋อง|ขวด|ถุง|ที่|ห่อ|กล่อง|แท่ง|ก้อน|ไม้|ฟอง|คำ|ตัว|แผ่น|อัน|สกู๊ป|ม้วน|ถาด|ช้อน|ชุด|กำมือ|หยิบมือ|กิโลกรัม|กรัม|มิลลิลิตร|ลิตร|ช้อนโต๊ะ|ช้อนชา|ชาม|พู|กลีบ|หัว|ใบ|คู่/g;
 /* แปลงหน่วยที่ผู้ใช้พิมพ์เป็นจำนวนหน่วยของเมนู เช่น "6 ชิ้น" กับ "1 คู่ (2 ชิ้น)" = 3 หน่วย, "100 กรัม" กับ "(200 ก.)" = 0.5 */
 function convQ(seg, name, q) {
   const g = seg.match(/(\d+(?:\.\d+)?)\s*(?:กรัม|ก\.|g\b)/i); if (g) { const d = name.match(/(\d+)\s*(?:กรัม|ก\.)/); if (d && +d[1] > 0) return Math.max(0.1, Math.round(parseFloat(g[1]) / +d[1] * 10) / 10); return 1; }
@@ -68,14 +68,16 @@ const COOK = /ยำ|ต้ม|แกง|ทอด|ย่าง|เผา|นึ
 const cookMiss = (seg, name, key) => { const sc = (seg.match(COOK) || []), kc = ((name + " " + key).match(COOK) || []); return sc.some(w => kc.indexOf(w) < 0); };
 const protLess = s => skel(stripX(s).replace(PROTG, ""));
 /* แยกวลีที่พิมพ์ติดกันหลายเมนู เช่น "ไก่ย่างส้มตำข้าวเหนียว" โดยตัดคำตามชื่อในฐานข้อมูล */
+const WEAKK = /^(พะโล้|ผัด|ทอด|ต้ม|ย่าง|นึ่ง|แกง|ยำ|ตำ|น้ำ|ข้าว|ไข่|หมู|ไก่|ปลา|เนื้อ|กุ้ง)$/;
+const HEADW = /^(ก๋วยเตี๋ยว|บะหมี่|เส้น|ข้าวผัด|ข้าวต้ม|ข้าวราด|ข้าวหน้า|ข้าวแกง|ต้ม|แกง|ยำ|ลาบ|มาม่า|ขนมจีน|โจ๊ก)/;
 let SEGDICT = null, SEGSIG = "";
 function segDict() {
   const sig = FOODS.length + ":" + (S.myfoods || []).length; if (SEGDICT && sig === SEGSIG) return SEGDICT; const m = new Map();
-  foodList().forEach(f => keysOf(f).forEach(k => { const kk = skel(String(k).replace(/\s*[\d(].*$/, "")); if (kk.length < 3) return; const o = m.get(kk); if (!o || f[0].length < o[0].length) m.set(kk, f); }));
+  foodList().forEach(f => keysOf(f).forEach(k => { if (WEAKK.test(String(k).trim())) return; const kk = skel(String(k).replace(/\s*[\d(].*$/, "")); if (kk.length < 3) return; const o = m.get(kk); if (!o || f[0].length < o[0].length) m.set(kk, f); }));
   SEGSIG = sig; return (SEGDICT = Array.from(m.entries()).sort((a, b) => b[0].length - a[0].length));
 }
 function splitDishes(seg) {
-  const t = skel(stripX(seg)); if (t.length < 6) return null; const D = segDict(), n = t.length, best = new Array(n + 1).fill(null); best[0] = { cov: 0, pcs: [] };
+  const t = skel(stripX(seg)); if (t.length < 6) return null; if (HEADW.test(stripX(seg).trim())) return null; const D = segDict(), n = t.length, best = new Array(n + 1).fill(null); best[0] = { cov: 0, pcs: [] };
   for (let i = 0; i < n; i++) { if (!best[i]) continue;
     const skip = { cov: best[i].cov, pcs: best[i].pcs.concat([null]) }; if (!best[i + 1] || skip.cov > best[i + 1].cov || (skip.cov === best[i + 1].cov && skip.pcs.length < best[i + 1].pcs.length)) best[i + 1] = skip;
     for (const [kk, f] of D) { if (kk.length < 3 || i + kk.length > n || t.substr(i, kk.length) !== kk) continue; const cand = { cov: best[i].cov + kk.length, pcs: best[i].pcs.concat([{ f, kk }]) }, j = i + kk.length; if (!best[j] || cand.cov > best[j].cov || (cand.cov === best[j].cov && cand.pcs.length < best[j].pcs.length)) best[j] = cand; } }
@@ -86,7 +88,7 @@ function splitDishes(seg) {
 findFood = seg => (matchFood(seg) || {}).f || null;
 parseFood = function (text) {
   return text.split(SPLIT).map(s => s.trim()).filter(Boolean).flatMap(splitBySpace).flatMap(seg => {
-    const q = qtyOf(seg.replace(/\d+\s*in\s*\d+/gi, "").replace(/(?:หนึ่ง|สอง|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ)อย่าง/g, "")), r = matchFood(seg);
+    const q = qtyOf(seg.replace(/\d+\s*in\s*\d+/gi, "").replace(/(?:หนึ่ง|สอง|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ)อย่าง|สามชั้น|สามรส|สามเกลอ|สามสหาย|สามสี|สองสี|ห้าสี|เจ็ดสี|สามเหลี่ยม|สี่เหลี่ยม/g, "")), r = matchFood(seg);
     if (r) {
       const core = skel(stripX(seg)).length || 1, cov = skel(stripX(r.key)).length / core;
       const riceMiss = /ข้าว/.test(seg) && !/ข้าว/.test(r.key + r.f[0]);
