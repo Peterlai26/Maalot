@@ -278,7 +278,7 @@ ACT.nav = (a) => { closeSheet(); show(a.dataset.v); };
 SUBS.log = (arg) => {
   if (arg.fresh || !LG) {
     LG = { tab: arg.tab || arg.id || "food", text: arg.text || "", items: [], when: "today", busy: false };
-    if (LG.text) LG.items = LG.tab === "food" ? parseFood(LG.text) : parseWork(LG.text);
+    if (LG.text) { LG.items = LG.tab === "food" ? parseFood(LG.text) : parseWork(LG.text); LG.text = ""; }
     arg.fresh = false; if (arg.id) arg.id = null;
   }
   const kg = estW(), isF = LG.tab === "food";
@@ -340,7 +340,8 @@ function lgSearch(q) {
   box.innerHTML = hit.length ? hit.map(x => `<button class="chip" data-act="lgpick" data-i="${x.i}">${ic("plus", 14)}${esc(x.f[0])} · ${x.f[1]}</button>`).join("") : '<span class="xs muted">ไม่พบเมนูนี้ พิมพ์ในช่องด้านบนแล้วกดตีความ หรือให้ AI ประเมินได้</span>';
 }
 ACT.lgpick = (a) => { const f = FOODS[+a.dataset.i]; if (!f) return; LG.text = ($("#lgtext") || {}).value || LG.text; LG.items.push({ n: f[0], k1: f[1], q: 1, known: true }); rerenderSub(); };
-ACT.lgparse = () => { LG.text = $("#lgtext").value; LG.items = LG.text.trim() ? (LG.tab === "food" ? parseFood(LG.text) : parseWork(LG.text)) : []; if (!LG.items.length) toast("พิมพ์สิ่งที่ทำก่อนนะ"); rerenderSub(); };
+/* ตีความ = เพิ่มสิ่งที่พิมพ์เข้ารายการ แล้วเคลียร์ช่องพิมพ์ ไม่ลบรายการเดิม เพื่อให้พิมพ์ทีละอย่างได้ */
+ACT.lgparse = () => { const v = ($("#lgtext") || {}).value || ""; if (!v.trim()) { toast(LG.items.length ? "พิมพ์รายการใหม่ในช่องก่อนนะ" : "พิมพ์สิ่งที่ทำก่อนนะ"); return; } const add = LG.tab === "food" ? parseFood(v) : parseWork(v); if (!add.length) { toast("ยังตีความไม่ได้ ลองพิมพ์ใหม่หรือกดเพิ่มเอง"); return; } LG.items = LG.items.concat(add); LG.text = ""; rerenderSub(); };
 ACT.lgq = (a) => { const it = LG.items[+a.dataset.i]; it.q = Math.max(0.5, Math.round((it.q + parseFloat(a.dataset.d)) * 2) / 2); rerenderSub(); };
 ACT.lgrm = (a) => { LG.items.splice(+a.dataset.i, 1); rerenderSub(); };
 ACT.lgadd = () => { LG.items.push(LG.tab === "food" ? { n: "", k1: 0, q: 1, known: false } : { n: "", met: 0, kind: "time", sets: 0, reps: 0, secs: 0, mins: 0, known: false, km: 0 }); rerenderSub(); };
