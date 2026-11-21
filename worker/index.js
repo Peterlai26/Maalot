@@ -73,7 +73,13 @@ const J = (req, obj, status) => new Response(JSON.stringify(obj), { status: stat
 function cleanPrefs(p) {
   const every = Number(p && p.everyH), st = hm(p && p.start), en = hm(p && p.end), tz = Number(p && p.tzOff);
   if (![1, 2, 3, 4, 6, 8, 12].includes(every) || st === null || en === null || en < st || !(tz >= -840 && tz <= 840)) return null;
-  return { everyH: every, start: p.start, end: p.end, tzOff: Math.round(tz), iff: cleanIff(p.iff) };
+  return { everyH: every, start: p.start, end: p.end, tzOff: Math.round(tz), iff: cleanIff(p.iff), meal: !(p && p.meal === false), wk: cleanWk(p && p.wk) };
+}
+/* เตือนวันออกกำลัง: days = [{d: 0-6 (จันทร์=0), n: ชื่อวันนั้น}] min = นาทีของวัน */
+const cleanWk = (x) => { if (!x || typeof x !== "object") return null; const min = Math.round(+x.min); if (!(min >= 300 && min <= 1380) || !Array.isArray(x.days)) return null; const seen = {}, days = []; for (const q of x.days.slice(0, 7)) { const d = Math.round(+(q && q.d)); if (d >= 0 && d <= 6 && !seen[d]) { seen[d] = 1; days.push({ d, n: String((q && q.n) || "").slice(0, 40) }); } } return days.length ? { min, days } : null; };
+export function wkEvent(wk, min, dow, day) {
+  if (!wk || !(min >= wk.min && min < wk.min + 35)) return null; const q = wk.days.find((x) => x.d === dow); if (!q) return null;
+  return { key: day + "|wk", msg: "วันนี้ถึงคิว" + (q.n ? " " + q.n : "ออกกำลังกาย") + " แล้ว พร้อมไหม แตะเพื่อเริ่มได้เลย" };
 }
 const okEndpoint = (e) => { try { const u = new URL(e); return u.protocol === "https:" && PUSH_HOSTS.some((r) => r.test(u.hostname)) && e.length < 1000; } catch (_) { return false; } };
 
@@ -328,13 +334,17 @@ export default {
       const k = b.sub.keys || {}, prefs = cleanPrefs(b.prefs);
       if (typeof k.p256dh !== "string" || typeof k.auth !== "string" || !prefs) return J(req, { error: "bad subscription" }, 400);
       const old = JSON.parse((await env.SUBS.get(key)) || "null") || {};
-      await env.SUBS.put(key, JSON.stringify({ sub: { endpoint: ep, keys: { p256dh: k.p256dh, auth: k.auth } }, ...prefs, lastMeal: old.lastMeal || 0, lastSlot: old.lastSlot || "", lastIff: old.lastIff || "" }), { expirationTtl: 60 * 86400 });
-      return J(req, { ok: true });
+      await env.SUBS.put(key, JSON.stringify({ sub: { endpoint: ep, keys: { p256dh: k.p256dh, auth: k.auth } }, ...prefs, lastMeal: old.lastMeal || 0, lastSlot: old.lastSlot || "", lastIff: old.lastIff || "", lastWk: old.lastWk || "", lastWorkDay: old.lastWorkDay || "" }), { expirationTtl: 60 * 86400 });
+      return J(req, { ok: true, wk: !!prefs.wk });
     }
     if (url.pathname === "/unsubscribe") { await env.SUBS.delete(key); return J(req, { ok: true }); }
     if (url.pathname === "/ping") {
       const r = JSON.parse((await env.SUBS.get(key)) || "null"); if (!r) return J(req, { ok: false }, 404);
       r.lastMeal = Date.now(); await env.SUBS.put(key, JSON.stringify(r), { expirationTtl: 60 * 86400 }); return J(req, { ok: true });
+    }
+    if (url.pathname === "/wkdone") { /* ทำเซสชันวันนี้แล้ว: ไม่ต้องเตือนซ้ำ */
+      const r = JSON.parse((await env.SUBS.get(key)) || "null"); if (!r) return J(req, { ok: false }, 404); const day = String(b.day || "");
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return J(req, { error: "bad day" }, 400); if (r.lastWorkDay !== day) { r.lastWorkDay = day; await env.SUBS.put(key, JSON.stringify(r), { expirationTtl: 60 * 86400 }); } return J(req, { ok: true });
     }
     if (url.pathname === "/test") {
       const r = JSON.parse((await env.SUBS.get(key)) || "null"); if (!r) return J(req, { ok: false }, 404);
@@ -357,6 +367,15 @@ export default {
             await env.SUBS.put(k.name, JSON.stringify(r), { expirationTtl: 60 * 86400 });
           }
         }
+        if (r.wk) {
+          const local = new Date(now + r.tzOff * 60000), day = local.toISOString().slice(0, 10), min = local.getUTCHours() * 60 + local.getUTCMinutes(), ev = wkEvent(r.wk, min, (local.getUTCDay() + 6) % 7, day);
+          if (ev && r.lastWk !== ev.key) {
+            r.lastWk = ev.key; changed = true;
+            if (r.lastWorkDay !== day) { try { const res = await sendPush(env, r.sub, { title: "Maalot (มาลด)", body: ev.msg }); if (res.status === 404 || res.status === 410) { await env.SUBS.delete(k.name); continue; } } catch (_) { } }
+            await env.SUBS.put(k.name, JSON.stringify(r), { expirationTtl: 60 * 86400 });
+          }
+        }
+        if (r.meal === false) continue;
         let due = dueSlot(r, now);
         if (due && r.iff) { const local = new Date(now + r.tzOff * 60000), min = local.getUTCHours() * 60 + local.getUTCMinutes(); if (min < r.iff.s || min >= r.iff.e) due = null; }
         if (!due || r.lastSlot === due.key) continue;
