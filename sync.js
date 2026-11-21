@@ -144,14 +144,18 @@ function accParts() {
   const expired = AUTH && AUTH.expired ? `<div class="hint">${ic("lock", 18)}<span>เซสชันหมดอายุ เข้าสู่ระบบอีกครั้งเพื่อซิงก์ต่อ (ข้อมูลในเครื่องยังอยู่)</span></div>` : "";
   const err = ACC.err ? `<div class="hint warnh" style="margin:10px 0">${ic("heart", 18)}<span>${esc(ACC.err)}</span></div>` : "";
   const idv = esc((AUTH && AUTH.id) || ACC.id || "");
-  const form = rec ? `<h3 style="margin:0 0 6px">กู้รหัสผ่านด้วยรหัสกู้คืน</h3><p class="muted sm" style="margin-bottom:8px">ใช้รหัสกู้คืนที่ได้ตอนสมัคร (รูปแบบ XXXX-XXXX-…) เพื่อตั้งรหัสผ่านใหม่ ข้อมูลของคุณยังอยู่</p>
-<label class="f" for="aid">ไอดี (อีเมลหรือชื่อผู้ใช้)</label><input id="aid" type="text" autocomplete="username" autocapitalize="none" value="${idv}"/>
+  const form = rec ? `<h3 style="margin:0 0 6px">ลืมรหัสผ่าน</h3><p class="muted sm" style="margin-bottom:8px">ข้อมูลของคุณยังอยู่ เลือกวิธีตั้งรหัสผ่านใหม่</p>
+<label class="f" for="aid">ไอดีหรืออีเมล</label><input id="aid" type="text" autocomplete="username" autocapitalize="none" value="${idv}"/>
+${ACC.msg ? `<div class="hint" style="margin:10px 0">${ic("sparkle", 18)}<span>${esc(ACC.msg)}</span></div>` : ""}
+<button class="btn primary block" style="margin-top:12px" data-act="accforgot" ${ACC.busy ? "disabled" : ""}>${ic("mail", 18)}ส่งลิงก์ตั้งรหัสผ่านใหม่ทางอีเมล</button>
+<p class="xs muted" style="margin-top:6px">ใช้ได้เมื่อบัญชีนี้เคยตั้งอีเมลไว้ ลิงก์ใช้ได้ 30 นาที ถ้าไม่เห็นอีเมล ดูในกล่องสแปมด้วย</p>
+<div class="sec" style="margin-top:16px">หรือใช้รหัสกู้คืน (รูปแบบ XXXX-XXXX-…)</div>
 <label class="f" for="arc">รหัสกู้คืน</label><input id="arc" type="text" autocapitalize="characters" autocomplete="off" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX"/>
 <label class="f" for="apw">รหัสผ่านใหม่ (อย่างน้อย 8 ตัว)</label><input id="apw" type="password" autocomplete="new-password"/>
-<button class="btn primary block" style="margin-top:14px" data-act="accgo" ${ACC.busy ? "disabled" : ""}>${ACC.busy ? "กำลังทำงาน…" : "ตั้งรหัสผ่านใหม่"}</button><button class="linkbtn" style="margin-top:8px" data-act="accmode" data-m="login">กลับไปเข้าสู่ระบบ</button>`
+<button class="btn block" style="margin-top:14px" data-act="accgo" ${ACC.busy ? "disabled" : ""}>${ACC.busy ? "กำลังทำงาน…" : "ตั้งรหัสผ่านใหม่ด้วยรหัสกู้คืน"}</button><button class="linkbtn" style="margin-top:8px" data-act="accmode" data-m="login">กลับไปเข้าสู่ระบบ</button>`
     : `${tabs}<label class="f" for="aid">ไอดี (อีเมลหรือชื่อผู้ใช้)</label><input id="aid" type="text" autocomplete="username" autocapitalize="none" placeholder="เช่น mali@example.com หรือ mali_01" value="${idv}"/>
 <label class="f" for="apw">รหัสผ่าน${reg ? " (อย่างน้อย 8 ตัว)" : ""}</label><input id="apw" type="password" autocomplete="${reg ? "new-password" : "current-password"}"/>
-${reg ? `<label class="f" for="apw2">ยืนยันรหัสผ่าน</label><input id="apw2" type="password" autocomplete="new-password"/><p class="xs muted" style="margin-top:8px">ไม่มีการส่งอีเมลยืนยัน ถ้าลืมรหัสผ่านจะกู้ได้ด้วย “รหัสกู้คืน” ที่แอปให้หลังสมัคร เก็บไว้ให้ดี ถ้าไม่มีทั้งรหัสผ่านและรหัสกู้คืน จะเข้าบัญชีไม่ได้</p>` : ""}
+${reg ? `<label class="f" for="apw2">ยืนยันรหัสผ่าน</label><input id="apw2" type="password" autocomplete="new-password"/><label class="f" for="aem">อีเมล (ไม่บังคับ ไว้กู้รหัสผ่าน)</label><input id="aem" type="email" autocomplete="email" autocapitalize="none" placeholder="mali@example.com"/><p class="xs muted" style="margin-top:8px">ใส่อีเมลไว้ ถ้าลืมรหัสผ่านจะส่งลิงก์ตั้งรหัสใหม่ให้ทางอีเมลได้ (ถ้าไอดีเป็นอีเมลอยู่แล้ว ใช้ไอดีนั้นเลย) หรือกู้ด้วย “รหัสกู้คืน” ที่แอปให้หลังสมัคร เก็บไว้ให้ดี ถ้าไม่มีทั้งอีเมลและรหัสกู้คืน จะเข้าบัญชีไม่ได้</p>` : ""}
 <button class="btn primary block" style="margin-top:14px" data-act="accgo" ${ACC.busy ? "disabled" : ""}>${ACC.busy ? "กำลังทำงาน…" : reg ? "สมัครสมาชิก" : "เข้าสู่ระบบ"}</button>${reg ? "" : `<button class="linkbtn" style="margin-top:8px" data-act="accmode" data-m="recover">ลืมรหัสผ่าน?</button>`}`;
   return { m, reg, rec, err, expired, form };
 }
@@ -176,16 +180,16 @@ SUBS.account = () => {
     return { title: "บัญชีและซิงก์", html: `<div class="scard"><div class="row between"><div><div class="xs muted">เข้าสู่ระบบเป็น</div><b style="font-size:17px">${esc(AUTH.id)}</b></div><span id="syncacct">${acctStatusText()}</span></div>
 <div class="row" style="margin-top:12px"><button class="btn primary" style="flex:1" data-act="syncnow">ซิงก์ตอนนี้</button><button class="btn" style="flex:1" data-act="logout">ออกจากระบบ</button></div></div>
 <p class="xs muted" style="margin:10px 4px">ข้อมูลที่ซิงก์ (อาหาร ออกกำลังกาย น้ำหนัก อารมณ์ ของที่ซื้อ ฯลฯ) ถูกเก็บบนเซิร์ฟเวอร์ของแอปที่ Cloudflare โดยไม่ได้เข้ารหัสแบบ end-to-end ส่วนรหัสผ่านไม่เคยถูกส่งหรือเก็บเป็นตัวจริง ซิงก์เมื่อข้อมูลเปลี่ยนและตอนเปิดแอป ค่าที่ตั้งเฉพาะเครื่อง (ธีมสี โหมดสว่าง/มืด การเตือน) ไม่ซิงก์</p>
-<div class="sgt">จัดการบัญชี</div><div class="scard rows"><button class="srow" data-act="pwchange"><span class="sic">${ic("lock", 20)}</span><span class="grow"><b>เปลี่ยนรหัสผ่าน</b><small>เครื่องอื่นจะต้องเข้าสู่ระบบใหม่</small></span></button><button class="srow" data-act="srvdelask"><span class="sic danger">${ic("trash", 20)}</span><span class="grow"><b>ลบบัญชีและข้อมูลบนเซิร์ฟเวอร์</b><small>ข้อมูลในเครื่องนี้ยังอยู่</small></span></button></div>` };
+<div class="sgt">จัดการบัญชี</div><div class="scard rows"><button class="srow" data-act="emailset"><span class="sic">${ic("mail", 20)}</span><span class="grow"><b>อีเมลกู้รหัสผ่าน</b><small>${AUTH.em ? esc(AUTH.em) : "ยังไม่ได้ตั้ง ตั้งไว้เพื่อกู้รหัสผ่านทางอีเมล"}</small></span></button><button class="srow" data-act="pwchange"><span class="sic">${ic("lock", 20)}</span><span class="grow"><b>เปลี่ยนรหัสผ่าน</b><small>เครื่องอื่นจะต้องเข้าสู่ระบบใหม่</small></span></button><button class="srow" data-act="srvdelask"><span class="sic danger">${ic("trash", 20)}</span><span class="grow"><b>ลบบัญชีและข้อมูลบนเซิร์ฟเวอร์</b><small>ข้อมูลในเครื่องนี้ยังอยู่</small></span></button></div>` };
   }
   const P = accParts(), reg = P.reg, rec = P.rec, err = P.err, expired = P.expired, form = P.form;
   return { title: reg ? "สมัครสมาชิก" : rec ? "ลืมรหัสผ่าน" : "เข้าสู่ระบบ", html: `${expired}${ACC.gate ? `<div class="card" style="text-align:center;margin-bottom:12px"><b style="font-size:17px">สมัครสมาชิกก่อนเริ่มสร้างตัวละคร</b><p class="muted sm" style="margin-top:6px">น้องเกี๊ยวและข้อมูลที่จดไว้จะอยู่กับบัญชีของคุณ ไม่หายเวลาเปลี่ยนมือถือ และใช้ได้ทุกเครื่อง มีบัญชีอยู่แล้วเลือก “เข้าสู่ระบบ”</p></div>` : `<p class="muted sm" style="margin-bottom:12px">สมัครสมาชิกเพื่อใช้ข้อมูลเดียวกันได้ทุกเครื่อง และไม่หายเวลาเปลี่ยนมือถือ</p>`}${err}${form}` };
 };
 /* gate = true เมื่อเปิดจากหน้าแรกก่อนสร้างตัวละคร: สมัครหรือเข้าสู่ระบบเสร็จแล้วไปขั้นสร้างตัวละครต่อทันที */
 ACT.acctopen = () => { const onb = !S.onboarded && !$("#onb").hidden; ACC = { mode: "login", busy: false, err: "", id: ACC.id, gate: onb, pop: onb }; if (onb) openGate(); else openSub("account", {}); };
-ACT.accmode = (a) => { const e = $("#aid"); if (e) ACC.id = e.value; ACC.mode = a.dataset.m; ACC.err = ""; accDraw(); };
+ACT.accmode = (a) => { const e = $("#aid"); if (e) ACC.id = e.value; ACC.mode = a.dataset.m; ACC.err = ""; ACC.msg = ""; accDraw(); };
 function accBusy(b, err) {
-  const g = id => { const e = $("#" + id); return e ? e.value : undefined; }, keep = { aid: g("aid"), apw: g("apw"), apw2: g("apw2"), arc: g("arc") };
+  const g = id => { const e = $("#" + id); return e ? e.value : undefined; }, keep = { aid: g("aid"), apw: g("apw"), apw2: g("apw2"), arc: g("arc"), aem: g("aem") };
   ACC.busy = b; ACC.err = err || ""; if (keep.aid !== undefined) ACC.id = keep.aid; accDraw();
   Object.keys(keep).forEach(k => { const e = $("#" + k); if (e && keep[k] !== undefined) e.value = keep[k]; });
 }
@@ -201,12 +205,12 @@ ACT.accgo = async () => {
   let r, rcNew = null;
   try {
     if (m === "login") r = await accReq("/auth/login", { id, k: await authKey(id, pw) });
-    else if (m === "register") { rcNew = newRecovery(); r = await accReq("/auth/register", { id, k: await authKey(id, pw), rk: await recKey(id, rcNew) }); }
+    else if (m === "register") { rcNew = newRecovery(); r = await accReq("/auth/register", { id, k: await authKey(id, pw), rk: await recKey(id, rcNew), email: (($("#aem") || {}).value || "").trim() }); }
     else { rcNew = newRecovery(); r = await accReq("/auth/recover", { id, rk: await recKey(id, rcIn), k2: await authKey(id, pw), rk2: await recKey(id, rcNew) }); }
   } catch (e) { accBusy(false, "เครื่องนี้ไม่รองรับการเข้ารหัสที่ต้องใช้ ลองเปิดด้วย Chrome หรือ Safari รุ่นใหม่"); return; }
   if (!r.ok) { accBusy(false, accMsg(r.status)); return; }
   const gate = !!ACC.gate;
-  const prev = AUTH; AUTH = { token: r.j.token, exp: r.j.exp, id: r.j.id, linked: prev && prev.id === r.j.id ? !!prev.linked : false, base: prev && prev.id === r.j.id ? prev.base || 0 : 0 }; authSave(); ACC = { mode: "login", busy: false, err: "" };
+  const prev = AUTH; AUTH = { token: r.j.token, exp: r.j.exp, id: r.j.id, em: r.j.em || "", linked: prev && prev.id === r.j.id ? !!prev.linked : false, base: prev && prev.id === r.j.id ? prev.base || 0 : 0 }; authSave(); ACC = { mode: "login", busy: false, err: "" };
   /* ผ่านด่านแล้ว: ถ้าบัญชีนี้มีข้อมูลเดิม applyRemote จะพาเข้าหน้าแรกเอง ถ้าเป็นบัญชีใหม่ไปขั้นสร้างตัวละคร */
   const go = () => { closeModal(); if (subStack.length) closeSub(); syncLink().then(() => { if (m !== "login" && typeof settingsRefresh === "function") settingsRefresh(); if (gate && !S.onboarded && typeof ONB !== "undefined" && ONB && !$("#onb").hidden) { renderOnb(); if (typeof confetti === "function") confetti(); } }); };
   if (rcNew) showRecovery(rcNew, go); else go();
@@ -238,4 +242,42 @@ ACT.srvdel = async () => {
   const p = $("#pwd").value; if (!p) { toast("ใส่รหัสผ่านก่อนนะ"); return; } toast("กำลังลบ…");
   try { const r = await syncApi("POST", "/auth/delete", { k: await authKey(AUTH.id, p) }); if (!r.ok) { toast(r.status === 401 ? "รหัสผ่านไม่ถูกต้อง" : "ลบไม่สำเร็จ ลองอีกครั้งนะ"); return; } AUTH = null; authSave(); closeModal(); toast("ลบบัญชีและข้อมูลบนเซิร์ฟเวอร์แล้ว"); rerenderSub(); } catch (e) { toast("ลบไม่สำเร็จ ลองอีกครั้งนะ"); }
 };
+ACT.accforgot = async () => {
+  if (ACC.busy) return; const q = (($("#aid") || {}).value || "").trim().toLowerCase(); if (q.length < 3) { accBusy(false, "ใส่ไอดีหรืออีเมลของบัญชีก่อน"); return; }
+  accBusy(true); const r = await accReq("/auth/forgot", { id: q });
+  if (!r.ok) { ACC.busy = false; accBusy(false, r.status === 429 ? "ขอบ่อยเกินไป รอสักครู่แล้วลองใหม่" : "ส่งไม่สำเร็จ ลองอีกครั้ง หรือใช้รหัสกู้คืนแทน"); return; }
+  ACC.msg = r.j.mail === false ? "ตอนนี้ระบบยังไม่เปิดส่งอีเมล ใช้รหัสกู้คืนด้านล่างแทนนะ" : "ถ้าไอดีหรืออีเมลนี้มีบัญชีและเคยตั้งอีเมลไว้ เราส่งลิงก์ให้แล้ว เช็กอีเมลภายใน 30 นาที (ดูในสแปมด้วย)";
+  accBusy(false, "");
+};
+/* ลิงก์จากอีเมล: https://…/#reset=TOKEN&id=ไอดี */
+function resetFromHash() {
+  const m = /^#reset=([0-9a-f]{64})&id=(.+)$/.exec(location.hash || ""); if (!m) return;
+  let id = ""; try { id = decodeURIComponent(m[2]); } catch (e) { return; } RESET = { token: m[1], id: normId(id) };
+  try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { }
+  resetModal("");
+}
+let RESET = null;
+function resetModal(err) {
+  openModal(`<h2>ตั้งรหัสผ่านใหม่</h2><p class="muted sm" style="margin:6px 0 10px">บัญชี <b>${esc(RESET.id)}</b></p>${err ? `<div class="hint warnh" style="margin-bottom:10px">${ic("heart", 18)}<span>${esc(err)}</span></div>` : ""}<label class="f" for="rpw">รหัสผ่านใหม่ (อย่างน้อย 8 ตัว)</label><input id="rpw" type="password" autocomplete="new-password"/><label class="f" for="rpw2">ยืนยันรหัสผ่านใหม่</label><input id="rpw2" type="password" autocomplete="new-password"/><button class="btn primary block" style="margin-top:14px" data-act="pwresetgo">ตั้งรหัสผ่านใหม่</button><button class="linkbtn" style="margin-top:8px" data-act="pwresetcancel">ยกเลิก</button>`);
+}
+ACT.pwresetcancel = () => { RESET = null; closeModal(); };
+ACT.pwresetgo = async () => {
+  if (!RESET) return; const p1 = ($("#rpw") || {}).value || "", p2 = ($("#rpw2") || {}).value || "";
+  if (p1.length < 8) { resetModal("รหัสผ่านต้องยาวอย่างน้อย 8 ตัว"); return; } if (p1 !== p2) { resetModal("รหัสผ่านสองช่องไม่ตรงกัน"); return; }
+  toast("กำลังตั้งรหัสผ่านใหม่…"); let r, rcNew;
+  try { rcNew = newRecovery(); r = await accReq("/auth/reset", { token: RESET.token, id: RESET.id, k2: await authKey(RESET.id, p1), rk2: await recKey(RESET.id, rcNew) }); } catch (e) { resetModal("เครื่องนี้ไม่รองรับการเข้ารหัสที่ต้องใช้ ลองเปิดด้วย Chrome หรือ Safari รุ่นใหม่"); return; }
+  if (!r.ok) { resetModal(r.status === 410 ? "ลิงก์หมดอายุหรือถูกใช้ไปแล้ว ขอลิงก์ใหม่จากหน้าเข้าสู่ระบบได้" : accMsg(r.status)); return; }
+  const prev = AUTH; AUTH = { token: r.j.token, exp: r.j.exp, id: r.j.id, em: r.j.em || "", linked: prev && prev.id === r.j.id ? !!prev.linked : false, base: prev && prev.id === r.j.id ? prev.base || 0 : 0 }; authSave(); RESET = null;
+  showRecovery(rcNew, () => { closeModal(); syncLink().then(() => { if (typeof settingsRefresh === "function") settingsRefresh(); }); toast("ตั้งรหัสผ่านใหม่แล้ว"); });
+};
+ACT.emailset = () => openModal(`<h2>อีเมลกู้รหัสผ่าน</h2><p class="muted sm" style="margin:6px 0 10px">ใช้รับลิงก์ตั้งรหัสผ่านใหม่ตอนลืมรหัสผ่าน ปัจจุบัน: ${AUTH && AUTH.em ? esc(AUTH.em) : "ยังไม่ได้ตั้ง"}</p><label class="f" for="em1">อีเมลใหม่ (เว้นว่างเพื่อลบ)</label><input id="em1" type="email" autocomplete="email" autocapitalize="none"/><label class="f" for="em2">รหัสผ่านปัจจุบัน</label><input id="em2" type="password" autocomplete="current-password"/><div class="row" style="margin-top:12px"><button class="btn" style="flex:1" data-act="modalclose">ยกเลิก</button><button class="btn primary" style="flex:1" data-act="emailgo">บันทึก</button></div>`);
+ACT.emailgo = async () => {
+  const em = ($("#em1").value || "").trim(), pw = $("#em2").value; if (!pw) { toast("ใส่รหัสผ่านก่อนนะ"); return; }
+  toast("กำลังบันทึก…"); try {
+    const r = await syncApi("POST", "/auth/email", { k: await authKey(AUTH.id, pw), email: em });
+    if (!r.ok) { toast(r.status === 401 ? "รหัสผ่านไม่ถูกต้อง" : r.status === 409 ? "อีเมลนี้ถูกใช้กับบัญชีอื่นแล้ว" : r.status === 400 ? "รูปแบบอีเมลไม่ถูกต้อง" : "ทำไม่สำเร็จ ลองอีกครั้งนะ"); return; }
+    AUTH.em = r.j.em || ""; authSave(); closeModal(); toast(em ? "ตั้งอีเมลแล้ว" : "ลบอีเมลแล้ว"); if (subStack.length) rerenderSub();
+  } catch (e) { toast("ทำไม่สำเร็จ ลองอีกครั้งนะ"); }
+};
+addEventListener("hashchange", resetFromHash); addEventListener("load", () => setTimeout(resetFromHash, 600));
 function settingsRefresh() { const t = subStack[subStack.length - 1]; if (t && t.name === "settings") rerenderSub(); }

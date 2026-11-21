@@ -173,6 +173,7 @@ async function estimate(req, env) {
 /* ---------- บัญชีผู้ใช้ (ไอดี + รหัสผ่าน) และซิงก์ข้ามเครื่อง ----------
    เบราว์เซอร์เป็นคนยืดรหัสผ่านด้วย PBKDF2 (250k รอบ) แล้วส่งเฉพาะค่าที่ได้ (k) มา เซิร์ฟเวอร์เก็บ HMAC(pepper, salt + k) เท่านั้น
    รหัสกู้คืนใช้หลักการเดียวกัน (rk) เพราะไม่มีอีเมลยืนยันสำหรับรีเซ็ตรหัสผ่าน */
+const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/, cleanEmail = (s) => { const e = String(s || "").trim().toLowerCase(); return e.length <= 120 && EMAIL_RE.test(e) ? e : ""; }, maskEmail = (e) => { if (!e) return ""; const [u, d] = e.split("@"); return u.slice(0, 1) + "***@" + d; };
 const SESSION_TTL = 30 * 86400, MAX_SYNC_BYTES = 2 * 1024 * 1024, ID_RE = /^[a-z0-9._@+-]{3,40}$/, HEX64 = /^[0-9a-f]{64}$/;
 const strB64u = (str) => b64u.enc(enc.encode(str));
 const jsonB64u = (s) => JSON.parse(new TextDecoder().decode(b64u.dec(s)));
@@ -196,7 +197,12 @@ async function readJson(req, max) { const t = await req.text(); if (t.length > (
 async function accountOf(env, id) { const uid = await env.SUBS.get("u:" + (await sha(id))); if (!uid) return null; const a = JSON.parse((await env.SUBS.get("a:" + uid)) || "null"); return a ? { uid, a } : null; }
 async function lockedOut(env, uid) { const f = JSON.parse((await env.SUBS.get("f:" + uid)) || "null"); return !!(f && f.n >= 8 && Date.now() - f.t < 15 * 60000); }
 async function noteFail(env, uid) { const f = JSON.parse((await env.SUBS.get("f:" + uid)) || "null") || { n: 0, t: 0 }; const fresh = Date.now() - f.t > 15 * 60000; await env.SUBS.put("f:" + uid, JSON.stringify({ n: fresh ? 1 : f.n + 1, t: Date.now() }), { expirationTtl: 3600 }); }
-async function sessionOut(req, env, a, uid) { return J(req, { token: await signSession(uid, a.tv, env), exp: Math.floor(Date.now() / 1000) + SESSION_TTL, id: a.id }); }
+async function sessionOut(req, env, a, uid) { return J(req, { token: await signSession(uid, a.tv, env), exp: Math.floor(Date.now() / 1000) + SESSION_TTL, id: a.id, em: maskEmail(a.em) }); }
+/* ส่งอีเมลผ่าน Resend (ต้องตั้ง secret RESEND_API_KEY และตัวแปร MAIL_FROM) */
+export async function sendMail(env, to, subject, text, html) {
+  if (!env.RESEND_API_KEY || !env.MAIL_FROM) return false;
+  try { const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject, text, html }) }); return r.ok; } catch (_) { return false; }
+}
 async function authed(req, env) {
   const m = /^Bearer (.+)$/.exec(req.headers.get("Authorization") || ""); const s = m ? await verifySession(m[1], env) : null; if (!s) return null;
   const a = JSON.parse((await env.SUBS.get("a:" + s.sub)) || "null"); return a && a.tv === s.tv ? { uid: s.sub, a } : null;
@@ -211,6 +217,7 @@ export async function handleAccount(req, env, url) {
       if (ipBlocked(ip)) return J(req, { error: "slow down" }, 429);
       if (await env.SUBS.get("u:" + (await sha(id)))) return J(req, { error: "taken" }, 409);
       const uid = hex(crypto.getRandomValues(new Uint8Array(16))), salt = hex(crypto.getRandomValues(new Uint8Array(16))), a = { id, salt, h: await pw(env, salt, b.k), rh: await pw(env, salt, "r" + b.rk), tv: 1, created: Date.now() };
+      const em = cleanEmail(b.email) || cleanEmail(id); if (em && !(await env.SUBS.get("m:" + (await sha(em))))) { a.em = em; await env.SUBS.put("m:" + (await sha(em)), uid); }
       await env.SUBS.put("a:" + uid, JSON.stringify(a)); await env.SUBS.put("u:" + (await sha(id)), uid); ipFail(ip); /* นับการสมัครด้วย กันสมัครรัว */
       return sessionOut(req, env, a, uid);
     }
@@ -232,7 +239,40 @@ export async function handleAccount(req, env, url) {
       r.a.h = await pw(env, r.a.salt, b.k2); r.a.rh = await pw(env, r.a.salt, "r" + b.rk2); r.a.tv += 1; await env.SUBS.put("a:" + r.uid, JSON.stringify(r.a));
       return sessionOut(req, env, r.a, r.uid);
     }
+    if (p === "/auth/forgot") { /* ส่งลิงก์ตั้งรหัสใหม่ทางอีเมล: ตอบเหมือนกันเสมอ ไม่บอกว่ามีบัญชีหรือไม่ */
+      const q = String(b.id || "").trim().toLowerCase(); if (!q || q.length > 120) return J(req, { error: "bad input" }, 400);
+      if (ipBlocked(ip)) return J(req, { error: "slow down" }, 429); ipFail(ip);
+      if (!env.RESEND_API_KEY || !env.MAIL_FROM) return J(req, { ok: true, mail: false });
+      let r = ID_RE.test(q) ? await accountOf(env, q) : null;
+      if (!r && EMAIL_RE.test(q)) { const uid = await env.SUBS.get("m:" + (await sha(q))); if (uid) { const a = JSON.parse((await env.SUBS.get("a:" + uid)) || "null"); if (a) r = { uid, a }; } }
+      if (r && r.a.em && !(await env.SUBS.get("rl:" + r.uid))) {
+        await env.SUBS.put("rl:" + r.uid, "1", { expirationTtl: 60 });
+        const token = hex(crypto.getRandomValues(new Uint8Array(32)));
+        await env.SUBS.put("rt:" + (await sha(token)), JSON.stringify({ uid: r.uid, exp: Date.now() + 30 * 60000 }), { expirationTtl: 1800 });
+        const link = (env.APP_URL || "https://maalot-2jx.pages.dev") + "/#reset=" + token + "&id=" + encodeURIComponent(r.a.id);
+        await sendMail(env, r.a.em, "ตั้งรหัสผ่านใหม่ Maalot", "มีคำขอตั้งรหัสผ่านใหม่สำหรับบัญชี Maalot ของคุณ\n\nเปิดลิงก์นี้ภายใน 30 นาที:\n" + link + "\n\nถ้าคุณไม่ได้ขอ ไม่ต้องทำอะไร รหัสผ่านเดิมยังใช้ได้ตามปกติ", "<p>มีคำขอตั้งรหัสผ่านใหม่สำหรับบัญชี Maalot ของคุณ</p><p><a href=\"" + link + "\">ตั้งรหัสผ่านใหม่</a> (ใช้ได้ภายใน 30 นาที)</p><p>ถ้าคุณไม่ได้ขอ ไม่ต้องทำอะไร รหัสผ่านเดิมยังใช้ได้ตามปกติ</p>");
+      }
+      return J(req, { ok: true, mail: true });
+    }
+    if (p === "/auth/reset") {
+      const token = String(b.token || ""); if (!/^[0-9a-f]{64}$/.test(token) || !HEX64.test(b.k2 || "") || !HEX64.test(b.rk2 || "")) return J(req, { error: "bad input" }, 400);
+      if (ipBlocked(ip)) return J(req, { error: "slow down" }, 429);
+      const tk = "rt:" + (await sha(token)), rec = JSON.parse((await env.SUBS.get(tk)) || "null");
+      if (!rec || rec.exp < Date.now()) { ipFail(ip); return J(req, { error: "expired" }, 410); }
+      const a = JSON.parse((await env.SUBS.get("a:" + rec.uid)) || "null"); if (!a || (id && a.id !== id)) { ipFail(ip); return J(req, { error: "wrong" }, 401); }
+      a.h = await pw(env, a.salt, b.k2); a.rh = await pw(env, a.salt, "r" + b.rk2); a.tv += 1; await env.SUBS.put("a:" + rec.uid, JSON.stringify(a));
+      await env.SUBS.delete(tk); if (await env.SUBS.get("f:" + rec.uid)) await env.SUBS.delete("f:" + rec.uid);
+      return sessionOut(req, env, a, rec.uid);
+    }
     const me = await authed(req, env); if (!me) return J(req, { error: "unauthorized" }, 401);
+    if (p === "/auth/email") { /* ตั้ง/เปลี่ยน/ลบอีเมลกู้รหัสผ่าน ต้องยืนยันรหัสผ่านก่อน */
+      if (!HEX64.test(b.k || "") || !ctEq(await pw(env, me.a.salt, b.k), me.a.h)) { ipFail(ip); return J(req, { error: "wrong" }, 401); }
+      const em = cleanEmail(b.email); if (String(b.email || "").trim() && !em) return J(req, { error: "bad email" }, 400);
+      if (em) { const cur = await env.SUBS.get("m:" + (await sha(em))); if (cur && cur !== me.uid) return J(req, { error: "email taken" }, 409); }
+      if (me.a.em && me.a.em !== em) await env.SUBS.delete("m:" + (await sha(me.a.em)));
+      if (em) { me.a.em = em; await env.SUBS.put("m:" + (await sha(em)), me.uid); } else delete me.a.em;
+      await env.SUBS.put("a:" + me.uid, JSON.stringify(me.a)); return J(req, { ok: true, em: maskEmail(me.a.em) });
+    }
     if (p === "/auth/password") {
       if (!HEX64.test(b.k || "") || !HEX64.test(b.k2 || "")) return J(req, { error: "bad input" }, 400);
       if (!ctEq(await pw(env, me.a.salt, b.k), me.a.h)) { ipFail(ip); return J(req, { error: "wrong" }, 401); }
@@ -240,7 +280,7 @@ export async function handleAccount(req, env, url) {
     }
     if (p === "/auth/delete") {
       if (!HEX64.test(b.k || "") || !ctEq(await pw(env, me.a.salt, b.k), me.a.h)) { ipFail(ip); return J(req, { error: "wrong" }, 401); }
-      await env.SUBS.delete("a:" + me.uid); await env.SUBS.delete("u:" + (await sha(me.a.id))); await env.SUBS.delete("d:" + me.uid); await env.SUBS.delete("p:" + me.uid); await env.SUBS.delete("fr:" + me.uid); return J(req, { ok: true });
+      await env.SUBS.delete("a:" + me.uid); await env.SUBS.delete("u:" + (await sha(me.a.id))); if (me.a.em) await env.SUBS.delete("m:" + (await sha(me.a.em))); await env.SUBS.delete("d:" + me.uid); await env.SUBS.delete("p:" + me.uid); await env.SUBS.delete("fr:" + me.uid); return J(req, { ok: true });
     }
     return J(req, { error: "not found" }, 404);
   }
